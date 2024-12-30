@@ -94,7 +94,6 @@ public:
 
   // rvalue since no need to keep the event?
   void DispatchEvent(Event &&e) {
-    assert(e.GetEvtCode == EVENT_KEY_PRESSED);
     auto entry = map_.find(e.GetEvtCode());
     if (entry == map_.end()) {
       // spdlog::info("No callback entry found for this event. Dropping...");

@@ -1,0 +1,57 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug-ninja",
+      "displayName": "Debug",
+      "description": "Debug build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "rel-ninja",
+      "displayName": "Release",
+      "description": "Release build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "configurePreset": "debug-ninja",
+      "jobs": 8
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "configurePreset": "rel-ninja",
+      "jobs": 8
+    },
+    {
+      "name": "debug-clean",
+      "displayName": "Clean Debug",
+      "inherits": "debug",
+      "cleanFirst": true,
+      "verbose": true
+    },
+    {
+      "name": "release-clean",
+      "displayName": "Clean Release",
+      "inherits": "release",
+      "cleanFirst": true
+    }
+  ]
+}

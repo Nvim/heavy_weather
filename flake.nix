@@ -30,6 +30,7 @@
           # IDE/Dev Tools:
           cmake
           pkg-config
+          ninja
           clang-tools_18 # LSP & Formatter
           lldb_18 # Debugger
 
