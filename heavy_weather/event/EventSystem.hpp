@@ -25,7 +25,7 @@ template <typename EventType>
 using EventCallback = std::function<void(const EventType &e)>;
 
 enum class EventCode {
-  EVENT_SHUTDOWN,
+  EVENT_WINDOW_CLOSED,
   EVENT_RESIZED,
   EVENT_KEY_PRESSED,
   EVENT_KEY_RELEASED,

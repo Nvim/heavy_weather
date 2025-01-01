@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug demo",
+      "program": "./build/debug/examples/demo"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "myPrompt",
+      "type": "promptString",
+      "description": "Program to run: ",
+      "default": "foobar"
+    }
+  ]
+}

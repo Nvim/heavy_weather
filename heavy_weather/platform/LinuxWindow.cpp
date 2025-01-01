@@ -4,11 +4,13 @@
 #include "heavy_weather/core/Logger.hpp"
 // clang-format on
 #include "LinuxWindow.hpp"
+#include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/EventSystem.hpp"
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
+#include "heavy_weather/event/WindowCloseEvent.hpp"
 
 namespace weather {
 namespace {
@@ -25,10 +27,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
 }
 
 void resize_callback(GLFWwindow *window, int width, int height) {
-  s_WindowProps *props =
-      static_cast<s_WindowProps *>(glfwGetWindowUserPointer(window));
-  EventDispatch(ResizeEvent{props->width, props->height,
-                            static_cast<u16>(width), static_cast<u16>(height)});
+  s_WindowProps &props = *(s_WindowProps *)(glfwGetWindowUserPointer(window));
+  EventDispatch(ResizeEvent{props.width, props.height, static_cast<u16>(width),
+                            static_cast<u16>(height)});
 }
 
 // TODO: log this
@@ -45,20 +46,16 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  if (!glfwInit()) {
-    HW_CORE_ERROR("Couldn't init GLFW");
-    return;
-  }
+  HW_ASSERT_MSG((glfwInit()), "Couldn't init GLFW");
   window_ = glfwCreateWindow(props.width, props.height, props.title.c_str(),
                              nullptr, nullptr);
   if (!window_) {
-    HW_CORE_ERROR("Couldn't create GLFW window");
+    HW_CORE_CRITICAL("Couldn't create GLFW window");
     glfwTerminate();
     return;
   }
 
   glfwMakeContextCurrent(window_);
-
   glfwSetWindowUserPointer(window_, &props_);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -67,13 +64,17 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
     glfwTerminate();
     return;
   }
-
   glfwSwapInterval(1);
 
   // TODO: Use events for key, resize and close callback
   glfwSetKeyCallback(window_, key_callback);
   glfwSetWindowSizeCallback(window_, resize_callback);
   glfwSetErrorCallback(error_callback);
+  glfwSetWindowCloseCallback(window_, [](GLFWwindow *window) {
+    // s_WindowProps &props = *(s_WindowProps
+    // *)glfwGetWindowUserPointer(window);
+    EventDispatch(WindowCloseEvent{window});
+  });
 
   HW_CORE_DEBUG("Window created");
 }

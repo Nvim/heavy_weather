@@ -43,7 +43,6 @@ public:
 
   void Trigger(const Event &e) const override {
     if (e.GetEvtCode() == EventType::CODE) {
-      HW_CORE_INFO("Event code matches code expected by callback. Executing.");
       callback_(static_cast<const EventType &>(e));
     }
   }
