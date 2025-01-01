@@ -6,7 +6,6 @@
 
 #pragma once
 #include "Event.hpp"
-#include "heavy_weather/core/Logger.hpp"
 // #include "EventSystem.hpp"
 
 #include <functional>

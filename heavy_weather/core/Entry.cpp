@@ -1,5 +1,6 @@
 #include "Entry.hpp"
 #include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Logger.hpp"
 
 int main(void) {
   weather::Logger::Init();

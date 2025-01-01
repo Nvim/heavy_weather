@@ -24,7 +24,7 @@
 void report_assertion_failure(const char *expression, const char *message,
                               const char *file, int line);
 
-#define HW_STATIC_ASSERT
+#define HW_STATIC_ASSERT(expr, msg)
 
 #define HW_ASSERT(expr)                                                        \
   {                                                                            \
@@ -46,10 +46,8 @@ void report_assertion_failure(const char *expression, const char *message,
 
 #else
 
-#define HW_STATIC_ASSERT
-
-#define HW_ASSERT
-
-#define HW_ASSERT_DBG
+#define HW_STATIC_ASSERT(expr, msg)
+#define HW_ASSERT(expr)
+#define HW_ASSERT_MSG(expr, msg)
 
 #endif

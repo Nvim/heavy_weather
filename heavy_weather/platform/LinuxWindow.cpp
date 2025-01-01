@@ -8,6 +8,7 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/EventSystem.hpp"
 #include "heavy_weather/event/KeyPressedEvent.hpp"
+#include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
@@ -74,6 +75,10 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
     // s_WindowProps &props = *(s_WindowProps
     // *)glfwGetWindowUserPointer(window);
     EventDispatch(WindowCloseEvent{window});
+  });
+  glfwSetCursorPosCallback(window_, [](GLFWwindow *window, double x, double y) {
+    (void)window;
+    EventDispatch(MouseMovedEvent{x, y});
   });
 
   HW_CORE_DEBUG("Window created");
