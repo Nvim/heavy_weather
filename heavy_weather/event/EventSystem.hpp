@@ -96,7 +96,7 @@ public:
   void DispatchEvent(Event &&e) {
     auto entry = map_.find(e.GetEvtCode());
     if (entry == map_.end()) {
-      // spdlog::info("No callback entry found for this event. Dropping...");
+      // HW_CORE_INFO("No callback entry found for this event. Dropping...");
       return;
     }
 

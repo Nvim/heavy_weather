@@ -1,5 +1,5 @@
 #include "Application.hpp"
-#include "spdlog/spdlog.h"
+#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
@@ -22,18 +22,18 @@ Application::Application() {
   EventRegister(key_callback_);
   EventRegister(resize_callback_);
 
-  spdlog::info("App started. W: {}, H: {}", window_->GetProps().width,
+  HW_CORE_INFO("App started. W: {}, H: {}", window_->GetProps().width,
                window_->GetProps().height);
 }
 
 Application::~Application() {
   EventUnregister(key_callback_);
   EventUnregister(resize_callback_);
-  spdlog::info("Application shutting down");
+  HW_CORE_INFO("Application shutting down");
 }
 
 void Application::Run() {
-  spdlog::info("App running");
+  HW_CORE_INFO("App running");
   is_running_ = true;
   while (is_running_) {
     window_->Update();
@@ -44,27 +44,27 @@ void Application::OnKeyPressed(const KeyPressedEvent &evt) {
   i32 action = evt.Action();
   i32 key = evt.KeyCode();
   if (action == GLFW_PRESS) {
-    spdlog::info("Key {} has been pressed", key);
+    HW_CORE_INFO("Key {} has been pressed", key);
   } else {
-    spdlog::info("Key {} has been released", key);
+    HW_CORE_INFO("Key {} has been released", key);
   }
   if (key == GLFW_KEY_ESCAPE) {
-    spdlog::info("App shutting down...");
+    HW_CORE_INFO("App shutting down...");
     window_->Close();
     is_running_ = false;
   }
   if (key == GLFW_KEY_SPACE) {
-    spdlog::warn("Removing app resize handler");
+    HW_CORE_WARN("Removing app resize handler");
     EventUnregister(resize_callback_);
   }
   if (key == GLFW_KEY_O) {
-    spdlog::warn("Registering app resize handler");
+    HW_CORE_WARN("Registering app resize handler");
     EventRegister(resize_callback_);
   }
 }
 
 void Application::OnResize(const ResizeEvent &evt) {
-  spdlog::info("App recieved ResizeEvent ({}, {}) => ({}, {})", evt.OldSize().w,
+  HW_CORE_INFO("App recieved ResizeEvent ({}, {}) => ({}, {})", evt.OldSize().w,
                evt.OldSize().h, evt.NewSize().w, evt.NewSize().h);
 }
 } // namespace weather

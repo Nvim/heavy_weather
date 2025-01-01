@@ -1,9 +1,9 @@
 // clang-format off
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include "heavy_weather/core/Logger.hpp"
 // clang-format on
 #include "LinuxWindow.hpp"
-#include "spdlog/spdlog.h"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/EventSystem.hpp"
 #include "heavy_weather/event/KeyPressedEvent.hpp"
@@ -46,13 +46,13 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   if (!glfwInit()) {
-    spdlog::error("Couldn't init GLFW");
+    HW_CORE_ERROR("Couldn't init GLFW");
     return;
   }
   window_ = glfwCreateWindow(props.width, props.height, props.title.c_str(),
                              nullptr, nullptr);
   if (!window_) {
-    spdlog::error("Couldn't create GLFW window");
+    HW_CORE_ERROR("Couldn't create GLFW window");
     glfwTerminate();
     return;
   }
@@ -62,7 +62,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   glfwSetWindowUserPointer(window_, &props_);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    spdlog::error("Couldn't load OpenGL");
+    HW_CORE_ERROR("Couldn't load OpenGL");
     glfwDestroyWindow(window_);
     glfwTerminate();
     return;
@@ -75,7 +75,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   glfwSetWindowSizeCallback(window_, resize_callback);
   glfwSetErrorCallback(error_callback);
 
-  spdlog::info("Window created");
+  HW_CORE_DEBUG("Window created");
 }
 
 void LinuxWindow::Close() { glfwSetWindowShouldClose(window_, GLFW_TRUE); }

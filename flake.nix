@@ -28,7 +28,7 @@
         ];
         packages = with pkgs; [
           # IDE/Dev Tools:
-          cmake
+          cmakeWithGui
           pkg-config
           ninja
           clang-tools_18 # LSP & Formatter

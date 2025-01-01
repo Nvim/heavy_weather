@@ -6,7 +6,7 @@
 
 #pragma once
 #include "Event.hpp"
-#include "spdlog/spdlog.h"
+#include "heavy_weather/core/Logger.hpp"
 // #include "EventSystem.hpp"
 
 #include <functional>
@@ -22,7 +22,7 @@ class EventCallbackWrapperInterface {
 public:
   // void Trigger(const Event &e) {
   //   Call(e);
-  //   // spdlog::info("hey");
+  //   // HW_CORE_INFO("hey");
   // }
   virtual void Trigger(const Event &e) const = 0;
   virtual const std::string &GetID() const = 0;
@@ -43,7 +43,7 @@ public:
 
   void Trigger(const Event &e) const override {
     if (e.GetEvtCode() == EventType::CODE) {
-      spdlog::info("Event code matches code expected by callback. Executing.");
+      HW_CORE_INFO("Event code matches code expected by callback. Executing.");
       callback_(static_cast<const EventType &>(e));
     }
   }
@@ -54,9 +54,9 @@ private:
   std::string name_;
   EventCallback<EventType> callback_;
   // void Call(const Event &e) override {
-  //   spdlog::info("Call?");
+  //   HW_CORE_INFO("Call?");
   // if (e.GetEvtCode() == EventType::CODE) {
-  //   spdlog::info("Event code matches code expected by callback.
+  //   HW_CORE_INFO("Event code matches code expected by callback.
   //   Executing."); callback_(static_cast<const EventType &>(e));
   // }
   // }
