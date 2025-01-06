@@ -2,7 +2,7 @@
 
 #include "GLFW/glfw3.h"
 #include "heavy_weather/core/Window.hpp"
-#include "heavy_weather/platform/platform.h"
+#include "heavy_weather/platform/Platform.hpp"
 
 namespace weather {
 

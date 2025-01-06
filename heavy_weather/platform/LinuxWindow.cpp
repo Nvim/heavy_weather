@@ -12,9 +12,15 @@
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
+#include <GL/gl.h>
+#include <chrono>
+#include <thread>
+#include <unistd.h>
 
 namespace weather {
 namespace {
+
+static bool s_glfwInit = false;
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods) {
 
@@ -40,6 +46,30 @@ void error_callback(int error, const char *description) {
 
 } // namespace
 
+// ** Platform functions ** //
+void platform_sleep(u64 time)
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds(time));
+}
+
+f64 platform_get_time(void) {
+  struct timespec now;
+  clock_gettime(CLOCK_MONOTONIC, &now);
+  f64 time = now.tv_sec + now.tv_nsec * 0.000000001;
+  if(s_glfwInit){
+    glfwSetTime(time);
+  }
+  return time;
+}
+
+std::unique_ptr<Window>
+platform_init_window(s_WindowProps props)
+{
+  return std::make_unique<LinuxWindow>(props);
+}
+
+
+// ** LinuxWindow class ** //
 LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
 
   // TODO: Do this from OpenGL 'platform init'
@@ -47,6 +77,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
   HW_ASSERT_MSG((glfwInit()), "Couldn't init GLFW");
   window_ = glfwCreateWindow(props.width, props.height, props.title.c_str(),
                              nullptr, nullptr);
@@ -65,7 +96,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
     glfwTerminate();
     return;
   }
-  glfwSwapInterval(1);
+  glfwSwapInterval(0);
 
   // TODO: Use events for key, resize and close callback
   glfwSetKeyCallback(window_, key_callback);
@@ -81,6 +112,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
     EventDispatch(MouseMovedEvent{x, y});
   });
 
+  s_glfwInit = true;
   HW_CORE_DEBUG("Window created");
 }
 

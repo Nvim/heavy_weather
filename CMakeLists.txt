@@ -20,6 +20,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(cxx_setup INTERFACE HW_ENABLE_ASSERTS=1)
 endif()
 
+if(PLATFORM_LINUX STREQUAL "1")
+  target_compile_definitions(cxx_setup INTERFACE PLATFORM_LINUX=1)
+endif()
+
 # set(BUILD_GMOCK OFF CACHE BOOL "" FORCE) include(CTest)
 
 add_subdirectory(${PROJECT_NAME})

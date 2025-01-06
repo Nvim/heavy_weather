@@ -12,6 +12,9 @@
 weather::Application *weather::CreateAppHook() { return new Demo{}; }
 
 Demo::Demo() {
+  #ifdef PLATFORM_LINUX
+  HW_APP_DEBUG("LINUX_PLATFORM");
+  #endif
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
   EventRegister(mouse_callback_);
   EventCallback<KeyPressedEvent> e = BIND_EVENT_FUNC(&Demo::OnKeyPressed);

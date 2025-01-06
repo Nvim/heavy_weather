@@ -3,7 +3,7 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
-#include "heavy_weather/platform/platform.h"
+#include "heavy_weather/platform/Platform.hpp"
 
 namespace weather {
 class Application {

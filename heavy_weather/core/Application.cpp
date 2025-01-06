@@ -6,9 +6,11 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/platform/LinuxWindow.hpp"
+#include "heavy_weather/platform/Platform.hpp"
 
 namespace {
-std::string kTitle = "Demo";
+std::string kTitle = "Sandbox";
+constexpr f64 kFrametime = 1.0f / 60;
 }
 
 namespace weather {
@@ -18,7 +20,7 @@ Application::Application() {
   s_instance = this;
   is_running_ = false;
   s_WindowProps props{kTitle, 1280, 720};
-  window_ = std::make_unique<LinuxWindow>(props);
+  window_ = platform_init_window(props);
 
   resize_callback_ = [this](const ResizeEvent &e) { this->OnResize(e); };
   close_callback_ = [this](const WindowCloseEvent &e) { this->OnClose(e); };
@@ -40,8 +42,16 @@ const Window &Application::GetWindow() const { return *window_.get(); }
 void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
+  f64 start, end, remaining, delta;
   while (is_running_) {
+    start = platform_get_time();
     window_->Update();
+    end = platform_get_time();
+    delta = end - start;
+    remaining = kFrametime - delta;
+    if (delta > 0.0f && remaining > 0.0f) {
+      platform_sleep(remaining - 1);
+    }
   }
 }
 
