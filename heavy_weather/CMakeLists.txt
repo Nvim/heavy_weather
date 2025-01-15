@@ -10,4 +10,4 @@ target_include_directories(events
 target_link_libraries(engine PRIVATE events)
 
 target_sources(engine PRIVATE ${SOURCES})
-target_link_libraries(engine PUBLIC cxx_setup spdlog glfw glad)
+target_link_libraries(engine PUBLIC cxx_setup spdlog glfw glad imgui)
