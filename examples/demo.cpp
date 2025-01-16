@@ -1,6 +1,7 @@
 #include "Demo.hpp"
 #include "heavy_weather/core/Entry.hpp"
 #include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/core/InputManager.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include <GLFW/glfw3.h>
 #include <functional>
@@ -36,6 +37,7 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   i32 key = evt.KeyCode();
   if (action == GLFW_PRESS) {
     HW_CORE_TRACE("Key {} has been pressed", key);
+    HW_CORE_TRACE("Key O status: {}", weather::InputManager.isKeyDown());
   } else {
     HW_CORE_TRACE("Key {} has been released", key);
   }

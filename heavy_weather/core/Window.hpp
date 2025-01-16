@@ -20,6 +20,7 @@ class Window {
 
 public:
   virtual ~Window() = default;
+  virtual void* GetNative() = 0;
   virtual const s_WindowProps &GetProps() const = 0;
   virtual void Update() = 0;
   static std::unique_ptr<Window> Create(const s_WindowProps &props);

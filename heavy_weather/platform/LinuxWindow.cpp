@@ -125,6 +125,10 @@ void LinuxWindow::Update() {
   glfwPollEvents();
 }
 
+void* LinuxWindow::GetNative(){
+  return window_;
+}
+
 const s_WindowProps &LinuxWindow::GetProps() const { return props_; }
 
 } // namespace weather

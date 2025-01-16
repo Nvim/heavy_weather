@@ -14,6 +14,7 @@ public:
   void Update() override;
   void Close() override;
   const s_WindowProps& GetProps() const override;
+  virtual void* GetNative() override;
 
 private:
   GLFWwindow* window_;

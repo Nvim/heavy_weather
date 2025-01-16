@@ -1,11 +1,11 @@
 #include "Application.hpp"
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/core/InputManager.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
-#include "heavy_weather/platform/LinuxWindow.hpp"
 #include "heavy_weather/platform/Platform.hpp"
 
 namespace {
@@ -22,6 +22,7 @@ Application::Application() {
   s_WindowProps props{kTitle, 1280, 720};
   window_ = platform_init_window(props);
 
+  InputManager::Init(window_->GetNative());
   resize_callback_ = [this](const ResizeEvent &e) { this->OnResize(e); };
   close_callback_ = [this](const WindowCloseEvent &e) { this->OnClose(e); };
   EventRegister(resize_callback_);
