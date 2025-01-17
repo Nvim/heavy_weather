@@ -14,7 +14,7 @@ inline void EventRegister(EventCallback<EvtType> &func) {
   std::unique_ptr<EventCallbackWrapperInterface> ptr =
       std::make_unique<EventCallbackWrapper<EvtType>>(func);
 
-  EventSystem::get().Register(EvtType::CODE, std::move(ptr));
+  EventSystem::Get().Register(EvtType::kCode, std::move(ptr));
 }
 
 template <typename EvtType>
@@ -22,11 +22,11 @@ inline void EventUnregister(EventCallback<EvtType> &func) {
   // construct wrapper so we're safe if we change getID's implementation
   auto wrapper = EventCallbackWrapper<EvtType>{func};
   const std::string name = wrapper.GetID();
-  EventSystem::get().Unregister(EvtType::CODE, name);
+  EventSystem::Get().Unregister(EvtType::kCode, name);
 }
 
 inline void EventDispatch(Event &&e) {
-  EventSystem::get().DispatchEvent(std::move(e));
+  EventSystem::Get().DispatchEvent(std::move(e));
 }
 
 } // namespace weather

@@ -29,7 +29,8 @@ Demo::~Demo() {
   EventUnregister(e);
 }
 
-void Demo::OnMouseMoved(const MouseMovedEvent &e) {
+void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT
+{
   HW_APP_DEBUG("Mouse moved: ({}, {})", e.Position().x, e.Position().y);
 }
 
@@ -38,7 +39,7 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   i32 key = evt.KeyCode();
   if (action == GLFW_PRESS) {
     HW_CORE_TRACE("Key {} has been pressed", key);
-    if (weather::InputSystem::isKeyDown(HW_KEY_O)) {
+    if (weather::InputSystem::IsKeyDown(HW_KEY_O)) {
       HW_CORE_TRACE("Yay");
     }
     // HW_CORE_TRACE("Key O status: {}",

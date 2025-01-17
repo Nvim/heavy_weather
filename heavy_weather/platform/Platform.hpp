@@ -9,9 +9,9 @@
 
 namespace weather {
 
-void platform_sleep(u64 time);
-f64 platform_get_time(void);
-std::unique_ptr<Window> platform_init_window(s_WindowProps props);
-InputManager *platform_init_input(void *window);
+void PlatformSleep(u64 time);
+f64 PlatformGetTime();
+std::unique_ptr<Window> PlatformInitWindow(const WindowProps &props);
+InputManager *PlatformInitInput(void *window);
 
 } // namespace weather

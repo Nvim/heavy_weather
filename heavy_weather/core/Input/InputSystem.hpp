@@ -16,29 +16,27 @@ namespace weather {
 class InputSystem {
 public:
   static bool Init(void *window) {
-    if (!s_impl) {
+    if (s_impl == nullptr) {
       HW_ASSERT(window != nullptr);
       HW_CORE_DEBUG("Input manager initialized");
-      s_impl = platform_init_input(window);
+      s_impl = std::unique_ptr<InputManager>(PlatformInitInput(window));
+      return true;
     }
     return false;
   };
-  static bool isKeyDown(int key) {
+  static bool IsKeyDown(int key) {
     HW_ASSERT(s_impl);
-    return s_impl->isKeyDown(key);
+    return s_impl->IsKeyDown(key);
   }
-  static std::pair<f64, f64> getMousePos() { return s_impl->getMousePos(); }
+  static std::pair<f64, f64> GetMousePos() { return s_impl->GetMousePos(); }
 
-  static void Shutdown() {
-    if (s_impl) {
-      delete s_impl;
-    }
-  }
+  static void Shutdown() {}
 
   // TODO: To poll input, we just proxy query to glfw, assuming polling is
   // done by window. We may need input polling part done here instead at some
   // time?
 private:
-  static inline InputManager *s_impl;
+  // static inline InputManager *s_impl;
+  static inline std::unique_ptr<InputManager> s_impl;
 };
 } // namespace weather

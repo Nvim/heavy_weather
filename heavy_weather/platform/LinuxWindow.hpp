@@ -8,15 +8,20 @@ namespace weather {
 class LinuxWindow : public Window {
 
 public:
-  LinuxWindow(const s_WindowProps &props);
+  LinuxWindow(const LinuxWindow &) = delete;
+  LinuxWindow(LinuxWindow &&) = delete;
+  LinuxWindow &operator=(const LinuxWindow &) = delete;
+  LinuxWindow &operator=(LinuxWindow &&) = delete;
+
+  LinuxWindow(const WindowProps &props);
   ~LinuxWindow() override;
   void Update() override;
   void Close() override;
-  const s_WindowProps &GetProps() const override;
-  virtual void *GetNative() override;
+  const WindowProps &GetProps() const override;
+  void *GetNative() override;
 
 private:
   GLFWwindow *window_;
-  s_WindowProps props_;
+  WindowProps props_;
 };
 } // namespace weather

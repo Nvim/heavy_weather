@@ -8,8 +8,8 @@ class WindowCloseEvent : public Event {
 public:
   WindowCloseEvent(void *window) : window_ptr_{window} {}
 
-  EventCode GetEvtCode() const override { return CODE; }
-  static constexpr EventCode CODE = EventCode::EVENT_WINDOW_CLOSED;
+  EventCode GetEvtCode() const override { return kCode; }
+  static constexpr EventCode kCode = EventCode::EVENT_WINDOW_CLOSED;
 
   const void *GetWindow() const { return window_ptr_; }
 

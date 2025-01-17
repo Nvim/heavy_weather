@@ -2,7 +2,7 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
 
-int main(void) {
+int main() {
   weather::Logger::Init();
   HW_APP_DEBUG("Engine starting in debug mode")
 
@@ -11,7 +11,7 @@ int main(void) {
 
   app->Run();
 
-  delete app;
+  delete app; // NOLINT
 
   HW_APP_DEBUG("Engine shutting down");
   return 0;

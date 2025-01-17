@@ -12,8 +12,8 @@ namespace weather {
 class GLFWInputManager : public InputManager {
 public:
   GLFWInputManager(void *window);
-  bool isKeyDown(int key);
-  std::pair<f64, f64> getMousePos();
+  bool IsKeyDown(int key) override;
+  std::pair<f64, f64> GetMousePos() override;
 
 private:
   GLFWwindow *window_;

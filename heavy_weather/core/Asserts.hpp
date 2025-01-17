@@ -19,8 +19,8 @@
  * @param file The path and name of the file containing the expression.
  * @param line The line number in the file where the assertion failure occurred.
  */
-void report_assertion_failure(const char *expression, const char *message,
-                              const char *file, int line);
+void ReportAssertionFailure(const char *expression, const char *message,
+                            const char *file, int line);
 
 #define HW_STATIC_ASSERT(expr, msg)
 
@@ -28,7 +28,7 @@ void report_assertion_failure(const char *expression, const char *message,
   {                                                                            \
     if (expr) {                                                                \
     } else {                                                                   \
-      report_assertion_failure(#expr, "", __FILE__, __LINE__);                 \
+      ReportAssertionFailure(#expr, "", __FILE__, __LINE__);                   \
       debugBreak()                                                             \
     }                                                                          \
   }
@@ -37,7 +37,7 @@ void report_assertion_failure(const char *expression, const char *message,
   {                                                                            \
     if (expr) {                                                                \
     } else {                                                                   \
-      report_assertion_failure(#expr, msg, __FILE__, __LINE__);                \
+      ReportAssertionFailure(#expr, msg, __FILE__, __LINE__);                  \
       debugBreak()                                                             \
     }                                                                          \
   }

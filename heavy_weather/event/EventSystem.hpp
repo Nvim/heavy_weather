@@ -12,6 +12,9 @@ check?)
 
 #pragma once
 #include "EventCallback.hpp"
+#include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/engine.h"
 #include <algorithm>
 #include <cassert>
 #include <functional>
@@ -24,7 +27,7 @@ namespace weather {
 template <typename EventType>
 using EventCallback = std::function<void(const EventType &e)>;
 
-enum class EventCode {
+enum class EventCode : u8 {
   EVENT_WINDOW_CLOSED,
   EVENT_RESIZED,
   EVENT_KEY_PRESSED,
@@ -38,21 +41,29 @@ class EventCallbackWrapperInterface;
 
 class EventSystem {
 public:
-  static void Shutdown();
   EventSystem(EventSystem &e) = delete;
   EventSystem(EventSystem &&e) = delete;
-  const EventSystem operator=(EventSystem &e) = delete;
-  const EventSystem operator=(EventSystem &&e) = delete;
-  ~EventSystem() = delete;
-
-  static EventSystem &get() {
-    static EventSystem *instance_ = new EventSystem();
-    return *instance_;
+  EventSystem operator=(EventSystem &e) = delete;
+  EventSystem operator=(EventSystem &&e) = delete;
+  ~EventSystem() {
+    map_.clear(); // clear is enough since map holds unique_ptrs
   }
+
+  static EventSystem &Get() {
+    if (s_instance == nullptr) {
+      HW_CORE_INFO("Creating a new instance of eventsystem");
+      s_instance = std::unique_ptr<EventSystem>(new EventSystem()); // NOLINT
+    }
+    return *s_instance;
+  }
+
+  static void Shutdown() {
+    HW_CORE_DEBUG("Shutting down Event System.");
+    s_instance = nullptr;
+  }
+
   void Register(EventCode code,
                 std::unique_ptr<EventCallbackWrapperInterface> &&callback) {
-    const std::string ID = callback->GetID();
-
     // check if a callback is already registered for this code:
     auto entry = map_.find(code);
     if (entry != map_.end()) {
@@ -107,6 +118,8 @@ public:
   }
 
 private:
+  // static inline EventSystem* s_instance = nullptr;
+  static inline std::unique_ptr<EventSystem> s_instance = nullptr;
   EventSystem() {
     map_ = std::unordered_map<
         EventCode,

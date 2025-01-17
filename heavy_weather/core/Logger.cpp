@@ -26,8 +26,8 @@ void Logger::Init() {
 } // namespace weather
 
 /* Defining it here since it's the only asserts function */
-void report_assertion_failure(const char *expression, const char *message,
-                              const char *file, int line) {
+void ReportAssertionFailure(const char *expression, const char *message,
+                            const char *file, int line) {
   HW_CORE_CRITICAL(
       "Assertion Failure: {}, message: '{}', in file: {}, line: {:d}\n",
       expression, message, file, line);

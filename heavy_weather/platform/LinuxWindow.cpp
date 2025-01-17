@@ -21,58 +21,41 @@
 
 namespace weather {
 namespace {
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+bool s_glfw_init = false;
 
-static bool s_glfwInit = false;
-void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                  int mods) {
-
-  (void)mods;
-  (void)action;
-  (void)window;
-  (void)scancode;
-  // Moving stack memory?
-  KeyPressedEvent e{key, action};
-  EventSystem::get().DispatchEvent(std::move(e));
-}
-
-void resize_callback(GLFWwindow *window, int width, int height) {
-  s_WindowProps &props = *(s_WindowProps *)(glfwGetWindowUserPointer(window));
-  EventDispatch(ResizeEvent{props.width, props.height, static_cast<u16>(width),
-                            static_cast<u16>(height)});
-}
-
-// TODO: log this
-void error_callback(int error, const char *description) {
-  fprintf(stderr, "GLFW error %d: %s\n", error, description);
+void ErrorCallback(int error, const char *description) {
+  HW_CORE_ERROR("GLFW Error: {}: {}", error, description);
 }
 
 } // namespace
 
 // ** Platform functions ** //
-void platform_sleep(u64 time) {
+void PlatformSleep(u64 time) {
   std::this_thread::sleep_for(std::chrono::milliseconds(time));
 }
 
-f64 platform_get_time(void) {
-  struct timespec now;
+f64 PlatformGetTime() {
+  struct timespec now {};
   clock_gettime(CLOCK_MONOTONIC, &now);
-  f64 time = now.tv_sec + now.tv_nsec * 0.000000001;
-  if (s_glfwInit) {
+  f64 time = now.tv_sec + now.tv_nsec * 0.000000001; // NOLINT
+  if (s_glfw_init) {
     glfwSetTime(time);
   }
   return time;
 }
 
-std::unique_ptr<Window> platform_init_window(s_WindowProps props) {
+std::unique_ptr<Window> PlatformInitWindow(const WindowProps &props) {
   return std::make_unique<LinuxWindow>(props);
 }
 
-InputManager *platform_init_input(void *window) {
-  return new GLFWInputManager(window);
+InputManager *PlatformInitInput(void *window) {
+  // TODO shared_ptr
+  return new GLFWInputManager(window); // NOLINT
 }
 
 // ** LinuxWindow class ** //
-LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
+LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
 
   // TODO: Do this from OpenGL 'platform init'
   glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -92,6 +75,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   glfwMakeContextCurrent(window_);
   glfwSetWindowUserPointer(window_, &props_);
 
+  // NOLINTNEXTLINE
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     HW_CORE_ERROR("Couldn't load OpenGL");
     glfwDestroyWindow(window_);
@@ -100,13 +84,23 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
   }
   glfwSwapInterval(0);
 
-  // TODO: Use events for key, resize and close callback
-  glfwSetKeyCallback(window_, key_callback);
-  glfwSetWindowSizeCallback(window_, resize_callback);
-  glfwSetErrorCallback(error_callback);
+  glfwSetKeyCallback(window_, [](GLFWwindow *window, int key, int scancode,
+                                 int action, int mods) {
+    // clang-format off
+      (void)mods; (void)action; (void)window; (void)scancode;
+    // clang-format on
+    EventSystem::Get().DispatchEvent(KeyPressedEvent{key, action});
+  });
+
+  glfwSetWindowSizeCallback(
+      window_, [](GLFWwindow *window, int width, int height) {
+        auto &p = *static_cast<WindowProps *>(glfwGetWindowUserPointer(window));
+        EventDispatch(ResizeEvent{p.width, p.height, static_cast<u16>(width),
+                                  static_cast<u16>(height)});
+      });
+
+  glfwSetErrorCallback(ErrorCallback);
   glfwSetWindowCloseCallback(window_, [](GLFWwindow *window) {
-    // s_WindowProps &props = *(s_WindowProps
-    // *)glfwGetWindowUserPointer(window);
     EventDispatch(WindowCloseEvent{window});
   });
   glfwSetCursorPosCallback(window_, [](GLFWwindow *window, double x, double y) {
@@ -114,7 +108,7 @@ LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
     EventDispatch(MouseMovedEvent{x, y});
   });
 
-  s_glfwInit = true;
+  s_glfw_init = true;
   HW_CORE_DEBUG("Window created");
 }
 
@@ -129,6 +123,6 @@ void LinuxWindow::Update() {
 
 void *LinuxWindow::GetNative() { return window_; }
 
-const s_WindowProps &LinuxWindow::GetProps() const { return props_; }
+const WindowProps &LinuxWindow::GetProps() const { return props_; }
 
 } // namespace weather

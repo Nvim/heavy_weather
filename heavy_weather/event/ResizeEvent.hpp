@@ -14,19 +14,19 @@ using size = struct {
 class ResizeEvent : public Event {
 public:
   ResizeEvent(u16 w, u16 h, u16 old_w, u16 old_h)
-      : new_sz{w, h}, old_sz{old_w, old_h} {}
+      : new_sz_{w, h}, old_sz_{old_w, old_h} {}
 
-  ResizeEvent(size nw, size old) : new_sz{nw}, old_sz{old} {}
+  ResizeEvent(size nw, size old) : new_sz_{nw}, old_sz_{old} {}
 
-  EventCode GetEvtCode() const override { return CODE; }
-  static constexpr EventCode CODE = EventCode::EVENT_RESIZED;
+  EventCode GetEvtCode() const override { return kCode; }
+  static constexpr EventCode kCode = EventCode::EVENT_RESIZED;
 
-  const size &NewSize() const { return new_sz; }
+  const size &NewSize() const { return new_sz_; }
 
-  const size &OldSize() const { return old_sz; }
+  const size &OldSize() const { return old_sz_; }
 
 private:
-  size new_sz;
-  size old_sz;
+  size new_sz_;
+  size old_sz_;
 };
 } // namespace weather

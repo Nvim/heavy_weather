@@ -3,13 +3,16 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
-#include "heavy_weather/platform/Platform.hpp"
 
 namespace weather {
 class Application {
 
 public:
   Application();
+  Application(const Application &) = delete;
+  Application(Application &&) = delete;
+  Application &operator=(const Application &) = delete;
+  Application &operator=(Application &&) = delete;
   virtual ~Application();
 
   void Run();
@@ -18,7 +21,7 @@ public:
   void OnResize(const ResizeEvent &evt);
   void OnClose(const WindowCloseEvent &evt);
 
-  inline static Application &Get() { return *s_instance; }
+  static Application &Get() { return *s_instance; }
 
   const Window &GetWindow() const;
 

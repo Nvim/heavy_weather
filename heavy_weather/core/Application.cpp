@@ -9,7 +9,7 @@
 #include "heavy_weather/platform/Platform.hpp"
 
 namespace {
-std::string kTitle = "Sandbox";
+std::string s_title = "Sandbox";
 constexpr f64 kFrametime = 1.0f / 60;
 } // namespace
 
@@ -19,8 +19,8 @@ Application::Application() {
   HW_ASSERT_MSG(!s_instance, "App already exists");
   s_instance = this;
   is_running_ = false;
-  s_WindowProps props{kTitle, 1280, 720};
-  window_ = platform_init_window(props);
+  WindowProps props{s_title, 1280, 720};
+  window_ = PlatformInitWindow(props);
 
   if (!InputSystem::Init(window_->GetNative())) {
     HW_CORE_CRITICAL("Failed to init input");
@@ -37,28 +37,30 @@ Application::Application() {
 Application::~Application() {
   EventUnregister(resize_callback_);
   EventUnregister(close_callback_);
+  EventSystem::Shutdown();
   HW_CORE_INFO("Application shutting down");
 }
 
-const Window &Application::GetWindow() const { return *window_.get(); }
+const Window &Application::GetWindow() const { return *window_; }
 
 void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
-  f64 start, end, remaining, delta;
+  f64 start{}, end{}, remaining{}, delta{};
   while (is_running_) {
-    start = platform_get_time();
+    start = PlatformGetTime();
     window_->Update();
-    end = platform_get_time();
+    end = PlatformGetTime();
     delta = end - start;
     remaining = kFrametime - delta;
     if (delta > 0.0f && remaining > 0.0f) {
-      platform_sleep(remaining - 1);
+      PlatformSleep(remaining - 1); // NOLINT
     }
   }
 }
 
-void Application::OnResize(const ResizeEvent &evt) {
+void Application::OnResize(const ResizeEvent &evt) // NOLINT
+{
   HW_CORE_INFO("App recieved ResizeEvent ({}, {}) => ({}, {})", evt.OldSize().w,
                evt.OldSize().h, evt.NewSize().w, evt.NewSize().h);
 }

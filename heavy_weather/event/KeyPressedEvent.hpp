@@ -10,8 +10,8 @@ public:
   KeyPressedEvent(i32 keycode, i32 action)
       : keycode_{keycode}, action_{action} {}
 
-  EventCode GetEvtCode() const override { return CODE; }
-  static constexpr EventCode CODE = EventCode::EVENT_KEY_PRESSED;
+  EventCode GetEvtCode() const override { return kCode; }
+  static constexpr EventCode kCode = EventCode::EVENT_KEY_PRESSED;
 
   i32 KeyCode() const { return keycode_; }
   i32 Action() const { return action_; }

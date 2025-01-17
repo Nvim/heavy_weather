@@ -8,7 +8,7 @@
 namespace weather {
 
 // clang-format off
-#define HW_KEY_UNKNOWN            -1
+#define HW_KEY_UNKNOWN            (-1)
 /* Printable keys */
 #define HW_KEY_SPACE              GLFW_KEY_SPACE
 #define HW_KEY_APOSTROPHE         GLFW_KEY_APOSTROPHE  /* ' */
