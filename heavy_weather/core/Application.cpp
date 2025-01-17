@@ -1,7 +1,7 @@
 #include "Application.hpp"
 #include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Input/InputSystem.hpp"
 #include "heavy_weather/core/Logger.hpp"
-#include "heavy_weather/core/InputManager.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
@@ -11,7 +11,7 @@
 namespace {
 std::string kTitle = "Sandbox";
 constexpr f64 kFrametime = 1.0f / 60;
-}
+} // namespace
 
 namespace weather {
 
@@ -22,7 +22,9 @@ Application::Application() {
   s_WindowProps props{kTitle, 1280, 720};
   window_ = platform_init_window(props);
 
-  InputManager::Init(window_->GetNative());
+  if (!InputSystem::Init(window_->GetNative())) {
+    HW_CORE_CRITICAL("Failed to init input");
+  }
   resize_callback_ = [this](const ResizeEvent &e) { this->OnResize(e); };
   close_callback_ = [this](const WindowCloseEvent &e) { this->OnClose(e); };
   EventRegister(resize_callback_);

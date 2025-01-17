@@ -10,9 +10,7 @@
 
 // TODO: make more portable
 #define debugBreak()                                                           \
-  {                                                                            \
-    __asm__ volatile("int $0x03");                                             \
-  }
+  { __asm__ volatile("int $0x03"); }
 
 /**
  * @brief Reports an assertion failure.

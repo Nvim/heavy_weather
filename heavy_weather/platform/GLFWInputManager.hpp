@@ -1,6 +1,7 @@
 #pragma once
 
-#include <heavy_weather/core/InputManager.hpp>
+#include <GLFW/glfw3.h>
+#include <heavy_weather/core/Input/InputManager.hpp>
 namespace weather {
 
 /**
@@ -10,8 +11,12 @@ namespace weather {
  */
 class GLFWInputManager : public InputManager {
 public:
+  GLFWInputManager(void *window);
   bool isKeyDown(int key);
   std::pair<f64, f64> getMousePos();
+
+private:
+  GLFWwindow *window_;
 };
 
 } // namespace weather

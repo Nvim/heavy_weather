@@ -1,7 +1,8 @@
 #include "Demo.hpp"
 #include "heavy_weather/core/Entry.hpp"
+#include "heavy_weather/core/Input/InputSystem.hpp"
+#include "heavy_weather/core/Input/KeyCodes.hpp"
 #include "heavy_weather/core/Logger.hpp"
-#include "heavy_weather/core/InputManager.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include <GLFW/glfw3.h>
 #include <functional>
@@ -13,9 +14,9 @@
 weather::Application *weather::CreateAppHook() { return new Demo{}; }
 
 Demo::Demo() {
-  #ifdef PLATFORM_LINUX
+#ifdef PLATFORM_LINUX
   HW_APP_DEBUG("LINUX_PLATFORM");
-  #endif
+#endif
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
   EventRegister(mouse_callback_);
   EventCallback<KeyPressedEvent> e = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
@@ -37,7 +38,10 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   i32 key = evt.KeyCode();
   if (action == GLFW_PRESS) {
     HW_CORE_TRACE("Key {} has been pressed", key);
-    HW_CORE_TRACE("Key O status: {}", weather::InputManager.isKeyDown());
+    if (weather::InputSystem::isKeyDown(HW_KEY_O)) {
+      HW_CORE_TRACE("Yay");
+    }
+    // HW_CORE_TRACE("Key O status: {}",
   } else {
     HW_CORE_TRACE("Key {} has been released", key);
   }

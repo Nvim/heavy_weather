@@ -1,6 +1,7 @@
 // clang-format off
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include "heavy_weather/core/Input/InputManager.hpp"
 #include "heavy_weather/core/Logger.hpp"
 // clang-format on
 #include "LinuxWindow.hpp"
@@ -12,6 +13,7 @@
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
+#include "heavy_weather/platform/GLFWInputManager.hpp"
 #include <GL/gl.h>
 #include <chrono>
 #include <thread>
@@ -47,8 +49,7 @@ void error_callback(int error, const char *description) {
 } // namespace
 
 // ** Platform functions ** //
-void platform_sleep(u64 time)
-{
+void platform_sleep(u64 time) {
   std::this_thread::sleep_for(std::chrono::milliseconds(time));
 }
 
@@ -56,18 +57,19 @@ f64 platform_get_time(void) {
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
   f64 time = now.tv_sec + now.tv_nsec * 0.000000001;
-  if(s_glfwInit){
+  if (s_glfwInit) {
     glfwSetTime(time);
   }
   return time;
 }
 
-std::unique_ptr<Window>
-platform_init_window(s_WindowProps props)
-{
+std::unique_ptr<Window> platform_init_window(s_WindowProps props) {
   return std::make_unique<LinuxWindow>(props);
 }
 
+InputManager *platform_init_input(void *window) {
+  return new GLFWInputManager(window);
+}
 
 // ** LinuxWindow class ** //
 LinuxWindow::LinuxWindow(const s_WindowProps &props) : props_{props} {
@@ -125,9 +127,7 @@ void LinuxWindow::Update() {
   glfwPollEvents();
 }
 
-void* LinuxWindow::GetNative(){
-  return window_;
-}
+void *LinuxWindow::GetNative() { return window_; }
 
 const s_WindowProps &LinuxWindow::GetProps() const { return props_; }
 

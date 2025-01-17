@@ -1,9 +1,5 @@
 #pragma once
 
-#include "heavy_weather/core/Asserts.hpp"
-#include "heavy_weather/core/Logger.hpp"
-#include "heavy_weather/engine.h"
-#include <utility>
 #if defined(PLATFORM_LINUX) || defined(PLATFORM_WINDOWS)
 #include <GLFW/glfw3.h>
 
@@ -163,33 +159,4 @@ namespace weather {
 // clang-format on
 
 #endif
-
-// Store input state for current frame. Can be queried by other systems
-// Singleton system, tightly coupled with Window
-
-/**
- * @class InputManager
- * @brief Act as a proxy to query platform about input status. Can be queried by
- * other systems. Singleton system, coupled with Window. Depends on window
- * having polled the latest events, and doesn't store any input status
- */
-class InputManager {
-public:
-  static void Init(void* window){
-    static bool init_ = false;
-    if(!init_){
-      HW_ASSERT(window != nullptr);
-      HW_CORE_DEBUG("Input manager initialized");
-      s_window = window;
-      init_ = true;
-    }
-  };
-  virtual bool isKeyDown(int key) = 0;
-  virtual std::pair<f64, f64> getMousePos() = 0;
-
-  // TODO: To poll input, we just proxy query to glfw, assuming polling is done
-  // by window. We may need input polling part done here instead at some time?
-protected:
-  static inline void* s_window; // Internal window handle
-};
 }
