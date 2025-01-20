@@ -3,10 +3,16 @@
 #include "heavy_weather/core/Input/InputSystem.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
+#include "heavy_weather/engine.h"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/platform/Platform.hpp"
+#include "heavy_weather/rendering/VertexLayout.hpp"
+#include <heavy_weather/rendering/Backend/GL/GLAPI.hpp>
+#include <heavy_weather/rendering/Pipeline.hpp>
+#include <heavy_weather/rendering/Shader.hpp>
+#include <heavy_weather/rendering/Types.hpp>
 
 namespace {
 std::string s_title = "Sandbox";
@@ -47,9 +53,43 @@ void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
   f64 start{}, end{}, remaining{}, delta{};
+
+  // Graphics:
+  graphics::GLBackendAPI api{};
+  f32 vertices[] = {
+      -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, //
+      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, //
+      0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f  //
+  };
+
+  // Buffer:
+  graphics::VertexLayout layout{};
+  layout.AddAttribute({"position", graphics::DataFormat::Float3});
+  layout.AddAttribute({"color", graphics::DataFormat::Float4});
+  graphics::BufferDescriptor desc{sizeof(vertices), 3,
+                                  graphics::BufferType::VertexBuffer, &layout};
+  auto vbuf = api.CreateBuffer(desc, &vertices);
+
+  // Shaders:
+  graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
+                                    "demo.vert"};
+  graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
+                                    "demo.frag"};
+  UniquePtr<graphics::Shader> vs = api.CreateShader(vsdesc);
+  UniquePtr<graphics::Shader> fs = api.CreateShader(fsdesc);
+
+  graphics::PipelineDescriptor pdesc = {std::move(vs), std::move(fs)};
+  auto pipeline = api.CreatePipeline(pdesc);
+
   while (is_running_) {
     start = PlatformGetTime();
+
     window_->Update();
+    api.BindBuffer(*vbuf);
+    api.UsePipeline(*pipeline);
+    api.Clear();
+    api.Render();
+
     end = PlatformGetTime();
     delta = end - start;
     remaining = kFrametime - delta;
