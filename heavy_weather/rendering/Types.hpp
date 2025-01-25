@@ -1,10 +1,13 @@
 #pragma once
 
 #include "heavy_weather/engine.h"
-#include <filesystem>
 #include <heavy_weather/core/Logger.hpp>
 
 namespace weather::graphics {
+
+enum class Backend : u8 {
+  OpenGL,
+};
 
 struct ShaderDescriptor;   // Type, path, uniforms/attribs
 struct BufferDescriptor;   // Type, size, layout
@@ -38,8 +41,8 @@ enum class BufferType : u8 {
  * fs) = Linked program To bind shaders, renderer->UsePipeline(pipeline)
  * */
 struct BufferDescriptor {
-  u32 size;
-  u32 count;
+  u64 size;
+  u64 count;
   BufferType type;
   VertexLayout *layout;
 };
@@ -57,6 +60,13 @@ struct PipelineDescriptor {
 };
 
 enum ShaderCompileStatus : u8 { NotCompiled, Success, Failed };
+
+struct MeshDescriptor {
+  // void *vertices;
+  std::pair<void *, u64> vertices;
+  std::pair<u32 *, u64> indices;
+  VertexLayout *layout;
+};
 
 static inline u8 FormatCount(DataFormat format) {
   // clang-format off

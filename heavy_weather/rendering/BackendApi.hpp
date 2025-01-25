@@ -21,12 +21,13 @@ public:
   virtual UniquePtr<Pipeline> CreatePipeline(PipelineDescriptor &desc) = 0;
 
   /* Resouce binding: */
-  virtual void BindBuffer(Buffer &buf) = 0;
+  virtual void BindBuffer(const Buffer &buf) = 0;
   virtual void UsePipeline(Pipeline &pipeline) = 0;
 
   // Draw Call using previously bound resources:
   virtual void Clear() const = 0;
   virtual void Render() = 0;
+  virtual void RenderIndexed(u64 count) = 0;
 
   //
   BackendAPI(const BackendAPI &) = default;

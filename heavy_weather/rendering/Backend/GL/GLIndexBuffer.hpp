@@ -11,8 +11,8 @@ class GLIndexBuffer : public Buffer {
 public:
   GLIndexBuffer(BufferDescriptor desc, void *indices);
   ~GLIndexBuffer() override;
-  u32 Hanlde() const;
-  u32 VAO() const;
+  u32 Hanlde() const { return handle_; }
+  // u32 VAO() const { return vao_; }
 
   //
   GLIndexBuffer(const GLIndexBuffer &) = default;
@@ -22,8 +22,8 @@ public:
 
 private:
   u32 handle_; // ID given by GL on creation
-  u32 vao_;    // VAO associated with buffer
-  VertexLayout layout_;
+  // u32 vao_;    // VAO associated with buffer
+  // VertexLayout layout_;
 };
 
 } // namespace weather::graphics

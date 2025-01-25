@@ -8,6 +8,7 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/platform/Platform.hpp"
+#include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include <heavy_weather/rendering/Backend/GL/GLAPI.hpp>
 #include <heavy_weather/rendering/Pipeline.hpp>
@@ -55,41 +56,53 @@ void Application::Run() {
   f64 start{}, end{}, remaining{}, delta{};
 
   // Graphics:
-  graphics::GLBackendAPI api{};
-  f32 vertices[] = {
+  f32 vertices_1[] = {
       -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, //
       0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, //
       0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f  //
   };
+  f32 vertices_2[] = {
+      -0.8f,  0.5f,  0.0f, 0.6f, 0.8f, 0.3f, 1.0f, //
+      -0.8f,  0.8f,  0.0f, 0.2f, 0.6f, 0.4f, 1.0f, //
+      -0.95f, 0.65f, 0.0f, 0.9f, 0.3f, 0.1f, 1.0f, //
+      -0.65f, 0.65f, 0.0f, 0.1f, 0.5f, 0.8f, 1.0f  //
+  };
 
-  // Buffer:
+  u32 indices[] = {0, 1, 2}; // NOLINT
+  u32 square_indices[] = {0, 1, 3, 2, 1, 0};
+
+  // Buffers:
   graphics::VertexLayout layout{};
   layout.AddAttribute({"position", graphics::DataFormat::Float3});
   layout.AddAttribute({"color", graphics::DataFormat::Float4});
-  graphics::BufferDescriptor desc{sizeof(vertices), 3,
-                                  graphics::BufferType::VertexBuffer, &layout};
-  auto vbuf = api.CreateBuffer(desc, &vertices);
+
+  graphics::MeshDescriptor mesh_desc{std::pair(vertices_1, sizeof(vertices_1)),
+                                     std::pair(indices, sizeof(indices)),
+                                     &layout};
+
+  graphics::MeshDescriptor mesh_desc2{
+      std::pair(vertices_2, sizeof(vertices_2)),
+      std::pair(square_indices, sizeof(square_indices)), &layout};
 
   // Shaders:
   graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
                                     "demo.vert"};
   graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
                                     "demo.frag"};
-  UniquePtr<graphics::Shader> vs = api.CreateShader(vsdesc);
-  UniquePtr<graphics::Shader> fs = api.CreateShader(fsdesc);
 
-  graphics::PipelineDescriptor pdesc = {std::move(vs), std::move(fs)};
-  auto pipeline = api.CreatePipeline(pdesc);
+  graphics::Renderer renderer{graphics::Backend::OpenGL};
+  UniquePtr<graphics::Mesh> mesh = renderer.CreateMesh(mesh_desc);
+  UniquePtr<graphics::Mesh> mesh2 = renderer.CreateMesh(mesh_desc2);
+  auto pipeline = renderer.CreatePipeline(vsdesc, fsdesc);
 
   while (is_running_) {
     start = PlatformGetTime();
 
     window_->Update();
-    api.BindBuffer(*vbuf);
-    api.UsePipeline(*pipeline);
-    api.Clear();
-    api.Render();
-
+    renderer.UsePipeline(*pipeline);
+    renderer.Clear();
+    renderer.Submit(*mesh);
+    renderer.Submit(*mesh2);
     end = PlatformGetTime();
     delta = end - start;
     remaining = kFrametime - delta;

@@ -24,8 +24,8 @@ public:
 
 private:
   BufferType type_;
-  u32 size_;  // Size of the buffer in bytes
-  u32 count_; // Element count of the buffer
+  u64 size_;  // Size of the buffer in bytes
+  u64 count_; // Element count of the buffer
 };
 
 } // namespace weather::graphics

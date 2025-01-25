@@ -4,6 +4,7 @@
 #include "heavy_weather/rendering/Types.hpp"
 #include <fstream>
 #include <heavy_weather/core/Asserts.hpp>
+#include <sstream>
 
 static GLenum GetType(weather::graphics::ShaderType type) {
   switch (type) {
@@ -32,12 +33,12 @@ bool GLShader::Compile() {
   shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
     shader_file.open(this->Path());
-    std::stringstream stream;
+    std::stringstream s;
 
-    stream << shader_file.rdbuf();
+    s << shader_file.rdbuf();
     shader_file.close();
 
-    shader_code = stream.str();
+    shader_code = s.str();
   } catch (std::ifstream::failure &e) {
 
     HW_CORE_ERROR("Failed load shader file: {}", this->Path());

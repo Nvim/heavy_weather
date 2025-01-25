@@ -9,7 +9,7 @@ namespace weather::graphics {
 
 class GLVertexBuffer : public Buffer {
 public:
-  GLVertexBuffer(BufferDescriptor desc, void *vertices);
+  GLVertexBuffer(BufferDescriptor desc, void *vertices, u32 vao);
   ~GLVertexBuffer() override;
   u32 Hanlde() const { return handle_; }
   u32 VAO() const { return vao_; }
