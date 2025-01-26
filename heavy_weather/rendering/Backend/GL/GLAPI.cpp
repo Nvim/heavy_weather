@@ -14,7 +14,11 @@
 namespace weather::graphics {
 
 GLBackendAPI::GLBackendAPI() { //
-  HW_CORE_INFO("Initializing OpenGL backend");
+#ifdef GL_VERSION_4
+  HW_CORE_INFO("Initializing OpenGL 4.6 backend");
+#else
+  HW_CORE_INFO("Initializing OpenGL 3.3 backend");
+#endif // GL_VERSION_4
   glViewport(0, 0, 1280, 720);
 }
 
