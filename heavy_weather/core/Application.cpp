@@ -3,24 +3,26 @@
 #include "heavy_weather/core/Input/InputSystem.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
+#include "heavy_weather/engine.h"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/platform/Platform.hpp"
-
-namespace {
-std::string s_title = "Sandbox";
-constexpr f64 kFrametime = 1.0f / 60;
-} // namespace
+#include "heavy_weather/rendering/Renderer.hpp"
+#include "heavy_weather/rendering/VertexLayout.hpp"
+#include <heavy_weather/rendering/Backend/GL/GLAPI.hpp>
+#include <heavy_weather/rendering/Pipeline.hpp>
+#include <heavy_weather/rendering/Shader.hpp>
+#include <heavy_weather/rendering/Types.hpp>
 
 namespace weather {
 
-Application::Application() {
+Application::Application(WindowProps &window_props, f64 fps) {
   HW_ASSERT_MSG(!s_instance, "App already exists");
   s_instance = this;
   is_running_ = false;
-  WindowProps props{s_title, 1280, 720};
-  window_ = PlatformInitWindow(props);
+  fps_ = fps;
+  window_ = PlatformInitWindow(window_props);
 
   if (!InputSystem::Init(window_->GetNative())) {
     HW_CORE_CRITICAL("Failed to init input");
@@ -47,12 +49,15 @@ void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
   f64 start{}, end{}, remaining{}, delta{};
+
   while (is_running_) {
     start = PlatformGetTime();
+
     window_->Update();
+    this->OnRender(delta);
     end = PlatformGetTime();
     delta = end - start;
-    remaining = kFrametime - delta;
+    remaining = fps_ - delta;
     if (delta > 0.0f && remaining > 0.0f) {
       PlatformSleep(remaining - 1); // NOLINT
     }
@@ -61,8 +66,10 @@ void Application::Run() {
 
 void Application::OnResize(const ResizeEvent &evt) // NOLINT
 {
-  HW_CORE_INFO("App recieved ResizeEvent ({}, {}) => ({}, {})", evt.OldSize().w,
-               evt.OldSize().h, evt.NewSize().w, evt.NewSize().h);
+  (void)evt;
+  // HW_CORE_INFO("App recieved ResizeEvent ({}, {}) => ({}, {})",
+  // evt.OldSize().w,
+  //              evt.OldSize().h, evt.NewSize().w, evt.NewSize().h);
 }
 
 void Application::OnClose(const WindowCloseEvent &evt) {

@@ -95,8 +95,10 @@ LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
   glfwSetWindowSizeCallback(
       window_, [](GLFWwindow *window, int width, int height) {
         auto &p = *static_cast<WindowProps *>(glfwGetWindowUserPointer(window));
-        EventDispatch(ResizeEvent{p.width, p.height, static_cast<u16>(width),
-                                  static_cast<u16>(height)});
+        EventDispatch(ResizeEvent{static_cast<u16>(width),
+                                  static_cast<u16>(height), p.width, p.height});
+        p.width = width;
+        p.height = height;
       });
 
   glfwSetErrorCallback(ErrorCallback);

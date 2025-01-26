@@ -8,7 +8,7 @@ namespace weather {
 class Application {
 
 public:
-  Application();
+  Application(WindowProps &window_props, f64 fps);
   Application(const Application &) = delete;
   Application(Application &&) = delete;
   Application &operator=(const Application &) = delete;
@@ -26,9 +26,11 @@ public:
   const Window &GetWindow() const;
 
 private:
+  virtual void OnRender(f64 delta) = 0;
   static inline Application *s_instance{nullptr};
   std::unique_ptr<Window> window_;
   bool is_running_;
+  f64 fps_;
   // EventCallback<KeyPressedEvent> key_callback_;
   EventCallback<ResizeEvent> resize_callback_;
   EventCallback<WindowCloseEvent> close_callback_;
