@@ -30,4 +30,9 @@ static inline u32 FormatTOGL(DataFormat format) {
   HW_CORE_WARN("Unkown buffer format.");
   return 0;
 }
+
+void APIENTRY LogDebugMessage(GLenum source, GLenum type, unsigned int id,
+                              GLenum severity, GLsizei length,
+                              const char *message, const void *userParam);
+
 } // namespace weather::graphics

@@ -6,7 +6,9 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
+#include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLPipeline.hpp"
+#include "heavy_weather/rendering/Backend/GL/Utils.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glad/glad.h>
 #include <memory>
@@ -14,11 +16,24 @@
 namespace weather::graphics {
 
 GLBackendAPI::GLBackendAPI() { //
-#ifdef GL_VERSION_4
-  HW_CORE_INFO("Initializing OpenGL 4.6 backend");
-#else
-  HW_CORE_INFO("Initializing OpenGL 3.3 backend");
-#endif // GL_VERSION_4
+  PlatformLoadBackend(Backend::OpenGL);
+
+  i32 flags; // NOLINT
+  glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+  if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+    HW_CORE_DEBUG("OpenGL debug context enabled")
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(LogDebugMessage, nullptr);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr,
+                          GL_TRUE);
+  }
+
+  i32 maj, min; // NOLINT
+  glGetIntegerv(GL_MAJOR_VERSION, &maj);
+  glGetIntegerv(GL_MINOR_VERSION, &min);
+  HW_CORE_INFO("OpenGL version: {}.{}", maj, min);
+
   glViewport(0, 0, 1280, 720);
 }
 
@@ -109,7 +124,7 @@ void GLBackendAPI::BindVBO(u32 vbo, u32 vao) {
 // Bind the ebo to the last used vao
 void GLBackendAPI::BindEBO(u32 ebo) {
   glBindVertexArray(state_.vao);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 9);
   state_.ebo = ebo;
 }
 

@@ -1,11 +1,11 @@
 // clang-format off
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "heavy_weather/core/Input/InputManager.hpp"
-#include "heavy_weather/core/Logger.hpp"
 // clang-format on
 #include "LinuxWindow.hpp"
 #include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Input/InputManager.hpp"
+#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/EventSystem.hpp"
 #include "heavy_weather/event/KeyPressedEvent.hpp"
@@ -14,7 +14,7 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/platform/GLFWInputManager.hpp"
-#include <GL/gl.h>
+#include "heavy_weather/rendering/Types.hpp"
 #include <chrono>
 #include <thread>
 #include <unistd.h>
@@ -54,16 +54,39 @@ InputManager *PlatformInitInput(void *window) {
   return new GLFWInputManager(window); // NOLINT
 }
 
-// ** LinuxWindow class ** //
-LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
+// TODO: gracefully handle errors
+bool PlatformLoadBackend(graphics::Backend backend) {
+  HW_ASSERT_MSG(backend == graphics::Backend::OpenGL,
+                "Backend is not supported on Linux");
+  // NOLINTNEXTLINE
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    HW_ASSERT_MSG(0, "Couldn't load OpenGL");
+  }
+  return true;
+}
 
-  // TODO: Do this from OpenGL 'platform init'
-  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+// TODO: this takes a backend as param:
+static void set_window_flags() {
+  glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef GL_VERSION_4
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+#else
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+#endif // GL_VERSION_4
+#ifdef HW_DEBUG
+  HW_CORE_DEBUG("Set debug mode window hint");
+  glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
+#endif // HW_DEBUG
+}
+
+// ** LinuxWindow class ** //
+LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
+  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND); // TODO: define for this
   HW_ASSERT_MSG((glfwInit()), "Couldn't init GLFW");
+  set_window_flags();
   window_ = glfwCreateWindow(props.width, props.height, props.title.c_str(),
                              nullptr, nullptr);
   if (!window_) {
@@ -75,13 +98,6 @@ LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
   glfwMakeContextCurrent(window_);
   glfwSetWindowUserPointer(window_, &props_);
 
-  // NOLINTNEXTLINE
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    HW_CORE_ERROR("Couldn't load OpenGL");
-    glfwDestroyWindow(window_);
-    glfwTerminate();
-    return;
-  }
   glfwSwapInterval(0);
 
   glfwSetKeyCallback(window_, [](GLFWwindow *window, int key, int scancode,
