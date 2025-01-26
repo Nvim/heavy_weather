@@ -4,6 +4,7 @@
 #include <heavy_weather/rendering/BackendApi.hpp>
 
 #include <heavy_weather/engine.h>
+#include <utility>
 
 namespace weather::graphics {
 
@@ -28,6 +29,7 @@ public:
   void Render() override;
   void RenderIndexed(u64 count) override;
   void Clear() const override;
+  void Resize(std::pair<u16, u16> new_sz) override;
 
   //
   GLBackendAPI(const GLBackendAPI &) = delete;

@@ -18,6 +18,11 @@ GLBackendAPI::GLBackendAPI() { //
   glViewport(0, 0, 1280, 720);
 }
 
+void GLBackendAPI::Resize(std::pair<u16, u16> new_sz) {
+  // HW_CORE_TRACE("Resizing opengl to {}x{}", new_sz.first, new_sz.second);
+  glViewport(0, 0, new_sz.first, new_sz.second);
+}
+
 UniquePtr<Buffer> GLBackendAPI::CreateVertexBuffer(BufferDescriptor desc,
                                                    void *data) {
   HW_ASSERT(desc.layout);

@@ -8,6 +8,7 @@
 #include "Buffer.hpp"
 #include "Types.hpp"
 #include <heavy_weather/engine.h>
+#include <utility>
 
 namespace weather::graphics {
 class BackendAPI {
@@ -28,6 +29,9 @@ public:
   virtual void Clear() const = 0;
   virtual void Render() = 0;
   virtual void RenderIndexed(u64 count) = 0;
+
+  /* Misc: */
+  virtual void Resize(std::pair<u16, u16> new_sz) = 0;
 
   //
   BackendAPI(const BackendAPI &) = default;

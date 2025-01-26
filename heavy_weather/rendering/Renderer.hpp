@@ -23,6 +23,7 @@ public:
   UniquePtr<Pipeline> CreatePipeline(ShaderDescriptor vsdesc,
                                      ShaderDescriptor fsdesc);
   void UsePipeline(Pipeline &pipeline);
+  void Resize(std::pair<u16, u16> new_sz) { api_->Resize(new_sz); }
 
 private:
   UniquePtr<BackendAPI> api_ = nullptr;
