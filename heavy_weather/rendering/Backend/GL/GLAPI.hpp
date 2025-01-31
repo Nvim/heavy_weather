@@ -1,6 +1,7 @@
 #pragma once
 
 #include "heavy_weather/rendering/Types.hpp"
+#include <glm/glm.hpp>
 #include <heavy_weather/rendering/BackendApi.hpp>
 
 #include <heavy_weather/engine.h>
@@ -28,7 +29,7 @@ public:
   void UsePipeline(Pipeline &pipeline) override;
   void Render() override;
   void RenderIndexed(u64 count) override;
-  void Clear() const override;
+  void Clear(glm::vec4 col) const override;
   void Resize(std::pair<u16, u16> new_sz) override;
 
   //

@@ -25,6 +25,7 @@ public:
 
   const Shader &VertexShader() const { return *vertex_; }
   const Shader &FragmentShader() const { return *fragment_; }
+  virtual u32 Handle() const = 0;
 
 protected:
   UniquePtr<Shader> vertex_{nullptr};

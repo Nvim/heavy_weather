@@ -5,6 +5,7 @@
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
+#include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Mesh.hpp"
 #include "heavy_weather/rendering/Pipeline.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
@@ -31,4 +32,6 @@ private:
   UniquePtr<weather::graphics::Mesh> tri_{nullptr};
   UniquePtr<weather::graphics::Pipeline> pipeline_{nullptr};
   weather::graphics::Renderer renderer_;
+  weather::graphics::Gui gui_;
+  glm::vec4 bgcolor_{1.0f, 0.2f, 0.9f, 1.0f};
 };

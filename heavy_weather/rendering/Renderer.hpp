@@ -6,6 +6,7 @@
 #include "heavy_weather/rendering/BackendApi.hpp"
 #include "heavy_weather/rendering/Mesh.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include <glm/glm.hpp>
 
 namespace weather::graphics {
 
@@ -18,7 +19,7 @@ public:
 
   UniquePtr<Mesh> CreateMesh(const MeshDescriptor &desc);
   UniquePtr<Mesh> CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i);
-  void Clear() { api_->Clear(); }
+  void Clear(glm::vec4 col) { api_->Clear(col); }
   void Submit(Mesh &mesh);
   UniquePtr<Pipeline> CreatePipeline(ShaderDescriptor vsdesc,
                                      ShaderDescriptor fsdesc);

@@ -139,7 +139,7 @@ void LinuxWindow::Update() {
   glfwPollEvents();
 }
 
-void *LinuxWindow::GetNative() { return window_; }
+void *LinuxWindow::GetNative() const { return window_; }
 
 const WindowProps &LinuxWindow::GetProps() const { return props_; }
 

@@ -1,14 +1,18 @@
+// clang-format off
+#include <glad/glad.h>
+// clang-format on
 #include "Demo.hpp"
+#include "backends/imgui_impl_opengl3.h"
 #include "heavy_weather/core/Entry.hpp"
 #include "heavy_weather/core/Input/InputSystem.hpp"
 #include "heavy_weather/core/Input/KeyCodes.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
-#include "heavy_weather/event/EventCallback.hpp"
+#include "heavy_weather/engine.h"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
-#include <GLFW/glfw3.h>
+#include "imgui.h"
 #include <functional>
 
 // Shortcut for registering events
@@ -36,7 +40,8 @@ weather::Application *weather::CreateAppHook() {
  *   Demo Funcs  *
  *****************/
 Demo::Demo(WindowProps &window_props, f64 fps)
-    : Application(window_props, fps), renderer_{graphics::Backend::OpenGL} {
+    : Application(window_props, fps), renderer_{graphics::Backend::OpenGL},
+      gui_{static_cast<GLFWwindow *>(this->GetWindow().GetNative())} {
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
   EventRegister(mouse_callback_);
   EventCallback<KeyPressedEvent> k = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
@@ -46,6 +51,11 @@ Demo::Demo(WindowProps &window_props, f64 fps)
 
   // Graphics:
   InitGraphics();
+
+  graphics::GuiComponentDesc desc = {graphics::GuiComponentType::Color3Piker,
+                                     (void *)(&bgcolor_), 0.0f, 10.0f,
+                                     "background"};
+  gui_.AddComponent(desc);
 }
 
 Demo::~Demo() {
@@ -98,10 +108,16 @@ void Demo::InitGraphics() {
 
 void Demo::OnRender(f64 delta) {
   (void)delta;
+  auto time = PlatformGetTime();
   renderer_.UsePipeline(*pipeline_);
-  renderer_.Clear();
+  int loc = glGetUniformLocation(pipeline_->Handle(), "iGlobalTime");
+  glUniform1f(loc, time);
+  renderer_.Clear(bgcolor_);
   renderer_.Submit(*tri_);
   renderer_.Submit(*square_);
+
+  gui_.Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT
@@ -115,9 +131,8 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   if (action == GLFW_PRESS) {
     HW_CORE_TRACE("Key {} has been pressed", key);
     if (weather::InputSystem::IsKeyDown(HW_KEY_O)) {
-      HW_CORE_TRACE("Yay");
+      gui_.RemoveComponent(1);
     }
-    // HW_CORE_TRACE("Key O status: {}",
   } else {
     HW_CORE_TRACE("Key {} has been released", key);
   }

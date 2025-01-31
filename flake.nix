@@ -18,7 +18,20 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell.override { stdenv = pkgs.clang18Stdenv; } {
-        LD_LIBRARY_PATH = "${lib.getLib pkgs.libGL}/lib/libGL.so.1:${lib.getLib pkgs.libGL}/lib/libEGL.so.1";
+        # LD_LIBRARY_PATH = "${lib.getLib pkgs.libGL}/lib/libGL.so.1:${lib.getLib pkgs.libGL}/lib/libEGL.so.1";
+        LD_LIBRARY_PATH =
+          let
+            libPath = lib.makeLibraryPath ([
+              pkgs.libglvnd
+              pkgs.libxkbcommon
+              pkgs.xorg.libXcursor
+              pkgs.xorg.libXext
+              pkgs.xorg.libXrandr
+              pkgs.xorg.libXi
+              pkgs.wayland
+            ]);
+          in
+          "${libPath}";
 
         buildInputs = with pkgs; [
           # Vendor building dependencies:
@@ -38,7 +51,10 @@
           # Vendor (building them along project is cooler):
           glfw-wayland
           glm
-          # spdlog
+
+          # runtime for imgui:
+          libGL
+          libglvnd
         ];
       };
     };

@@ -18,7 +18,7 @@ public:
   ~GLPipeline() override = default;
   ShaderCompileStatus Init() override;
   ShaderCompileStatus Status() const { return status_; }
-  u32 Handle() const { return handle_; }
+  u32 Handle() const override { return handle_; }
 
 private:
   u32 handle_{};

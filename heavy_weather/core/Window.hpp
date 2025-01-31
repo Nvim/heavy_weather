@@ -26,7 +26,7 @@ public:
   Window &operator=(const Window &) = delete;
   Window &operator=(Window &&) = delete;
   virtual ~Window() = default;
-  virtual void *GetNative() = 0;
+  virtual void *GetNative() const = 0;
   virtual const WindowProps &GetProps() const = 0;
   virtual void Update() = 0;
   static std::unique_ptr<Window> Create(const WindowProps &props);

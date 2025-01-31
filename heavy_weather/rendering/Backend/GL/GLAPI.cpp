@@ -124,7 +124,7 @@ void GLBackendAPI::BindVBO(u32 vbo, u32 vao) {
 // Bind the ebo to the last used vao
 void GLBackendAPI::BindEBO(u32 ebo) {
   glBindVertexArray(state_.vao);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 9);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   state_.ebo = ebo;
 }
 
@@ -147,8 +147,8 @@ void GLBackendAPI::UsePipeline(Pipeline &pipeline) {
   glUseProgram(glpipeline.Handle());
 }
 
-void GLBackendAPI::Clear() const {
-  glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+void GLBackendAPI::Clear(glm::vec4 col) const {
+  glClearColor(col.r, col.g, col.b, col.a);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

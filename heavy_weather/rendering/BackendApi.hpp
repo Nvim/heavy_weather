@@ -7,6 +7,7 @@
 
 #include "Buffer.hpp"
 #include "Types.hpp"
+#include <glm/glm.hpp>
 #include <heavy_weather/engine.h>
 #include <utility>
 
@@ -26,7 +27,7 @@ public:
   virtual void UsePipeline(Pipeline &pipeline) = 0;
 
   // Draw Call using previously bound resources:
-  virtual void Clear() const = 0;
+  virtual void Clear(glm::vec4 col) const = 0;
   virtual void Render() = 0;
   virtual void RenderIndexed(u64 count) = 0;
 
