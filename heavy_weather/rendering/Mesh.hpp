@@ -3,6 +3,8 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Buffer.hpp"
+#include "heavy_weather/rendering/Material.hpp"
+#include "heavy_weather/rendering/Transform.hpp"
 
 namespace weather::graphics {
 
@@ -13,10 +15,15 @@ public:
 
   const Buffer &VertexBuffer() const { return *vbuffer_; }
   const Buffer &IndexBuffer() const { return *ibuffer_; }
+  void *Color() { return material_.Get(); }
+  Material &Material() { return material_; }
+  Transform *Transform() { return &transform_; }
 
 private:
   UniquePtr<Buffer> vbuffer_;
   UniquePtr<Buffer> ibuffer_;
+  struct Material material_;
+  struct Transform transform_;
 };
 
 } // namespace weather::graphics

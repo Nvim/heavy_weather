@@ -39,9 +39,10 @@ weather::Application *weather::CreateAppHook() {
 /*****************
  *   Demo Funcs  *
  *****************/
+
 Demo::Demo(WindowProps &window_props, f64 fps)
     : Application(window_props, fps), renderer_{graphics::Backend::OpenGL},
-      gui_{static_cast<GLFWwindow *>(this->GetWindow().GetNative())} {
+      gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}} {
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
   EventRegister(mouse_callback_);
   EventCallback<KeyPressedEvent> k = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
@@ -52,9 +53,41 @@ Demo::Demo(WindowProps &window_props, f64 fps)
   // Graphics:
   InitGraphics();
 
+  // Gui:
   graphics::GuiComponentDesc desc = {graphics::GuiComponentType::Color3Piker,
-                                     (void *)(&bgcolor_), 0.0f, 10.0f,
-                                     "background"};
+                                     (void *)(&bgcolor_),
+                                     0.0f,
+                                     10.0f,
+                                     "Background",
+                                     nullptr};
+  gui_.AddComponent(desc);
+  desc.data = tri_->Color();
+  desc.name = "Triangle color";
+  gui_.AddComponent(desc);
+  desc.data = square_->Color();
+  desc.name = "Square color";
+  gui_.AddComponent(desc);
+
+  auto cb = [this]() { this->tri_->Transform()->dirty = true; };
+  desc.callback = cb;
+  // Transform
+  desc.name = "Triangle translation";
+  desc.type = graphics::GuiComponentType::Float3Slider;
+  desc.data = tri_->Transform()->Translation();
+  desc.min = -10.0f;
+  gui_.AddComponent(desc);
+  // Scale
+  desc.name = "Triangle scale";
+  desc.type = graphics::GuiComponentType::Float3Slider;
+  desc.data = tri_->Transform()->Scale();
+  desc.min = -10.0f;
+  gui_.AddComponent(desc);
+  // Rotation
+  desc.name = "Triangle rotation";
+  desc.type = graphics::GuiComponentType::FloatSlider;
+  desc.data = tri_->Transform()->Rotation();
+  desc.max = 360.0f;
+  desc.min = 0.0f;
   gui_.AddComponent(desc);
 }
 
@@ -68,15 +101,15 @@ Demo::~Demo() {
 
 void Demo::InitGraphics() {
   f32 vertices_1[] = {
-      -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, //
-      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, //
-      0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f  //
+      -0.5f, -0.5f, 0.0f, //
+      0.5f,  -0.5f, 0.0f, //
+      0.0f,  0.5f,  0.0f  //
   };
   f32 vertices_2[] = {
-      -0.8f,  0.5f,  0.0f, 0.6f, 0.8f, 0.3f, 1.0f, //
-      -0.8f,  0.8f,  0.0f, 0.2f, 0.6f, 0.4f, 1.0f, //
-      -0.95f, 0.65f, 0.0f, 0.9f, 0.3f, 0.1f, 1.0f, //
-      -0.65f, 0.65f, 0.0f, 0.1f, 0.5f, 0.8f, 1.0f  //
+      -0.8f,  0.5f,  0.0f, //
+      -0.8f,  0.8f,  0.0f, //
+      -0.95f, 0.65f, 0.0f, //
+      -0.65f, 0.65f, 0.0f  //
   };
 
   u32 indices[] = {0, 1, 2}; // NOLINT
@@ -85,7 +118,7 @@ void Demo::InitGraphics() {
   // Buffers:
   graphics::VertexLayout layout{};
   layout.AddAttribute({"position", graphics::DataFormat::Float3});
-  layout.AddAttribute({"color", graphics::DataFormat::Float4});
+  // layout.AddAttribute({"color", graphics::DataFormat::Float4});
 
   graphics::MeshDescriptor mesh_desc{std::pair(vertices_1, sizeof(vertices_1)),
                                      std::pair(indices, sizeof(indices)),
@@ -122,7 +155,7 @@ void Demo::OnRender(f64 delta) {
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT
 {
-  HW_APP_DEBUG("Mouse moved: ({}, {})", e.Position().x, e.Position().y);
+  // HW_APP_DEBUG("Mouse moved: ({}, {})", e.Position().x, e.Position().y);
 }
 
 void Demo::OnKeyPressed(const KeyPressedEvent &evt) {

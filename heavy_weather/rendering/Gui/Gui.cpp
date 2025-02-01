@@ -8,17 +8,19 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WidgetCloseEvent.hpp"
 #include "heavy_weather/rendering/Gui/GuiComponent.hpp"
+#include "heavy_weather/rendering/Types.hpp"
 #include "imgui.h"
 #include <algorithm>
 #include <functional>
 #include <glm/glm.hpp>
-#include <memory>
 
 static int s_count = 0;
 
 namespace weather::graphics {
 
-Gui::Gui(GLFWwindow *window) : m_window_{window} {
+Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
+  HW_ASSERT_MSG(desc.backend == Backend::OpenGL,
+                "Only OpenGL is supported as a GUI backend");
   ImGui::CreateContext();
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -33,8 +35,9 @@ Gui::Gui(GLFWwindow *window) : m_window_{window} {
   ImGui::StyleColorsDark();
 
   // Setup Platform/Renderer backends
-  HW_ASSERT_MSG(ImGui_ImplGlfw_InitForOpenGL(window, true),
-                "Faild initializing imgui glfw impl");
+  HW_ASSERT_MSG(
+      ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(m_window_), true),
+      "Faild initializing imgui glfw impl");
   HW_ASSERT(ImGui_ImplOpenGL3_Init("#version 330"));
 
   EventCallback<WidgetCloseEvent> e =

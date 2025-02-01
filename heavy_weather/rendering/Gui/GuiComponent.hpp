@@ -1,5 +1,6 @@
 #pragma once
 
+#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "imgui.h"
 
@@ -20,6 +21,7 @@ struct GuiComponentDesc {
   f32 min = 0.0f;
   f32 max = 10.0f;
   const char *name;
+  std::function<void()> callback = nullptr;
 };
 
 class GuiComponent {
@@ -31,22 +33,38 @@ public:
   void Render() {
     switch (desc.type) {
     case GuiComponentType::FloatSlider:
-      ImGui::SliderFloat(desc.name, (float *)desc.data, desc.min, desc.max);
+      if (ImGui::SliderFloat(desc.name, (float *)desc.data, desc.min,
+                             desc.max)) {
+        if (desc.callback) {
+          desc.callback();
+        }
+      };
       break;
     case GuiComponentType::Float2Slider:
       ImGui::SliderFloat2(desc.name, (float *)desc.data, desc.min, desc.max);
       break;
     case GuiComponentType::Float3Slider:
-      ImGui::SliderFloat3(desc.name, (float *)desc.data, desc.min, desc.max);
+      if (ImGui::SliderFloat3(desc.name, (float *)desc.data, desc.min,
+                              desc.max)) {
+        if (desc.callback) {
+          desc.callback();
+        }
+      };
       break;
     case GuiComponentType::Float4Slider:
       ImGui::SliderFloat4(desc.name, (float *)desc.data, desc.min, desc.max);
       break;
     case GuiComponentType::Color3Piker:
-      ImGui::ColorEdit3(desc.name, (float *)desc.data);
+      if (ImGui::ColorEdit3(desc.name, (float *)desc.data)) {
+        if (desc.callback) {
+          desc.callback();
+        }
+      };
       break;
     case GuiComponentType::Color4Picker:
-      ImGui::ColorEdit4(desc.name, (float *)desc.data);
+      if (ImGui::ColorEdit4(desc.name, (float *)desc.data)) {
+        HW_CORE_DEBUG("I got changed");
+      };
     default:
       break;
     }

@@ -7,12 +7,12 @@
 
 void APIENTRY weather::graphics::LogDebugMessage(
     GLenum source, GLenum type, unsigned int id, GLenum severity,
-    GLsizei length, const char *message, const void *userParam) {
+    GLsizei length, const char *message, const void *user_param) {
   // clang-format off
   // ignore non-significant error/warning codes
   if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
   (void)length;
-  (void)userParam;
+  (void)user_param;
 
   std::string src, t, sev;
   switch (source)

@@ -31,6 +31,9 @@ UniquePtr<Mesh> Renderer::CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i) {
 }
 
 void Renderer::Submit(Mesh &mesh) {
+  api_->BindUniform(mesh.Material().uniform);
+  api_->BindUniform(mesh.Transform()->uniform);
+  mesh.Transform()->ComputeMatrix();
   api_->BindBuffer(mesh.VertexBuffer());
   api_->BindBuffer(mesh.IndexBuffer());
   api_->RenderIndexed(mesh.IndexBuffer().GetCount());

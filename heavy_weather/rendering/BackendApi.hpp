@@ -25,6 +25,7 @@ public:
   /* Resouce binding: */
   virtual void BindBuffer(const Buffer &buf) = 0;
   virtual void UsePipeline(Pipeline &pipeline) = 0;
+  virtual void BindUniform(UniformDescriptor &desc) = 0;
 
   // Draw Call using previously bound resources:
   virtual void Clear(glm::vec4 col) const = 0;

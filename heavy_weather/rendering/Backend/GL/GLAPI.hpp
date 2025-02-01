@@ -14,6 +14,7 @@ struct GLState {
   u32 vao = 0;
   u32 vbo = 0;
   u32 ebo = 0;
+  u32 program = 0;
 };
 
 class GLBackendAPI : public BackendAPI {
@@ -27,6 +28,7 @@ public:
 
   void BindBuffer(const Buffer &buf) override;
   void UsePipeline(Pipeline &pipeline) override;
+  void BindUniform(UniformDescriptor &desc) override;
   void Render() override;
   void RenderIndexed(u64 count) override;
   void Clear(glm::vec4 col) const override;
@@ -44,6 +46,7 @@ private:
     state_.ebo = s.ebo;
     state_.vbo = s.vbo;
     state_.vao = s.vao;
+    state_.program = s.program;
   };
 
   UniquePtr<Buffer> CreateVertexBuffer(BufferDescriptor desc, void *data);

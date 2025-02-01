@@ -68,6 +68,12 @@ struct MeshDescriptor {
   VertexLayout *layout;
 };
 
+struct UniformDescriptor {
+  const char *name;
+  DataFormat format;
+  void *data;
+};
+
 static inline u8 FormatCount(DataFormat format) {
   // clang-format off
   switch (format) {
