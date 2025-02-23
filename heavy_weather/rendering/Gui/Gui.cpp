@@ -41,7 +41,7 @@ Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
   HW_ASSERT(ImGui_ImplOpenGL3_Init("#version 330"));
 
   EventCallback<WidgetCloseEvent> e =
-      std::bind(&Gui::OnRemoveComponent, this, std::placeholders::_1);
+      std::bind(&Gui::OnRemoveWidget, this, std::placeholders::_1);
   EventRegister(e);
 }
 
@@ -50,29 +50,32 @@ void Gui::Render() {
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  for (auto &c : components_) {
-    c.Render();
+  for (auto &c : widgets_) {
+    c->Render();
   }
 
   ImGui::Render();
 }
 
-void Gui::AddComponent(GuiComponentDesc &desc) {
-  HW_CORE_DEBUG("Adding Gui component #{}", s_count + 1);
-  components_.emplace_back(desc, ++s_count);
+u64 Gui::AddWidget(UniquePtr<IWidget> w) {
+  w->SetID(++s_count);
+  widgets_.push_back(std::move(w));
+  HW_CORE_DEBUG("Added Gui widget #{}", s_count);
+  return s_count;
 }
 
-void Gui::RemoveComponent(u64 id) { EventDispatch(WidgetCloseEvent{(id)}); }
+void Gui::RemoveWidget(u64 id) { EventDispatch(WidgetCloseEvent{(id)}); }
 
-void Gui::OnRemoveComponent(const WidgetCloseEvent &e) {
+void Gui::OnRemoveWidget(const WidgetCloseEvent &e) {
   u64 id = e.GetID();
-  auto elem = std::find_if(components_.begin(), components_.end(),
-                           [&id](const GuiComponent &c) { return c.id == id; });
-  if (elem != components_.end()) {
-    HW_CORE_DEBUG("Removing Gui component #{}", id);
-    components_.erase(elem);
+  auto elem = std::find_if(
+      widgets_.begin(), widgets_.end(),
+      [&id](const UniquePtr<IWidget> &c) { return c->GetID() == id; });
+  if (elem != widgets_.end()) {
+    HW_CORE_DEBUG("Removing Gui widget #{}", id);
+    widgets_.erase(elem);
   } else {
-    HW_CORE_DEBUG("Couldn't remove Gui component #{}", id);
+    HW_CORE_DEBUG("Couldn't remove Gui widget #{}", id);
   }
 }
 

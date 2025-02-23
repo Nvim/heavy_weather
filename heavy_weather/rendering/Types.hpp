@@ -66,6 +66,7 @@ struct MeshDescriptor {
   std::pair<void *, u64> vertices;
   std::pair<u32 *, u64> indices;
   VertexLayout *layout;
+  const char *name;
 };
 
 struct UniformDescriptor {

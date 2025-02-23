@@ -42,7 +42,8 @@ weather::Application *weather::CreateAppHook() {
 
 Demo::Demo(WindowProps &window_props, f64 fps)
     : Application(window_props, fps), renderer_{graphics::Backend::OpenGL},
-      gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}} {
+      gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}},
+      scene_manager_{renderer_, gui_} {
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
   EventRegister(mouse_callback_);
   EventCallback<KeyPressedEvent> k = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
@@ -54,41 +55,6 @@ Demo::Demo(WindowProps &window_props, f64 fps)
   InitGraphics();
 
   // Gui:
-  graphics::GuiComponentDesc desc = {graphics::GuiComponentType::Color3Piker,
-                                     (void *)(&bgcolor_),
-                                     0.0f,
-                                     10.0f,
-                                     "Background",
-                                     nullptr};
-  gui_.AddComponent(desc);
-  desc.data = tri_->Color();
-  desc.name = "Triangle color";
-  gui_.AddComponent(desc);
-  desc.data = square_->Color();
-  desc.name = "Square color";
-  gui_.AddComponent(desc);
-
-  auto cb = [this]() { this->tri_->Transform()->dirty = true; };
-  desc.callback = cb;
-  // Transform
-  desc.name = "Triangle translation";
-  desc.type = graphics::GuiComponentType::Float3Slider;
-  desc.data = tri_->Transform()->Translation();
-  desc.min = -10.0f;
-  gui_.AddComponent(desc);
-  // Scale
-  desc.name = "Triangle scale";
-  desc.type = graphics::GuiComponentType::Float3Slider;
-  desc.data = tri_->Transform()->Scale();
-  desc.min = -10.0f;
-  gui_.AddComponent(desc);
-  // Rotation
-  desc.name = "Triangle rotation";
-  desc.type = graphics::GuiComponentType::FloatSlider;
-  desc.data = tri_->Transform()->Rotation();
-  desc.max = 360.0f;
-  desc.min = 0.0f;
-  gui_.AddComponent(desc);
 }
 
 Demo::~Demo() {
@@ -122,11 +88,11 @@ void Demo::InitGraphics() {
 
   graphics::MeshDescriptor mesh_desc{std::pair(vertices_1, sizeof(vertices_1)),
                                      std::pair(indices, sizeof(indices)),
-                                     &layout};
+                                     &layout, "triangle"};
 
   graphics::MeshDescriptor mesh_desc2{
       std::pair(vertices_2, sizeof(vertices_2)),
-      std::pair(square_indices, sizeof(square_indices)), &layout};
+      std::pair(square_indices, sizeof(square_indices)), &layout, "square"};
 
   // Shaders:
   graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
@@ -134,8 +100,8 @@ void Demo::InitGraphics() {
   graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
                                     "demo.frag"};
 
-  tri_ = renderer_.CreateMesh(mesh_desc);
-  square_ = renderer_.CreateMesh(mesh_desc2);
+  scene_manager_.AddNode(mesh_desc);
+  scene_manager_.AddNode(mesh_desc2);
   pipeline_ = renderer_.CreatePipeline(vsdesc, fsdesc);
 }
 
@@ -146,8 +112,7 @@ void Demo::OnRender(f64 delta) {
   int loc = glGetUniformLocation(pipeline_->Handle(), "iGlobalTime");
   glUniform1f(loc, time);
   renderer_.Clear(bgcolor_);
-  renderer_.Submit(*tri_);
-  renderer_.Submit(*square_);
+  scene_manager_.SubmitAll();
 
   gui_.Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -155,6 +120,7 @@ void Demo::OnRender(f64 delta) {
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT
 {
+  (void)e;
   // HW_APP_DEBUG("Mouse moved: ({}, {})", e.Position().x, e.Position().y);
 }
 
@@ -164,7 +130,7 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   if (action == GLFW_PRESS) {
     HW_CORE_TRACE("Key {} has been pressed", key);
     if (weather::InputSystem::IsKeyDown(HW_KEY_O)) {
-      gui_.RemoveComponent(1);
+      gui_.RemoveWidget(1);
     }
   } else {
     HW_CORE_TRACE("Key {} has been released", key);

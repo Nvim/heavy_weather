@@ -1,6 +1,5 @@
 #pragma once
 
-#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/ext/matrix_transform.hpp>
@@ -17,10 +16,10 @@ struct Transform {
       return;
     }
     matrix_ = glm::mat4(1.0f);
-    matrix_ = glm::scale(matrix_, scale_);
+    matrix_ = glm::translate(matrix_, translation_);
     matrix_ = glm::rotate(matrix_, glm::radians(rotation_),
                           glm::vec3(0.0f, 0.0f, 1.0f));
-    matrix_ = glm::translate(matrix_, translation_);
+    matrix_ = glm::scale(matrix_, scale_);
     dirty = false;
   }
 
