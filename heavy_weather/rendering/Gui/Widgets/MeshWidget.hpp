@@ -11,7 +11,7 @@ public:
   void Render() const override;
   explicit MeshWidget(const char *name, GuiComponentDesc &&c,
                       GuiComponentDesc &&t, GuiComponentDesc &&s,
-                      GuiComponentDesc &&r);
+                      GuiComponentDesc &&r, GuiComponentDesc&& d);
   ~MeshWidget() override = default;
 
   // No copy construct/assign here, 1 mesh => 1 widget.
@@ -26,6 +26,6 @@ private:
   GuiComponent<SliderFloat> translation_;
   GuiComponent<SliderFloat> scale_;
   GuiComponent<SliderFloat> rotation_;
-  // TODO: delete button
+  GuiComponent<Button> delete_;
 };
 } // namespace weather::graphics

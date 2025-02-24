@@ -24,16 +24,20 @@ void SceneManager::AddNode(MeshDescriptor &desc) {
                                       "scale", cb};
   GuiComponentDesc rotation_comp_desc = {mesh->Transform()->Rotation(), 0.0f,
                                          360.0f, "rotation", cb};
-  std::unique_ptr<IWidget> p = std::make_unique<MeshWidget>(
-      desc.name, std::move(color_comp_desc), std::move(transform_comp_desc),
-      std::move(scale_comp_desc), std::move(rotation_comp_desc));
-  auto widget_id = gui_.AddWidget(std::move(p));
 
   // register mesh to scene
   auto mesh_id = scene_.AddNode(std::move(mesh));
+  auto del_func = [this, mesh_id]() { this->scene_.DeleteNode(mesh_id); };
+  GuiComponentDesc delete_comp_desc = {nullptr, 0.0f, 0.0f, "delete", del_func};
+  std::unique_ptr<IWidget> p = std::make_unique<MeshWidget>(
+      desc.name, std::move(color_comp_desc), std::move(transform_comp_desc),
+      std::move(scale_comp_desc), std::move(rotation_comp_desc),
+      std::move(delete_comp_desc));
+  auto widget_id = gui_.AddWidget(std::move(p));
 
   // save mapping between mesh & it's gui component
   nodetogui_[mesh_id] = widget_id;
+  HW_CORE_DEBUG("Mapped Node #{} to Widget #{}", mesh_id, widget_id);
 }
 
 void SceneManager::SubmitAll() {

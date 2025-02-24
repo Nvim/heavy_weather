@@ -7,10 +7,10 @@
 namespace weather::graphics {
 
 // TODO: not only meshes
-// TODO: make actual use of id (can't remove for now)
 class Scene {
 public:
   u64 AddNode(UniquePtr<Mesh> node);
+  void DeleteNode(u64 id);
   std::vector<UniquePtr<Mesh>>::const_iterator GetBegin() const;
   std::vector<UniquePtr<Mesh>>::const_iterator GetEnd() const;
   // const std::vector<UniquePtr<Mesh>>& GetVector() const;

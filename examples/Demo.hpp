@@ -32,5 +32,5 @@ private:
   weather::graphics::Renderer renderer_;
   weather::graphics::Gui gui_;
   weather::graphics::SceneManager scene_manager_;
-  glm::vec4 bgcolor_{1.0f, 0.2f, 0.9f, 1.0f};
+  glm::vec4 bgcolor_{0.15f, 0.15f, 0.15f, 1.0f};
 };

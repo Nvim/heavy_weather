@@ -18,12 +18,15 @@ public:
   void *Color() { return material_.Get(); }
   Material &Material() { return material_; }
   Transform *Transform() { return &transform_; }
+  u64 GetID() const { return id_; }
+  void SetID(u64 id) { id_ = id; }
 
 private:
   UniquePtr<Buffer> vbuffer_;
   UniquePtr<Buffer> ibuffer_;
   struct Material material_;
   struct Transform transform_;
+  u64 id_{};
 };
 
 } // namespace weather::graphics

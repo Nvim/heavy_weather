@@ -43,6 +43,11 @@ public:
 
 /* COMPONENTS DRAW BEHAVIOR: Pass these as template parameters to GuiComponent
  */
+struct Button {
+  static bool Draw(const GuiComponentDesc &desc) {
+    return (ImGui::Button(desc.name));
+  }
+};
 
 struct SliderFloat {
   static bool Draw(const GuiComponentDesc &desc) {
