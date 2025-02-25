@@ -8,6 +8,7 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/platform/Platform.hpp"
+#include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include <heavy_weather/rendering/Backend/GL/GLAPI.hpp>
@@ -49,12 +50,23 @@ void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
   f64 start{}, end{}, remaining{}, delta{};
+  auto& gui = this->GetGui();
+  // TODO cool version string system
+  const char* engine_str = "Heavy Weather Engine - v0.0.0"; 
 
   while (is_running_) {
     start = PlatformGetTime();
 
+    graphics::AppInfo info = {
+      this->GetProgramName(),
+      engine_str,
+      delta,
+    };
+
     window_->Update();
+    gui.RenderAppWindow(info);
     this->OnRender(delta);
+    gui.EndFrame();
     end = PlatformGetTime();
     delta = end - start;
     remaining = fps_ - delta;

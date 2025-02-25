@@ -1,4 +1,5 @@
 #include "SceneManager.hpp"
+#include "heavy_weather/event/WidgetCloseEvent.hpp"
 #include "heavy_weather/rendering/Gui/GuiComponent.hpp"
 #include "heavy_weather/rendering/Gui/IWidget.hpp"
 #include <heavy_weather/rendering/Gui/Widgets/MeshWidget.hpp>
@@ -27,7 +28,11 @@ void SceneManager::AddNode(MeshDescriptor &desc) {
 
   // register mesh to scene
   auto mesh_id = scene_.AddNode(std::move(mesh));
-  auto del_func = [this, mesh_id]() { this->scene_.DeleteNode(mesh_id); };
+  auto del_func = [this, mesh_id]() {
+    this->scene_.DeleteNode(mesh_id);
+    gui_.RemoveWidget(this->nodetogui_[mesh_id]);
+    this->nodetogui_.erase(mesh_id);
+  };
   GuiComponentDesc delete_comp_desc = {nullptr, 0.0f, 0.0f, "delete", del_func};
   std::unique_ptr<IWidget> p = std::make_unique<MeshWidget>(
       desc.name, std::move(color_comp_desc), std::move(transform_comp_desc),

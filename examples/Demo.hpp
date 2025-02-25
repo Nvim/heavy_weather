@@ -17,6 +17,8 @@ class Demo : public weather::Application {
 public:
   Demo(weather::WindowProps &window_props, f64 fps);
   ~Demo() override;
+  const weather::graphics::Gui &GetGui() const override;
+  const char *GetProgramName() const override;
 
 private:
   void OnMouseMoved(const MouseMovedEvent &e);

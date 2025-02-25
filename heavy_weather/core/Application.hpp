@@ -3,6 +3,7 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
+#include "heavy_weather/rendering/Gui/Gui.hpp"
 
 namespace weather {
 class Application {
@@ -24,6 +25,8 @@ public:
   static Application &Get() { return *s_instance; }
 
   const Window &GetWindow() const;
+  virtual const graphics::Gui &GetGui() const = 0;
+  virtual const char *GetProgramName() const = 0;
 
 private:
   virtual void OnRender(f64 delta) = 0;

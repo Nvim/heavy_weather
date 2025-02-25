@@ -10,6 +10,7 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
+#include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "imgui.h"
@@ -115,7 +116,6 @@ void Demo::OnRender(f64 delta) {
   scene_manager_.SubmitAll();
 
   gui_.Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT
@@ -143,4 +143,12 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
 
 void Demo::OnResize(const ResizeEvent &e) {
   renderer_.Resize({e.NewSize().w, e.NewSize().h});
+}
+
+const graphics::Gui& Demo::GetGui() const {
+  return gui_;
+}
+
+const char* Demo::GetProgramName() const {
+  return kTitle.c_str();
 }

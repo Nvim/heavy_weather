@@ -46,15 +46,30 @@ Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
 }
 
 void Gui::Render() {
+  if(ImGui::Begin("Scene")){
+    for (auto &c : widgets_) {
+      c->Render();
+    }
+    ImGui::End();
+  } 
+}
+
+void Gui::RenderAppWindow(AppInfo& info) const {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  for (auto &c : widgets_) {
-    c->Render();
-  }
+  if(ImGui::Begin("Application")){
+    ImGui::Text("%s\n%s", info.program_name, info.engine_name);
+    ImGui::Separator();
+    ImGui::Text("Frametime: %f", info.frametime);
+    ImGui::End();
+  } 
+}
 
+void Gui::EndFrame() const {
   ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 u64 Gui::AddWidget(UniquePtr<IWidget> w) {
