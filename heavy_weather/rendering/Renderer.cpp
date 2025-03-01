@@ -32,7 +32,6 @@ UniquePtr<Mesh> Renderer::CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i) {
 }
 
 void Renderer::Submit(Mesh &mesh) {
-  api_->ClearDepthBuffer();
   mesh.Transform()->ComputeMatrix();
   glm::mat4 model = mesh.Transform()->GetMatrix();
   auto view =

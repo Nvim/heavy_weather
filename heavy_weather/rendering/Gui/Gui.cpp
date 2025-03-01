@@ -52,6 +52,7 @@ void Gui::Render() {
     }
     ImGui::End();
   } 
+  GarbageCollect();
 }
 
 void Gui::RenderAppWindow(AppInfo& info) const {
@@ -79,7 +80,24 @@ u64 Gui::AddWidget(UniquePtr<IWidget> w) {
   return s_count;
 }
 
-void Gui::RemoveWidget(u64 id) { EventDispatch(WidgetCloseEvent{(id)}); }
+void Gui::GarbageCollect(){
+  for (u64 id : removals_){
+    auto elem = std::find_if(
+      widgets_.begin(), widgets_.end(),
+      [&id](const UniquePtr<IWidget> &c) { return c->GetID() == id; });
+    if (elem != widgets_.end()) {
+      HW_CORE_DEBUG("Removing Gui widget #{}", id);
+      widgets_.erase(elem);
+    } else {
+      HW_CORE_DEBUG("Couldn't remove Gui widget #{}", id);
+    }
+  }
+  removals_.clear();
+}
+
+void Gui::RemoveWidget(u64 id) {
+  this->removals_.push_back(id);
+}
 
 void Gui::OnRemoveWidget(const WidgetCloseEvent &e) {
   u64 id = e.GetID();
@@ -92,6 +110,12 @@ void Gui::OnRemoveWidget(const WidgetCloseEvent &e) {
   } else {
     HW_CORE_DEBUG("Couldn't remove Gui widget #{}", id);
   }
+}
+
+Gui::~Gui() {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 }
 
 } // namespace weather::graphics

@@ -36,13 +36,21 @@ public:
   // void HideCursor();
 
   ImGuiIO *GetIO();
-  // ~Gui();
+  ~Gui();
 
 private:
-  void OnRemoveWidget(const WidgetCloseEvent &e);
+  void OnRemoveWidget(const WidgetCloseEvent &e); // Unused event handler
+  void GarbageCollect(); // Remove all widgets marked for removal
   ImGuiIO *io_ = nullptr;
   void *m_window_ = nullptr;
   std::vector<UniquePtr<IWidget>> widgets_;
+
+  /*
+   * Widget removals are processed at the end of frame.
+   * This is because they are triggered from the 'Delete' button callback,
+   * which will be ran while iterating through the widgets in `Render()`.
+   * */
+  std::vector<u64> removals_; 
 };
 
 } // namespace weather::graphics

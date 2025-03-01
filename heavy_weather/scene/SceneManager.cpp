@@ -29,8 +29,8 @@ void SceneManager::AddNode(MeshDescriptor &desc) {
   // register mesh to scene
   auto mesh_id = scene_.AddNode(std::move(mesh));
   auto del_func = [this, mesh_id]() {
-    this->scene_.DeleteNode(mesh_id);
     gui_.RemoveWidget(this->nodetogui_[mesh_id]);
+    this->scene_.DeleteNode(mesh_id);
     this->nodetogui_.erase(mesh_id);
   };
   GuiComponentDesc delete_comp_desc = {nullptr, 0.0f, 0.0f, "delete", del_func};
@@ -51,6 +51,7 @@ void SceneManager::SubmitAll() {
   for (auto &elem = beg; beg != end; elem++) {
     renderer_.Submit(**elem);
   }
+  scene_.GarbageCollect();
 }
 
 } // namespace weather::graphics

@@ -13,15 +13,21 @@ u64 Scene::AddNode(UniquePtr<Mesh> node) {
   return s_id;
 }
 
-void Scene::DeleteNode(u64 id) {
-  auto elem = std::find_if(scenegraph_.begin(), scenegraph_.end(),
-                           [&id](const UniquePtr<Mesh> &n) { return n->GetID() == id;});
-  if (elem != scenegraph_.end()) {
-    HW_CORE_DEBUG("Removing Scene Node #{}", id);
-    scenegraph_.erase(elem);
-  } else {
-    HW_CORE_INFO("Couldn't remove Scene Node #{}", id);
+void Scene::DeleteNode(u64 id) { this->removals_.push_back(id); }
+
+void Scene::GarbageCollect() {
+  for (u64 id : removals_) {
+    auto elem = std::find_if(
+        scenegraph_.begin(), scenegraph_.end(),
+        [&id](const UniquePtr<Mesh> &n) { return n->GetID() == id; });
+    if (elem != scenegraph_.end()) {
+      HW_CORE_DEBUG("Removing Scene Node #{}", id);
+      scenegraph_.erase(elem);
+    } else {
+      HW_CORE_INFO("Couldn't remove Scene Node #{}", id);
+    }
   }
+  removals_.clear();
 }
 
 std::vector<UniquePtr<Mesh>>::const_iterator Scene::GetBegin() const {

@@ -47,6 +47,7 @@
           clang-tools_18 # LSP & Formatter
           lldb_18 # Debugger
           pre-commit
+          gdbgui
 
           # Vendor (building them along project is cooler):
           glfw-wayland

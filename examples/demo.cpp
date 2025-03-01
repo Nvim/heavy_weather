@@ -26,7 +26,7 @@ constexpr f64 kFrametime = 1.0f / 60;
 constexpr u16 kWidth = 1280;
 constexpr u16 kHeight = 720;
 weather::graphics::RendererInitParams renderer_init = {
-    weather::graphics::Backend::OpenGL, {kWidth, kHeight}, true, true};
+    weather::graphics::Backend::OpenGL, {kWidth, kHeight}, false, true};
 } // namespace
 
 using namespace weather;
