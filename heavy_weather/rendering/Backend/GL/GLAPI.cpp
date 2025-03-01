@@ -16,12 +16,15 @@
 
 namespace weather::graphics {
 
-GLBackendAPI::GLBackendAPI() { //
+// TODO: Configurable Init
+GLBackendAPI::GLBackendAPI(u16 w, u16 h, bool depth, bool debug) :
+  config_{w, h, depth, debug, 0, 0}
+{ //
   PlatformLoadBackend(Backend::OpenGL);
 
   i32 flags; // NOLINT
   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-  if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+  if (debug && flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
     HW_CORE_DEBUG("OpenGL debug context enabled")
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -30,17 +33,25 @@ GLBackendAPI::GLBackendAPI() { //
                           GL_TRUE);
   }
 
-  i32 maj, min; // NOLINT
-  glGetIntegerv(GL_MAJOR_VERSION, &maj);
-  glGetIntegerv(GL_MINOR_VERSION, &min);
-  HW_CORE_INFO("OpenGL version: {}.{}", maj, min);
+  glGetIntegerv(GL_MAJOR_VERSION, &config_.maj);
+  glGetIntegerv(GL_MINOR_VERSION, &config_.min);
+  HW_CORE_INFO("OpenGL version: {}.{}", config_.maj, config_.min);
 
-  glViewport(0, 0, 1280, 720);
+  glViewport(0, 0, w, h);
+  if (depth) {
+    glEnable(GL_DEPTH_TEST);
+  }
 }
 
 void GLBackendAPI::Resize(std::pair<u16, u16> new_sz) {
   // HW_CORE_TRACE("Resizing opengl to {}x{}", new_sz.first, new_sz.second);
   glViewport(0, 0, new_sz.first, new_sz.second);
+  config_.viewport_w = new_sz.first;
+  config_.viewport_h = new_sz.second;
+}
+
+std::pair<u16, u16> GLBackendAPI::ViewPort() const {
+  return {config_.viewport_w, config_.viewport_h};
 }
 
 UniquePtr<Buffer> GLBackendAPI::CreateVertexBuffer(BufferDescriptor desc,
@@ -173,8 +184,10 @@ void GLBackendAPI::BindUniform(UniformDescriptor &desc) {
 
 void GLBackendAPI::Clear(glm::vec4 col) const {
   glClearColor(col.r, col.g, col.b, col.a);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT);
 }
+
+void GLBackendAPI::ClearDepthBuffer() const { glClear(GL_DEPTH_BUFFER_BIT); }
 
 void GLBackendAPI::Render() { glDrawArrays(GL_TRIANGLES, 0, 3); }
 

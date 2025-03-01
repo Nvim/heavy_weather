@@ -23,7 +23,7 @@ public:
 private:
   const char *name_;
   GuiComponent<Color4> color_;
-  GuiComponent<SliderFloat> translation_;
+  GuiComponent<SliderFloat3> translation_;
   GuiComponent<SliderFloat> scale_;
   GuiComponent<SliderFloat> rotation_;
   GuiComponent<Button> delete_;

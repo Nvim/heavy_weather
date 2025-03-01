@@ -2,11 +2,26 @@
 
 #include "heavy_weather/engine.h"
 #include <heavy_weather/core/Logger.hpp>
+#include <utility>
 
 namespace weather::graphics {
 
 enum class Backend : u8 {
   OpenGL,
+};
+
+struct RendererInitParams {
+  Backend backend;
+  std::pair<u16, u16> viewport;
+  bool depth_test;
+  bool debug_mode;
+  // CameraParams camera_params;
+};
+
+struct CameraParams {
+  f32 fov;
+  f32 near;
+  f32 far;
 };
 
 struct ShaderDescriptor;   // Type, path, uniforms/attribs

@@ -17,9 +17,17 @@ struct GLState {
   u32 program = 0;
 };
 
+// Configuration/Features for API:
+struct GLConfig {
+  u16 viewport_w, viewport_h;
+  bool depth_test;
+  bool debug_mode;
+  i32 maj, min; // opengl version
+};
+
 class GLBackendAPI : public BackendAPI {
 public:
-  explicit GLBackendAPI();
+  explicit GLBackendAPI(u16 w, u16 h, bool depth, bool debug);
   ~GLBackendAPI() override;
 
   UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) override;
@@ -32,7 +40,9 @@ public:
   void Render() override;
   void RenderIndexed(u64 count) override;
   void Clear(glm::vec4 col) const override;
+  void ClearDepthBuffer() const override;
   void Resize(std::pair<u16, u16> new_sz) override;
+  std::pair<u16, u16> ViewPort() const override;
 
   //
   GLBackendAPI(const GLBackendAPI &) = delete;
@@ -42,6 +52,7 @@ public:
 
 private:
   GLState state_;
+  GLConfig config_;
   void RestoreState(GLState &s) {
     state_.ebo = s.ebo;
     state_.vbo = s.vbo;

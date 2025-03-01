@@ -1,8 +1,7 @@
 // clang-format off
-#include <glad/glad.h>
+// #include <glad/glad.h>
 // clang-format on
 #include "Demo.hpp"
-#include "backends/imgui_impl_opengl3.h"
 #include "heavy_weather/core/Entry.hpp"
 #include "heavy_weather/core/Input/InputSystem.hpp"
 #include "heavy_weather/core/Input/KeyCodes.hpp"
@@ -13,7 +12,6 @@
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
-#include "imgui.h"
 #include <functional>
 
 // Shortcut for registering events
@@ -27,6 +25,8 @@ const std::string kTitle = "Sandbox";
 constexpr f64 kFrametime = 1.0f / 60;
 constexpr u16 kWidth = 1280;
 constexpr u16 kHeight = 720;
+weather::graphics::RendererInitParams renderer_init = {
+    weather::graphics::Backend::OpenGL, {kWidth, kHeight}, true, true};
 } // namespace
 
 using namespace weather;
@@ -34,17 +34,20 @@ using namespace weather;
 // Entrypoint hook:
 weather::Application *weather::CreateAppHook() {
   weather::WindowProps props = {kTitle, kWidth, kHeight};
-  return new Demo{props, kFrametime};
+  return new Demo{props, kFrametime, renderer_init};
 }
 
 /*****************
  *   Demo Funcs  *
  *****************/
 
-Demo::Demo(WindowProps &window_props, f64 fps)
-    : Application(window_props, fps), renderer_{graphics::Backend::OpenGL},
+Demo::Demo(WindowProps &window_props, f64 fps,
+           graphics::RendererInitParams &render_params)
+    : Application(window_props, fps), renderer_{render_params},
       gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}},
-      scene_manager_{renderer_, gui_} {
+      scene_manager_{renderer_, gui_}//
+{
+  // Event callbacks:
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
   EventRegister(mouse_callback_);
   EventCallback<KeyPressedEvent> k = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
@@ -54,8 +57,6 @@ Demo::Demo(WindowProps &window_props, f64 fps)
 
   // Graphics:
   InitGraphics();
-
-  // Gui:
 }
 
 Demo::~Demo() {
@@ -108,10 +109,10 @@ void Demo::InitGraphics() {
 
 void Demo::OnRender(f64 delta) {
   (void)delta;
-  auto time = PlatformGetTime();
+  // auto time = PlatformGetTime();
   renderer_.UsePipeline(*pipeline_);
-  int loc = glGetUniformLocation(pipeline_->Handle(), "iGlobalTime");
-  glUniform1f(loc, time);
+  // int loc = glGetUniformLocation(pipeline_->Handle(), "iGlobalTime");
+  // glUniform1f(loc, time);
   renderer_.Clear(bgcolor_);
   scene_manager_.SubmitAll();
 
@@ -145,10 +146,6 @@ void Demo::OnResize(const ResizeEvent &e) {
   renderer_.Resize({e.NewSize().w, e.NewSize().h});
 }
 
-const graphics::Gui& Demo::GetGui() const {
-  return gui_;
-}
+const graphics::Gui &Demo::GetGui() const { return gui_; }
 
-const char* Demo::GetProgramName() const {
-  return kTitle.c_str();
-}
+const char *Demo::GetProgramName() const { return kTitle.c_str(); }

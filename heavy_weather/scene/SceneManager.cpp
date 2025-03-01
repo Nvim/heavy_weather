@@ -17,8 +17,8 @@ void SceneManager::AddNode(MeshDescriptor &desc) {
   GuiComponentDesc &&color_comp_desc = {mesh->Color(), 0.0f, 0.0f, "color",
                                         nullptr};
 
-  auto transform = mesh->Transform();
-  auto cb = [transform]() { transform->dirty = true; };
+  auto *transform = mesh->Transform();
+  auto cb = [transform]() { transform->Touch(); };
   GuiComponentDesc transform_comp_desc = {mesh->Transform()->Translation(),
                                           -10.0f, 10.0f, "translation", cb};
   GuiComponentDesc scale_comp_desc = {mesh->Transform()->Scale(), -10.0f, 10.0f,

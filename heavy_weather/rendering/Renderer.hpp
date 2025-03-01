@@ -12,9 +12,9 @@ namespace weather::graphics {
 
 class Renderer {
 public:
-  Renderer(Backend backend) {
-    HW_ASSERT(backend == Backend::OpenGL);
-    api_ = std::unique_ptr<BackendAPI>(new GLBackendAPI);
+  Renderer(RendererInitParams& params) {
+    HW_ASSERT_MSG(params.backend == Backend::OpenGL, "Only OpenGL is supported");
+    api_ = std::unique_ptr<BackendAPI>(new GLBackendAPI(params.viewport.first, params.viewport.second, params.depth_test, params.debug_mode));
   };
 
   UniquePtr<Mesh> CreateMesh(const MeshDescriptor &desc);

@@ -15,7 +15,8 @@ using weather::MouseMovedEvent, weather::EventCallback, weather::EventRegister;
 
 class Demo : public weather::Application {
 public:
-  Demo(weather::WindowProps &window_props, f64 fps);
+  Demo(weather::WindowProps &window_props, f64 fps,
+       weather::graphics::RendererInitParams &render_params);
   ~Demo() override;
   const weather::graphics::Gui &GetGui() const override;
   const char *GetProgramName() const override;

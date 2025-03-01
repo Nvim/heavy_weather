@@ -2,7 +2,7 @@
 
 out vec4 FragColor;
 
-uniform float iGlobalTime;
+// uniform float iGlobalTime;
 uniform vec4 iMaterial;
 
 void main()

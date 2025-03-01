@@ -50,7 +50,7 @@ void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
   f64 start{}, end{}, remaining{}, delta{};
-  auto& gui = this->GetGui();
+  const auto& gui = this->GetGui();
   // TODO cool version string system
   const char* engine_str = "Heavy Weather Engine - v0.0.0"; 
 
@@ -61,6 +61,7 @@ void Application::Run() {
       this->GetProgramName(),
       engine_str,
       delta,
+      delta + remaining,
     };
 
     window_->Update();
@@ -71,6 +72,7 @@ void Application::Run() {
     delta = end - start;
     remaining = fps_ - delta;
     if (delta > 0.0f && remaining > 0.0f) {
+      // HW_CORE_INFO("Sleeping for {}", remaining);
       PlatformSleep(remaining - 1); // NOLINT
     }
   }

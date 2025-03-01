@@ -1,5 +1,5 @@
 ---
-Checks: "-*,readability-*,bugprone-*,cppcoreguidelines-*,modernize-*,clang-analyser-*,performance-*,-readability-identifier-length,-modernize-use-nodiscard,-modernize-use-trailing-return-type,-readability-uppercase-literal-suffix,-readability-isolate-declaration,-modernize-pass-by-value,-bugprone-easily-swappable-parameters,-readability-implicit-bool-conversion,-cppcoreguidelines-avoid-c-arrays,-modernize-avoid-c-arrays,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-modernize-avoid-bind"
+Checks: "-*,readability-*,bugprone-*,cppcoreguidelines-*,modernize-*,clang-analyser-*,performance-*,-readability-identifier-length,-modernize-use-nodiscard,-modernize-use-trailing-return-type,-readability-uppercase-literal-suffix,-readability-isolate-declaration,-modernize-pass-by-value,-bugprone-easily-swappable-parameters,-readability-implicit-bool-conversion,-cppcoreguidelines-avoid-c-arrays,-modernize-avoid-c-arrays,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-modernize-avoid-bind,-cppcoreguidelines-pro-type-union-access"
 HeaderFilterRegex: ""
 FormatStyle: Google
 CheckOptions:

@@ -62,7 +62,7 @@ void Gui::RenderAppWindow(AppInfo& info) const {
   if(ImGui::Begin("Application")){
     ImGui::Text("%s\n%s", info.program_name, info.engine_name);
     ImGui::Separator();
-    ImGui::Text("Frametime: %f", info.frametime);
+    ImGui::Text("FPS: %5f (%8f ms)", (1.0f / info.fps), info.frametime);
     ImGui::End();
   } 
 }

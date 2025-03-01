@@ -19,7 +19,8 @@ struct GuiDesc {
 struct AppInfo {
   const char *program_name;
   const char *engine_name;
-  f64 frametime;
+  f64 frametime; // Time the frame actually took
+  f64 fps; // FPS, counting sleep to meet configured cap
 };
 
 class Gui {
