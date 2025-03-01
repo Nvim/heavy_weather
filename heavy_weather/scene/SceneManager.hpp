@@ -16,12 +16,13 @@ namespace weather::graphics {
 class SceneManager {
 private:
   Scene scene_;
+  Camera camera_;
   Gui &gui_;
   Renderer &renderer_;
   std::unordered_map<u64, u64> nodetogui_;
 
 public:
-  SceneManager(Renderer &renderer, Gui &gui);
+  SceneManager(Renderer &renderer, Gui &gui, CameraParams &camera_params);
   void AddNode(MeshDescriptor &desc);
   void SubmitAll();
   void RemoveNode();

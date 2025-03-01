@@ -31,18 +31,7 @@ UniquePtr<Mesh> Renderer::CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i) {
   return std::make_unique<Mesh>(std::move(v), std::move(i));
 }
 
-void Renderer::Submit(Mesh &mesh) {
-  mesh.Transform()->ComputeMatrix();
-  glm::mat4 model = mesh.Transform()->GetMatrix();
-  auto view =
-      glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                  glm::vec3(0.0f, 1.0f, 0.0f));
-  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-  glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                          float(api_->ViewPort().first) /
-                                              float(api_->ViewPort().second),
-                                          0.1f, 100.0f);
-  auto mvp = projection * view * model;
+void Renderer::Submit(Mesh &mesh, glm::mat4 &mvp) {
   auto uniform_desc = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
   api_->BindUniform(uniform_desc);
   api_->BindUniform(mesh.Material().uniform);

@@ -11,10 +11,7 @@
 namespace weather::graphics {
 
 struct Transform {
-  void Touch() {
-    HW_CORE_DEBUG("Matrix got touched");
-    dirty_ = true;
-  }
+  void Touch() { dirty_ = true; }
   void ComputeMatrix() {
     if (!dirty_) {
       return;
@@ -24,11 +21,10 @@ struct Transform {
     matrix_ = glm::rotate(matrix_, glm::radians(rotation_),
                           glm::vec3(0.0f, 1.0f, 0.0f));
     matrix_ = glm::scale(matrix_, scale_);
-    HW_CORE_DEBUG("Translation is now ({}, {}, {}).", translation_.x, translation_.y, translation_.z);
     dirty_ = false;
   }
 
-  const glm::mat4& GetMatrix() const { return matrix_; }
+  const glm::mat4 &GetMatrix() const { return matrix_; }
 
   void *Translation() { return &translation_; }
   void *Scale() { return &scale_; }

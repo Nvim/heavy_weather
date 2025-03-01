@@ -9,6 +9,7 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
+#include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
@@ -16,6 +17,8 @@
 
 // Shortcut for registering events
 #define BIND_EVENT_FUNC(func) std::bind(func, this, std::placeholders::_1)
+
+using weather::graphics::Backend;
 
 /**************
  *   Globals  *
@@ -25,8 +28,11 @@ const std::string kTitle = "Sandbox";
 constexpr f64 kFrametime = 1.0f / 60;
 constexpr u16 kWidth = 1280;
 constexpr u16 kHeight = 720;
-weather::graphics::RendererInitParams renderer_init = {
-    weather::graphics::Backend::OpenGL, {kWidth, kHeight}, false, true};
+
+weather::graphics::RendererInitParams renderer_init{
+    Backend::OpenGL, {kWidth, kHeight}, false, true};
+
+weather::graphics::CameraParams camera_params{};
 } // namespace
 
 using namespace weather;
@@ -34,7 +40,7 @@ using namespace weather;
 // Entrypoint hook:
 weather::Application *weather::CreateAppHook() {
   weather::WindowProps props = {kTitle, kWidth, kHeight};
-  return new Demo{props, kFrametime, renderer_init};
+  return new Demo{props, kFrametime, renderer_init}; // NOLINT
 }
 
 /*****************
@@ -45,7 +51,7 @@ Demo::Demo(WindowProps &window_props, f64 fps,
            graphics::RendererInitParams &render_params)
     : Application(window_props, fps), renderer_{render_params},
       gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}},
-      scene_manager_{renderer_, gui_}//
+      scene_manager_{renderer_, gui_, camera_params} //
 {
   // Event callbacks:
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };

@@ -1,13 +1,15 @@
 #include "SceneManager.hpp"
-#include "heavy_weather/event/WidgetCloseEvent.hpp"
 #include "heavy_weather/rendering/Gui/GuiComponent.hpp"
 #include "heavy_weather/rendering/Gui/IWidget.hpp"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <heavy_weather/rendering/Gui/Widgets/MeshWidget.hpp>
 
 namespace weather::graphics {
 
-SceneManager::SceneManager(Renderer &renderer, Gui &gui)
-    : gui_{gui}, renderer_{renderer} {}
+SceneManager::SceneManager(Renderer &renderer, Gui &gui,
+                           CameraParams &camera_params)
+    : camera_{camera_params}, gui_{gui}, renderer_{renderer} {}
 
 void SceneManager::AddNode(MeshDescriptor &desc) {
   // construct a mesh using descriptor
@@ -48,8 +50,18 @@ void SceneManager::AddNode(MeshDescriptor &desc) {
 void SceneManager::SubmitAll() {
   auto beg = scene_.GetBegin();
   auto end = scene_.GetEnd();
+
+  auto view = camera_.GetMatrix();
+  auto proj = glm::perspective(glm::radians(camera_.Fov()),
+                               float(renderer_.ViewPort().first) /
+                                   float(renderer_.ViewPort().second),
+                               camera_.Near(), camera_.Far());
+
   for (auto &elem = beg; beg != end; elem++) {
-    renderer_.Submit(**elem);
+    Mesh &m = **elem;
+    m.Transform()->ComputeMatrix();
+    auto mvp = proj * view * m.Transform()->GetMatrix();
+    renderer_.Submit(m, mvp); // TODO: take it by copy when multithreading
   }
   scene_.GarbageCollect();
 }

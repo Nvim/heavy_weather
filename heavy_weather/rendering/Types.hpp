@@ -15,13 +15,6 @@ struct RendererInitParams {
   std::pair<u16, u16> viewport;
   bool depth_test;
   bool debug_mode;
-  // CameraParams camera_params;
-};
-
-struct CameraParams {
-  f32 fov;
-  f32 near;
-  f32 far;
 };
 
 struct ShaderDescriptor;   // Type, path, uniforms/attribs

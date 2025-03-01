@@ -1,6 +1,7 @@
 #pragma once
 
 #include "heavy_weather/engine.h"
+#include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Mesh.hpp"
 #include <vector>
 
@@ -22,7 +23,6 @@ private:
 
   // Same as in Gui.hpp
   std::vector<u64> removals_;
-  
 };
 
 } // namespace weather::graphics
