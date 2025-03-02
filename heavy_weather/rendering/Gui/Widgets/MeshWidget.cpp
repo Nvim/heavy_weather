@@ -6,13 +6,12 @@ namespace weather::graphics {
 
 MeshWidget::MeshWidget(const char *name, GuiComponentDesc &&c,
                        GuiComponentDesc &&t, GuiComponentDesc &&s,
-                       GuiComponentDesc &&r, GuiComponentDesc&& d)
+                       GuiComponentDesc &&r, GuiComponentDesc &&d)
     : name_{name}, color_{GuiComponent<Color4>{std::move(c)}},
       translation_{GuiComponent<SliderFloat3>{std::move(t)}},
-      scale_{GuiComponent<SliderFloat>{std::move(s)}},
-      rotation_{GuiComponent<SliderFloat>{std::move(r)}},
-      delete_{GuiComponent<Button>{std::move(d)}}
-{}
+      scale_{GuiComponent<SliderFloat3>{std::move(s)}},
+      rotation_{GuiComponent<SliderFloat3>{std::move(r)}},
+      delete_{GuiComponent<Button>{std::move(d)}} {}
 
 void MeshWidget::Render() const {
   if (ImGui::TreeNode(name_)) {
