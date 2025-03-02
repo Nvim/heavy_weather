@@ -1,8 +1,11 @@
 #pragma once
 
+#include "heavy_weather/event/KeyPressedEvent.hpp"
+#include "heavy_weather/event/MouseMovedEvent.hpp"
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
 #include <heavy_weather/engine.h>
+#include <utility>
 
 namespace weather::graphics {
 
@@ -12,6 +15,8 @@ struct CameraParams {
   f32 far{100.0f};
   f32 yaw{-90.0f};
   f32 pitch{0.0f};
+  f32 sens{0.1f};
+  f32 speed{5.0f};
   glm::vec3 pos{0.0f, 0.0f, 3.0f};
   glm::vec3 up{0.0f, 1.0f, 0.0f};
 };
@@ -19,12 +24,13 @@ struct CameraParams {
 class Camera {
 public:
   explicit Camera(CameraParams &params);
-  glm::mat4 &GetMatrix() { return matrix_; }
 
   void Touch() { dirty_ = true; }
 
   // Use angles to update vectors, then compute matrix from vectors
   void Update();
+  void ProcessInput(f64 delta);
+
   const glm::mat4 &GetMatrix() const { return matrix_; }
   f32 Far() const { return far_; }
   f32 Near() const { return near_; }
@@ -48,6 +54,13 @@ private:
   f32 fov_;
   f32 far_;
   f32 near_;
+
+  // User controls:
+  f32 sens_;
+  f32 speed_;
+  std::pair<f64, f64> mouse_{0.0f, 0.0f};
+  void ProcessKeyboard(f64 delta);
+  void ProcessMouse(f64 delta);
 };
 
 } // namespace weather::graphics

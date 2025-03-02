@@ -24,6 +24,7 @@ private:
 public:
   SceneManager(Renderer &renderer, Gui &gui, CameraParams &camera_params);
   void AddNode(MeshDescriptor &desc);
+  void Update(f64 delta);
   void SubmitAll();
   void RemoveNode();
 

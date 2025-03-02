@@ -95,6 +95,8 @@ LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
     return;
   }
 
+  // glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
   glfwMakeContextCurrent(window_);
   glfwSetWindowUserPointer(window_, &props_);
 
@@ -116,6 +118,16 @@ LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
         p.width = width;
         p.height = height;
       });
+
+  // glfwSetCursorEnterCallback(window_, [](GLFWwindow* window, int entered) {
+  //   auto &p = *static_cast<WindowProps *>(glfwGetWindowUserPointer(window));
+  //   if (entered) {
+  //     glfwSetCursorPos(window, p.width  / 2.0f, p.height / 2.0f);
+  //     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  //   } else {
+  //     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  //   }
+  // });
 
   glfwSetErrorCallback(ErrorCallback);
   glfwSetWindowCloseCallback(window_, [](GLFWwindow *window) {

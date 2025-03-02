@@ -11,6 +11,11 @@ SceneManager::SceneManager(Renderer &renderer, Gui &gui,
                            CameraParams &camera_params)
     : camera_{camera_params}, gui_{gui}, renderer_{renderer} {}
 
+void SceneManager::Update(f64 delta) {
+  camera_.ProcessInput(delta);
+  camera_.Update();
+}
+
 void SceneManager::AddNode(MeshDescriptor &desc) {
   // construct a mesh using descriptor
   auto mesh = renderer_.CreateMesh(desc);

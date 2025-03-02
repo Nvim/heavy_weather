@@ -14,6 +14,7 @@
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <functional>
+#include <resources/cube_vertices.hpp>
 
 // Shortcut for registering events
 #define BIND_EVENT_FUNC(func) std::bind(func, this, std::placeholders::_1)
@@ -80,10 +81,10 @@ void Demo::InitGraphics() {
       0.0f,  0.5f,  0.0f  //
   };
   f32 vertices_2[] = {
-      -0.8f,  0.5f,  0.0f, //
-      -0.8f,  0.8f,  0.0f, //
-      -0.95f, 0.65f, 0.0f, //
-      -0.65f, 0.65f, 0.0f  //
+      0.0f,   0.25f,  0.0f, //
+      0.0f,   -0.25f, 0.0f, //
+      -0.25f, 0.0f,   0.0f, //
+      0.25f,  0.0f,   0.0f  //
   };
 
   u32 indices[] = {0, 1, 2}; // NOLINT
@@ -102,6 +103,10 @@ void Demo::InitGraphics() {
       std::pair(vertices_2, sizeof(vertices_2)),
       std::pair(square_indices, sizeof(square_indices)), &layout, "square"};
 
+  graphics::MeshDescriptor cube_mesh{
+      std::pair(cube_verts, sizeof(cube_verts)),
+      std::pair(cube_indices, sizeof(cube_indices)), &layout, "cube"};
+
   // Shaders:
   graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
                                     "demo.vert"};
@@ -110,11 +115,12 @@ void Demo::InitGraphics() {
 
   scene_manager_.AddNode(mesh_desc);
   scene_manager_.AddNode(mesh_desc2);
+  scene_manager_.AddNode(cube_mesh);
   pipeline_ = renderer_.CreatePipeline(vsdesc, fsdesc);
 }
 
 void Demo::OnRender(f64 delta) {
-  (void)delta;
+  scene_manager_.Update(delta);
   // auto time = PlatformGetTime();
   renderer_.UsePipeline(*pipeline_);
   // int loc = glGetUniformLocation(pipeline_->Handle(), "iGlobalTime");
