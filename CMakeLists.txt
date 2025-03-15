@@ -13,6 +13,7 @@ add_library(cxx_setup INTERFACE)
 target_compile_features(cxx_setup INTERFACE cxx_std_17)
 target_include_directories(cxx_setup INTERFACE ${PROJECT_SOURCE_DIR})
 
+message(STATUS "BUILD_TESTING: ${BUILD_TESTING}")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   message(STATUS "Defining HW_DEBUG and ASSERT")
   target_compile_definitions(cxx_setup INTERFACE HW_DEBUG=1)
@@ -32,7 +33,10 @@ if(GL_VERSION_4 STREQUAL "1")
   target_compile_definitions(cxx_setup INTERFACE GL_VERSION_4=1)
 endif()
 
-# set(BUILD_GMOCK OFF CACHE BOOL "" FORCE) include(CTest)
+set(BUILD_GMOCK
+    OFF
+    CACHE BOOL "" FORCE)
+include(CTest)
 
 add_subdirectory(${PROJECT_NAME})
 add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty)
