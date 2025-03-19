@@ -1,6 +1,7 @@
 #include "Renderer.hpp"
 
 #include "heavy_weather/engine.h"
+#include "heavy_weather/rendering/BuffersComponent.hpp"
 #include "heavy_weather/rendering/Pipeline.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
@@ -8,7 +9,7 @@
 
 namespace weather::graphics {
 
-UniquePtr<Mesh> Renderer::CreateMesh(const MeshDescriptor &desc) {
+BuffersComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
   u32 *indices = desc.indices.first;
   u64 indices_sz = desc.indices.second;
   void *verts = desc.vertices.first;
@@ -22,22 +23,32 @@ UniquePtr<Mesh> Renderer::CreateMesh(const MeshDescriptor &desc) {
   BufferDescriptor idesc{indices_sz, index_count, BufferType::IndexBuffer,
                          nullptr};
 
-  auto vbuf = api_->CreateBuffer(vdesc, verts);
-  auto ibuf = api_->CreateBuffer(idesc, indices);
-  return std::make_unique<Mesh>(std::move(vbuf), std::move(ibuf));
+  return BuffersComponent{api_->CreateBuffer(vdesc, verts),
+                          api_->CreateBuffer(idesc, indices)};
 }
 
 UniquePtr<Mesh> Renderer::CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i) {
   return std::make_unique<Mesh>(std::move(v), std::move(i));
 }
 
-void Renderer::Submit(Mesh &mesh, glm::mat4 &mvp) {
+// void Renderer::Submit(Mesh &mesh, glm::mat4 &mvp) {
+//   auto uniform_desc = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
+//   api_->BindUniform(uniform_desc);
+//   api_->BindUniform(mesh.Material().uniform);
+//   api_->BindBuffer(mesh.VertexBuffer());
+//   api_->BindBuffer(mesh.IndexBuffer());
+//   api_->RenderIndexed(mesh.IndexBuffer().GetCount());
+// }
+//
+void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
+                      MaterialComponent *material) {
   auto uniform_desc = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
   api_->BindUniform(uniform_desc);
-  api_->BindUniform(mesh.Material().uniform);
-  api_->BindBuffer(mesh.VertexBuffer());
-  api_->BindBuffer(mesh.IndexBuffer());
-  api_->RenderIndexed(mesh.IndexBuffer().GetCount());
+  UniformDescriptor mat{"iMaterial", DataFormat::Float4, &material->color};
+  api_->BindUniform(mat);
+  api_->BindBuffer(vbuf);
+  api_->BindBuffer(ibuf);
+  api_->RenderIndexed(ibuf.GetCount());
 }
 
 UniquePtr<Pipeline> Renderer::CreatePipeline(ShaderDescriptor vsdesc,

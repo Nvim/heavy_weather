@@ -35,7 +35,7 @@ enum class EventCode : u8 {
   EVENT_BUTTON_PRESSED,
   EVENT_BUTTON_RELEASED,
   EVENT_MOUSE_MOVED,
-  EVENT_WIDGET_CLOSED
+  EVENT_ENTITY_REMOVED
 };
 
 class EventCallbackWrapperInterface;

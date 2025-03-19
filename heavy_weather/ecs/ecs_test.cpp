@@ -1,6 +1,9 @@
 #include "ecs.hpp"
+#include "heavy_weather/ecs/sparse.hpp"
+#include "heavy_weather/engine.h"
 #include <algorithm>
 #include <gtest/gtest.h>
+#include <memory>
 #include <vector>
 
 using f32 = float;
@@ -19,6 +22,23 @@ struct Type2 {
   bool operator==(const Type2 &other) const {
     return (scale == other.scale && rotation == other.rotation &&
             translation == other.translation);
+  }
+};
+
+struct Uptr {
+  UniquePtr<Type1> t1;
+
+  explicit Uptr(UniquePtr<Type1> t1) : t1(std::move(t1)) {}
+  Uptr(Uptr &&other) noexcept : t1(std::move(other.t1)) {}
+  Uptr(const Uptr &) = delete;
+  Uptr &operator=(const Uptr &) = delete;
+  Uptr &operator=(Uptr &&other) noexcept {
+    // Make sure we're not assigning to ourselves
+    if (this != &other) {
+      // Take resources from 'other' and make them ours
+      this->t1 = std::move(other).t1;
+    }
+    return *this;
   }
 };
 
@@ -54,8 +74,8 @@ TEST(ecs, get_component) {
   ecs.AddComponent(e1, t);
 
   EXPECT_EQ(ecs.GetComponent<Type1>(e1), t);
-  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type2>(e1), "failed");
-  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type1>(120), "failed");
+  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type2>(e1), "");
+  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type1>(120), "");
 
   // Also try with rvalue
   ecs.AddComponent(e1, Type2{0.0f, 10.0f, 777.8f});
@@ -69,7 +89,7 @@ TEST(ecs, add_same_component) {
   Type1 t{22.0f, 0.0f};
 
   ecs.AddComponent(e1, t);
-  EXPECT_DEBUG_DEATH(ecs.AddComponent(e1, t), "failed");
+  EXPECT_DEBUG_DEATH(ecs.AddComponent(e1, t), "");
 }
 
 TEST(ecs, query_basic) {
@@ -131,7 +151,7 @@ TEST(ecs, remove_has_get) {
 
   // Check that component has been removed:
   EXPECT_FALSE(ecs.HasComponent<Type2>(e1));
-  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type2>(e1), "failed");
+  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type2>(e1), "");
 
   // Check nothing else was touched:
   EXPECT_TRUE(ecs.HasComponent<Type1>(e1));
@@ -146,11 +166,11 @@ TEST(ecs, remove_invalid) {
   ecs.AddComponent(e1, Type1{0.3f, 60.8f});
 
   // Remove absent component from existing entity:
-  EXPECT_DEBUG_DEATH(ecs.RemoveComponent<Type1>(e2), "failed");
-  EXPECT_DEBUG_DEATH(ecs.RemoveComponent<Type2>(e1), "failed");
+  EXPECT_DEBUG_DEATH(ecs.RemoveComponent<Type1>(e2), "");
+  EXPECT_DEBUG_DEATH(ecs.RemoveComponent<Type2>(e1), "");
 
   // Remove from non-existing entity:
-  EXPECT_DEBUG_DEATH(ecs.RemoveComponent<Type2>(64), "failed");
+  EXPECT_DEBUG_DEATH(ecs.RemoveComponent<Type2>(64), "");
 }
 
 TEST(ecs, remove_queries) {
@@ -220,6 +240,37 @@ TEST(ecs, destroy_count_query) {
   EXPECT_EQ(result2.size(), 1);
 }
 
+TEST(ecs, destroy_complex) {
+  ECS ecs{};
+  auto e1 = ecs.CreateEntity();
+  auto e2 = ecs.CreateEntity();
+  auto e3 = ecs.CreateEntity();
+
+  ecs.AddComponent(e1, Type1{20.0f, 4.0f});
+  ecs.AddComponent(e2, Type1{22.0f, 6.0f});
+  ecs.AddComponent(e3, Type1{24.0f, 8.0f});
+
+  ecs.AddComponent(e1, Type2{20.0f, 4.0f, 3.0f});
+  ecs.AddComponent(e2, Type2{22.0f, 6.0f, 8.8f});
+  ecs.AddComponent(e3, Type2{22.0f, 6.0f, 67.3f});
+
+  auto result = ecs.Query<Type1, Type2>();
+  EXPECT_EQ(result.size(), 3);
+
+  ecs.DestroyEntity(e1);
+  auto result2 = ecs.Query<Type1, Type2>();
+
+  EXPECT_EQ(ecs.Count(), 2);
+  EXPECT_EQ(result2.size(), 2);
+  EXPECT_GT(result2[0], e1);
+  EXPECT_GT(result2[1], e1);
+  // auto expect = Type1{22.0f, 6.0f};
+  EXPECT_NE(ecs.GetComponentPtr<Type1>(result2[0])->x, 20.0f);
+  EXPECT_NE(ecs.GetComponentPtr<Type1>(result2[0])->y, 4.0f);
+  EXPECT_NE(ecs.GetComponentPtr<Type1>(result2[1])->x, 20.0f);
+  EXPECT_NE(ecs.GetComponentPtr<Type1>(result2[1])->y, 4.0f);
+}
+
 TEST(ecs, destroy_access) {
   ECS ecs{};
   auto e1 = ecs.CreateEntity();
@@ -230,9 +281,9 @@ TEST(ecs, destroy_access) {
 
   ecs.DestroyEntity(e2);
 
-  EXPECT_DEBUG_DEATH(ecs.HasComponent<Type2>(e2), "failed");
-  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type2>(e2), "failed");
-  EXPECT_DEBUG_DEATH(ecs.AddComponent(e2, Type1{0.8f, 5.0f}), "failed");
+  EXPECT_DEBUG_DEATH(ecs.HasComponent<Type2>(e2), "");
+  EXPECT_DEBUG_DEATH(ecs.GetComponent<Type2>(e2), "");
+  EXPECT_DEBUG_DEATH(ecs.AddComponent(e2, Type1{0.8f, 5.0f}), "");
 }
 
 TEST(ecs, destroy_add_after) {
@@ -257,4 +308,66 @@ TEST(ecs, destroy_add_after) {
 
   auto res = ecs.Query<Type2>();
   EXPECT_EQ(res.size(), 1);
+}
+
+TEST(ecs, move_semantics) {
+  ECS ecs{};
+  auto e1 = ecs.CreateEntity();
+  auto e2 = ecs.CreateEntity();
+  auto e3 = ecs.CreateEntity();
+
+  ecs.AddComponent(e1, Uptr{std::make_unique<Type1>(Type1{1.0f, 2.0f})});
+  ecs.AddComponent(e2, Uptr{std::make_unique<Type1>(Type1{3.0f, 4.0f})});
+  ecs.AddComponent(e3, Uptr{std::make_unique<Type1>(Type1{5.0f, 6.0f})});
+
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e1).t1->x, 1.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e1).t1->y, 2.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e2).t1->x, 3.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e2).t1->y, 4.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e3).t1->x, 5.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e3).t1->y, 6.0f);
+
+  ecs.DestroyEntity(e1);
+
+  // Check that query result is good:
+  auto result = ecs.Query<Uptr>();
+  EXPECT_EQ(result.size(), 2);
+  EXPECT_NE(result.at(0), e1);
+  EXPECT_NE(result.at(1), e1);
+
+  // Check both GetComponent variants:
+  EXPECT_TRUE(ecs.HasComponent<Uptr>(e2));
+  EXPECT_TRUE(ecs.HasComponent<Uptr>(e3));
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e2).t1->x, 3.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e2).t1->y, 4.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e3).t1->x, 5.0f);
+  EXPECT_EQ(ecs.GetComponent<Uptr>(e3).t1->y, 6.0f);
+  EXPECT_EQ(ecs.GetComponentPtr<Uptr>(e2)->t1->x, 3.0f);
+  EXPECT_EQ(ecs.GetComponentPtr<Uptr>(e2)->t1->y, 4.0f);
+  EXPECT_EQ(ecs.GetComponentPtr<Uptr>(e3)->t1->x, 5.0f);
+  EXPECT_EQ(ecs.GetComponentPtr<Uptr>(e3)->t1->y, 6.0f);
+
+  // Check internals as well:
+  const auto &pool_map = ecs.Pools();
+  EXPECT_EQ(pool_map.size(), 1);
+  auto pool = pool_map.find(TYPE_IDX(Uptr));
+  EXPECT_NE(pool, pool_map.end());
+  ISparseSet &s = *pool->second;
+  auto &set = dynamic_cast<SparseSet<Uptr> &>(s);
+
+  EXPECT_EQ(set.IDs().size(), 2);
+  EXPECT_EQ(set.Values().size(), 2);
+  // e3:
+  EXPECT_EQ(set.IDs().at(0), e3);
+  EXPECT_EQ(set.Values().at(0).t1->x, 5.0f);
+  EXPECT_EQ(set.Values().at(0).t1->y, 6.0f);
+  EXPECT_EQ(set.Get(e3).t1->x, 5.0f);
+  EXPECT_EQ(set.Get(e3).t1->y, 6.0f);
+
+  // e2:
+  EXPECT_EQ(set.IDs().at(1), e2);
+  EXPECT_EQ(set.Values().at(1).t1->x, 3.0f);
+  EXPECT_EQ(set.Values().at(1).t1->y, 4.0f);
+  EXPECT_EQ(set.Get(e2).t1->x, 3.0f);
+  EXPECT_EQ(set.Get(e2).t1->y, 4.0f);
 }

@@ -9,7 +9,7 @@ struct SomeType {
   float b;
   std::string str;
 
-  bool operator ==(const SomeType& other) const {
+  bool operator==(const SomeType &other) const {
     return (a == other.a && b == other.b && str == other.str);
   }
 };
@@ -31,7 +31,7 @@ TEST(primitive, add) {
   EXPECT_TRUE(s.Has(41));
 
   // Add already present element:
-  EXPECT_DEBUG_DEATH(s.Add(42, 33.0f), "failed");
+  EXPECT_DEBUG_DEATH(s.Add(42, 33.0f), "");
 }
 
 TEST(primitive, has) {
@@ -39,7 +39,7 @@ TEST(primitive, has) {
   EXPECT_FALSE(s.Has(2));
 
   // inbounds check:
-  for(int i = 0; i < kSparseBaseLen; ++i) {
+  for (u32 i = 0; i < kSparseBaseLen; ++i) {
     EXPECT_FALSE(s.Has(i));
   }
 
@@ -63,7 +63,7 @@ TEST(primitive, get) {
   EXPECT_EQ(s.Get(40), l);
 
   // Get invalid index:
-  EXPECT_DEBUG_DEATH(s.Get(505), "failed");
+  EXPECT_DEBUG_DEATH(s.Get(505), "");
 }
 
 TEST(primitive, remove_has) {
@@ -85,11 +85,11 @@ TEST(primitive, remove_get) {
   s.Add(8, 4);
 
   s.Remove(8);
-  EXPECT_DEBUG_DEATH(s.Get(8), "failed");
+  EXPECT_DEBUG_DEATH(s.Get(8), "");
 
   EXPECT_EQ(800, s.Get(1));
   s.Remove(1);
-  EXPECT_DEBUG_DEATH(s.Get(1), "failed");
+  EXPECT_DEBUG_DEATH(s.Get(1), "");
 }
 
 TEST(primitive, remove_count) {
@@ -140,7 +140,7 @@ TEST(custom_type, remove) {
   s.Remove(2);
   EXPECT_FALSE(s.Has(2));
   EXPECT_EQ(s.Count(), 1);
-  
+
   s.Remove(1);
   EXPECT_FALSE(s.Has(1));
   EXPECT_EQ(s.Count(), 0);

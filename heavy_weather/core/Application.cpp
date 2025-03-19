@@ -48,13 +48,18 @@ void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
   f64 start{}, end{}, remaining{}, delta{};
+#ifdef HW_ENABLE_GUI
   const auto &gui = this->GetGui();
-  // TODO cool version string system
   const char *engine_str = "Heavy Weather Engine - v0.0.0";
+#endif // HW_ENABLE_GUI
+
+  // TODO cool version string system
 
   while (is_running_) {
     start = PlatformGetTime();
 
+    window_->Update();
+#ifdef HW_ENABLE_GUI
     graphics::AppInfo info = {
         this->GetProgramName(),
         engine_str,
@@ -62,10 +67,13 @@ void Application::Run() {
         delta + remaining,
     };
 
-    window_->Update();
+    gui.BeginFrame();
     gui.RenderAppWindow(info);
+#endif // HW_ENABLE_GUI
     this->OnRender(delta);
+#ifdef HW_ENABLE_GUI
     gui.EndFrame();
+#endif // HW_ENABLE_GUI
     end = PlatformGetTime();
     delta = end - start;
     remaining = fps_ - delta;

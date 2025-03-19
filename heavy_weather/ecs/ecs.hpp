@@ -1,10 +1,11 @@
 #pragma once
 
 #include "sparse.hpp"
-#include <cassert>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
+
+#include <heavy_weather/core/Asserts.hpp>
 
 #define TYPE_IDX(T) std::type_index(typeid(T))
 
@@ -22,9 +23,10 @@ private:
   std::unordered_map<std::type_index, std::unique_ptr<ISparseSet>> pools_;
 
 public:
+  const auto& Pools() { return pools_; }
   u32 CreateEntity() {
     // TODO: recycle at some point
-    assert(entities_.Count() < kMaxId - 1);
+    HW_ASSERT(entities_.Count() < kMaxId - 1);
     u32 id = NewId();
     entities_.Add(id);
     return id;
@@ -34,7 +36,7 @@ public:
 
   void DestroyEntity(u32 entity) {
     // TODO: recycle at some point
-    assert(entities_.Has(entity));
+    HW_ASSERT(entities_.Has(entity));
     for (auto &p : pools_) {
       if (p.second->Has(entity)) {
         p.second->Remove(entity);
@@ -43,23 +45,20 @@ public:
     entities_.Remove(entity);
   }
 
-  template <typename T>
-  void AddComponent(u32 entity, T &component) {
-    assert(entities_.Has(entity));
+  template <typename T> void AddComponent(u32 entity, T &component) {
+    HW_ASSERT(entities_.Has(entity));
     auto &p = GetOrCreatePool<T>();
     p.Add(entity, component);
   }
 
-  template <typename T>
-  void AddComponent(u32 entity, T &&component) {
-    assert(entities_.Has(entity));
+  template <typename T> void AddComponent(u32 entity, T &&component) {
+    HW_ASSERT(entities_.Has(entity));
     auto &p = GetOrCreatePool<T>();
     p.Add(entity, std::forward<T>(component));
   }
 
-  template <typename T>
-  bool HasComponent(u32 entity) const {
-    assert(entities_.Has(entity));
+  template <typename T> bool HasComponent(u32 entity) const {
+    HW_ASSERT(entities_.Has(entity));
     auto p = pools_.find(TYPE_IDX(T));
     if (p == pools_.end()) {
       return false;
@@ -67,29 +66,35 @@ public:
     return p->second->Has(entity);
   }
 
-  template <typename T>
-  void RemoveComponent(u32 entity) {
-    assert(entities_.Has(entity));
+  template <typename T> void RemoveComponent(u32 entity) {
+    HW_ASSERT(entities_.Has(entity));
     auto p = pools_.find(TYPE_IDX(T));
-    assert((p != pools_.end() && p->second->Has(entity)));
+    HW_ASSERT((p != pools_.end() && p->second->Has(entity)));
     if (p == pools_.end() || !p->second->Has(entity)) {
       return;
     }
     p->second->Remove(entity);
   }
 
-  template <typename T>
-  T &GetComponent(u32 entity) {
-    assert(pools_.find(TYPE_IDX(T)) != pools_.end());
-    auto *pool = static_cast<SparseSet<T> *>(pools_.at(TYPE_IDX(T)).get());
+  template <typename T> T &GetComponent(u32 entity) {
+    HW_ASSERT(pools_.find(TYPE_IDX(T)) != pools_.end());
+    // auto *pool = static_cast<SparseSet<T> *>(pools_.at(TYPE_IDX(T)).get());
+    ISparseSet &s = *pools_.at(TYPE_IDX(T));
+    auto &set = dynamic_cast<SparseSet<T> &>(s);
 
-    return pool->Get(entity);
+    return set.Get(entity);
   }
 
-  template <typename... Ts>
-  std::vector<u32> Query() {
-    u32 min_comps = kMaxId;
-    u32 min_idx{0};
+  template <typename T> T *GetComponentPtr(u32 entity) {
+    HW_ASSERT(pools_.find(TYPE_IDX(T)) != pools_.end());
+    auto *pool = static_cast<SparseSet<T> *>(pools_.at(TYPE_IDX(T)).get());
+
+    return pool->GetPtr(entity);
+  }
+
+  template <typename... Ts> std::vector<u32> Query() {
+    // u32 min_comps = kMaxId;
+    // u32 min_idx{0};
     std::vector<ISparseSet *> required_pools;
     std::vector<u32> result{};
 
@@ -102,14 +107,14 @@ public:
       }
 
       required_pools.push_back(p->second.get());
-      if (p->second->Count() < min_comps) {
-        min_comps = p->second->Count();
-        min_idx = required_pools.size() - 1;
-      }
+      // if (p->second->Count() < min_comps) {
+      //   min_comps = p->second->Count();
+      //   min_idx = required_pools.size() - 1;
+      // }
     }
 
     // Iterate smallest pool and add ID to result if it's in all others
-    ISparseSet *small_pool = required_pools.at(min_idx);
+    ISparseSet *small_pool = required_pools.at(0);
     for (const auto &id : small_pool->GetAllIds()) {
       bool good = true;
       for (auto *p : required_pools) {
@@ -130,16 +135,14 @@ private:
     static u32 s_id = 0;
     return ++s_id;
   }
-  template <typename T>
-  void AddPool() {
-    assert(pools_.find(TYPE_IDX(T)) == pools_.end());
+  template <typename T> void AddPool() {
+    HW_ASSERT(pools_.find(TYPE_IDX(T)) == pools_.end());
     std::unique_ptr<ISparseSet> s =
         std::unique_ptr<ISparseSet>(new SparseSet<T>);
     pools_[TYPE_IDX(T)] = std::move(s);
   }
 
-  template <typename T>
-  SparseSet<T> &GetOrCreatePool() {
+  template <typename T> SparseSet<T> &GetOrCreatePool() {
     if (pools_.find(TYPE_IDX(T)) == pools_.end()) {
       AddPool<T>();
     }
