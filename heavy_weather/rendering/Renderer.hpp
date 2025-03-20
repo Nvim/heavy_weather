@@ -24,6 +24,7 @@ public:
   BuffersComponent CreateBuffers(const MeshDescriptor &desc);
   UniquePtr<Mesh> CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i);
   void Clear(glm::vec4 col) { api_->Clear(col); }
+  void ClearDepth() {api_->ClearDepthBuffer(); }
   // void Submit(Mesh &mesh, glm::mat4 &mvp);
   void Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
               MaterialComponent *material);

@@ -32,7 +32,7 @@ constexpr u16 kWidth = 1280;
 constexpr u16 kHeight = 720;
 
 weather::graphics::RendererInitParams renderer_init{
-    Backend::OpenGL, {kWidth, kHeight}, false, true};
+    Backend::OpenGL, {kWidth, kHeight}, true, true};
 
 weather::graphics::CameraParams camera_params{};
 } // namespace

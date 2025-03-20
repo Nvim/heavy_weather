@@ -8,6 +8,7 @@
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/scene/components/WidgetComponent.hpp"
+#include "heavy_weather/scene/components/NameComponent.hpp"
 #include <cstdio>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -41,6 +42,9 @@ void SceneManager::AddMesh(MeshDescriptor &desc) {
   scene_.AddComponent(mesh, renderer_.CreateBuffers(desc));
   scene_.AddComponent(mesh, MaterialComponent{});
   scene_.AddComponent(mesh, TransformComponent{});
+  if (desc.name) {
+    scene_.AddComponent(mesh, NameComponent{desc.name});
+  }
 
 // create and register a gui widget for the mesh
 #ifdef HW_ENABLE_GUI
@@ -51,6 +55,7 @@ void SceneManager::AddMesh(MeshDescriptor &desc) {
 }
 
 void SceneManager::SubmitAll() {
+  renderer_.ClearDepth();
   auto view = camera_.GetMatrix();
   auto proj = glm::perspective(glm::radians(camera_.Fov()),
                                float(renderer_.ViewPort().first) /
@@ -75,10 +80,14 @@ void SceneManager::SubmitAll() {
     renderer_.Submit(mvp, vbuf, ibuf, &mat);
   }
 
-  char title[12];
+  char title[32];
   auto widgets = scene_.Query<WidgetComponent>();
   for (const auto &e : widgets) {
-    std::sprintf(title, "entity #%u", e);
+    if(scene_.HasComponent<NameComponent>(e)) {
+      std::snprintf(title, 31, "%s", scene_.GetComponent<NameComponent>(e).name);
+    } else {
+      std::sprintf(title, "entity #%u", e);
+    }
     if (Gui::BeginTreeNode(title)) {
       for (auto &fn : scene_.GetComponent<WidgetComponent>(e).funcs) {
         fn(gui_, scene_, e);
