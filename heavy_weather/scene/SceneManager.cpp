@@ -1,74 +1,114 @@
 #include "SceneManager.hpp"
-#include "heavy_weather/rendering/Gui/GuiComponent.hpp"
-#include "heavy_weather/rendering/Gui/IWidget.hpp"
+#include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/event/EntityRemoved.hpp"
+#include "heavy_weather/event/Util.hpp"
+#include "heavy_weather/rendering/BuffersComponent.hpp"
+#include "heavy_weather/rendering/MaterialComponent.hpp"
+#include "heavy_weather/rendering/TransformComponent.hpp"
+#include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/scene/components/WidgetComponent.hpp"
+#include "heavy_weather/scene/components/NameComponent.hpp"
+#include <cstdio>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include <heavy_weather/rendering/Gui/Widgets/MeshWidget.hpp>
+#include <vector>
 
 namespace weather::graphics {
 
-SceneManager::SceneManager(Renderer &renderer, Gui &gui,
+SceneManager::SceneManager(Renderer &renderer,
+#ifdef HW_ENABLE_GUI
+                           Gui &gui,
+#endif
                            CameraParams &camera_params)
-    : camera_{camera_params}, gui_{gui}, renderer_{renderer} {}
+    : camera_{camera_params},
+#ifdef HW_ENABLE_GUI
+      gui_{gui},
+#endif
+      renderer_{renderer} {
+  EventCallback<EntityRemovedEvent> evt =
+      std::bind(&SceneManager::OnEntityRemoved, this, std::placeholders::_1);
+  EventRegister(evt);
+}
 
 void SceneManager::Update(f64 delta) {
   camera_.ProcessInput(delta);
   camera_.Update();
 }
 
-void SceneManager::AddNode(MeshDescriptor &desc) {
-  // construct a mesh using descriptor
-  auto mesh = renderer_.CreateMesh(desc);
-
-  // create and register a gui widget for the mesh
-  GuiComponentDesc &&color_comp_desc = {mesh->Color(), 0.0f, 0.0f, "color",
-                                        nullptr};
-
-  auto *transform = mesh->Transform();
-  auto cb = [transform]() { transform->Touch(); };
-  GuiComponentDesc transform_comp_desc = {mesh->Transform()->Translation(),
-                                          -10.0f, 10.0f, "translation", cb};
-  GuiComponentDesc scale_comp_desc = {mesh->Transform()->Scale(), -10.0f, 10.0f,
-                                      "scale", cb};
-  GuiComponentDesc rotation_comp_desc = {mesh->Transform()->Rotation(), 0.0f,
-                                         360.0f, "rotation", cb};
-
+void SceneManager::AddMesh(MeshDescriptor &desc) {
   // register mesh to scene
-  auto mesh_id = scene_.AddNode(std::move(mesh));
-  auto del_func = [this, mesh_id]() {
-    gui_.RemoveWidget(this->nodetogui_[mesh_id]);
-    this->scene_.DeleteNode(mesh_id);
-    this->nodetogui_.erase(mesh_id);
-  };
-  GuiComponentDesc delete_comp_desc = {nullptr, 0.0f, 0.0f, "delete", del_func};
-  std::unique_ptr<IWidget> p = std::make_unique<MeshWidget>(
-      desc.name, std::move(color_comp_desc), std::move(transform_comp_desc),
-      std::move(scale_comp_desc), std::move(rotation_comp_desc),
-      std::move(delete_comp_desc));
-  auto widget_id = gui_.AddWidget(std::move(p));
+  u32 mesh = scene_.CreateEntity();
+  scene_.AddComponent(mesh, renderer_.CreateBuffers(desc));
+  scene_.AddComponent(mesh, MaterialComponent{});
+  scene_.AddComponent(mesh, TransformComponent{});
+  if (desc.name) {
+    scene_.AddComponent(mesh, NameComponent{desc.name});
+  }
 
-  // save mapping between mesh & it's gui component
-  nodetogui_[mesh_id] = widget_id;
-  HW_CORE_DEBUG("Mapped Node #{} to Widget #{}", mesh_id, widget_id);
+// create and register a gui widget for the mesh
+#ifdef HW_ENABLE_GUI
+  scene_.AddComponent(mesh,
+                      WidgetComponent{std::vector<WidgetFunc>{
+                          TransformControl, MaterialPicker, DeleteButton}});
+#endif
 }
 
 void SceneManager::SubmitAll() {
-  auto beg = scene_.GetBegin();
-  auto end = scene_.GetEnd();
-
+  renderer_.ClearDepth();
   auto view = camera_.GetMatrix();
   auto proj = glm::perspective(glm::radians(camera_.Fov()),
                                float(renderer_.ViewPort().first) /
                                    float(renderer_.ViewPort().second),
                                camera_.Near(), camera_.Far());
 
-  for (auto &elem = beg; beg != end; elem++) {
-    Mesh &m = **elem;
-    m.Transform()->ComputeMatrix();
-    auto mvp = proj * view * m.Transform()->GetMatrix();
-    renderer_.Submit(m, mvp); // TODO: take it by copy when multithreading
+  auto meshes =
+      scene_.Query<TransformComponent, BuffersComponent, MaterialComponent>();
+  HW_ASSERT(scene_.Count() == meshes.size());
+  for (const auto &elem : meshes) {
+    auto &transform = scene_.GetComponent<TransformComponent>(elem);
+    auto &bufs = scene_.GetComponent<BuffersComponent>(elem);
+    auto &mat = scene_.GetComponent<MaterialComponent>(elem);
+    // HW_ASSERT(mat->color == glm::vec4(0.1f, 0.3f, 0.7f, 1.0f));
+
+    transform.ComputeMatrix();
+    auto mvp = proj * view * transform.matrix;
+    Buffer& vbuf = *bufs.vbuffer;
+    Buffer& ibuf = *bufs.ibuffer;
+    HW_ASSERT(vbuf.Type() == BufferType::VertexBuffer);
+    HW_ASSERT(ibuf.Type() == BufferType::IndexBuffer);
+    renderer_.Submit(mvp, vbuf, ibuf, &mat);
   }
-  scene_.GarbageCollect();
+
+  char title[32];
+  auto widgets = scene_.Query<WidgetComponent>();
+  for (const auto &e : widgets) {
+    if(scene_.HasComponent<NameComponent>(e)) {
+      std::snprintf(title, 31, "%s", scene_.GetComponent<NameComponent>(e).name);
+    } else {
+      std::sprintf(title, "entity #%u", e);
+    }
+    if (Gui::BeginTreeNode(title)) {
+      for (auto &fn : scene_.GetComponent<WidgetComponent>(e).funcs) {
+        fn(gui_, scene_, e);
+      }
+      Gui::EndTreeNode();
+    }
+  }
+  GarbageCollect();
+}
+
+void SceneManager::OnEntityRemoved(const EntityRemovedEvent &e) {
+  HW_CORE_INFO("Adding entity {} to removals", e.GetID());
+  removals_.push_back(e.GetID());
+}
+
+void SceneManager::GarbageCollect() {
+  for (auto r : removals_) {
+    HW_CORE_INFO("Removing entity {}", r);
+    scene_.DestroyEntity(r);
+  }
+  removals_.clear();
 }
 
 } // namespace weather::graphics

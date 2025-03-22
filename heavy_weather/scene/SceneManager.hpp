@@ -5,7 +5,9 @@
  * */
 #pragma once
 
-#include "Scene.hpp"
+#include "heavy_weather/ecs/ecs.hpp"
+#include "heavy_weather/event/EntityRemoved.hpp"
+#include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
@@ -15,18 +17,26 @@ namespace weather::graphics {
 
 class SceneManager {
 private:
-  Scene scene_;
+  // Scene scene_;
+  ECS scene_;
   Camera camera_;
+#ifdef HW_ENABLE_GUI
   Gui &gui_;
+#endif
   Renderer &renderer_;
   std::unordered_map<u64, u64> nodetogui_;
+  // TODO: removals should prevent duplicates
+  std::vector<u32> removals_; // Used to delay removals to the end of frame
 
 public:
-  SceneManager(Renderer &renderer, Gui &gui, CameraParams &camera_params);
-  void AddNode(MeshDescriptor &desc);
+  SceneManager(Renderer &renderer,
+#ifdef HW_ENABLE_GUI
+               Gui &gui,
+#endif
+               CameraParams &camera_params);
+  void AddMesh(MeshDescriptor &desc);
   void Update(f64 delta);
   void SubmitAll();
-  void RemoveNode();
 
   // Delete all
   SceneManager(const SceneManager &) = delete;
@@ -34,6 +44,10 @@ public:
   SceneManager &operator=(const SceneManager &) = delete;
   SceneManager &operator=(SceneManager &&) = delete;
   ~SceneManager() = default;
+
+private:
+  void OnEntityRemoved(const EntityRemovedEvent &e);
+  void GarbageCollect();
 };
 
 } // namespace weather::graphics

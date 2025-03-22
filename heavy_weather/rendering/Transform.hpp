@@ -1,8 +1,5 @@
 #pragma once
 
-#include "heavy_weather/core/Logger.hpp"
-#include "heavy_weather/engine.h"
-#include "heavy_weather/rendering/Types.hpp"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_transform.hpp>
 #include <glm/glm.hpp>

@@ -2,6 +2,7 @@
 // #include <glad/glad.h>
 // clang-format on
 #include "Demo.hpp"
+#include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Entry.hpp"
 #include "heavy_weather/core/Input/InputSystem.hpp"
 #include "heavy_weather/core/Input/KeyCodes.hpp"
@@ -31,7 +32,7 @@ constexpr u16 kWidth = 1280;
 constexpr u16 kHeight = 720;
 
 weather::graphics::RendererInitParams renderer_init{
-    Backend::OpenGL, {kWidth, kHeight}, false, true};
+    Backend::OpenGL, {kWidth, kHeight}, true, true};
 
 weather::graphics::CameraParams camera_params{};
 } // namespace
@@ -51,8 +52,16 @@ weather::Application *weather::CreateAppHook() {
 Demo::Demo(WindowProps &window_props, f64 fps,
            graphics::RendererInitParams &render_params)
     : Application(window_props, fps), renderer_{render_params},
+#ifdef HW_ENABLE_GUI
       gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}},
-      scene_manager_{renderer_, gui_, camera_params} //
+#endif
+      scene_manager_{
+          renderer_,
+#ifdef HW_ENABLE_GUI
+          gui_,
+#endif
+          camera_params,
+      } //
 {
   // Event callbacks:
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
@@ -113,9 +122,9 @@ void Demo::InitGraphics() {
   graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
                                     "demo.frag"};
 
-  scene_manager_.AddNode(mesh_desc);
-  scene_manager_.AddNode(mesh_desc2);
-  scene_manager_.AddNode(cube_mesh);
+  scene_manager_.AddMesh(mesh_desc2);
+  scene_manager_.AddMesh(cube_mesh);
+  scene_manager_.AddMesh(mesh_desc);
   pipeline_ = renderer_.CreatePipeline(vsdesc, fsdesc);
 }
 
@@ -127,8 +136,6 @@ void Demo::OnRender(f64 delta) {
   // glUniform1f(loc, time);
   renderer_.Clear(bgcolor_);
   scene_manager_.SubmitAll();
-
-  gui_.Render();
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT
@@ -142,9 +149,9 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   i32 key = evt.KeyCode();
   if (action == GLFW_PRESS) {
     HW_CORE_TRACE("Key {} has been pressed", key);
-    if (weather::InputSystem::IsKeyDown(HW_KEY_O)) {
-      gui_.RemoveWidget(1);
-    }
+    // if (weather::InputSystem::IsKeyDown(HW_KEY_O)) {
+    //   gui_.RemoveWidget(1);
+    // }
   } else {
     HW_CORE_TRACE("Key {} has been released", key);
   }
@@ -158,6 +165,8 @@ void Demo::OnResize(const ResizeEvent &e) {
   renderer_.Resize({e.NewSize().w, e.NewSize().h});
 }
 
+#ifdef HW_ENABLE_GUI
 const graphics::Gui &Demo::GetGui() const { return gui_; }
+#endif
 
 const char *Demo::GetProgramName() const { return kTitle.c_str(); }

@@ -2,19 +2,9 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "heavy_weather/core/Asserts.hpp"
-#include "heavy_weather/core/Logger.hpp"
-#include "heavy_weather/engine.h"
-#include "heavy_weather/event/EventCallback.hpp"
-#include "heavy_weather/event/Util.hpp"
-#include "heavy_weather/event/WidgetCloseEvent.hpp"
-#include "heavy_weather/rendering/Gui/GuiComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "imgui.h"
-#include <algorithm>
-#include <functional>
 #include <glm/glm.hpp>
-
-static int s_count = 0;
 
 namespace weather::graphics {
 
@@ -39,33 +29,21 @@ Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
       ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(m_window_), true),
       "Faild initializing imgui glfw impl");
   HW_ASSERT(ImGui_ImplOpenGL3_Init("#version 330"));
-
-  EventCallback<WidgetCloseEvent> e =
-      std::bind(&Gui::OnRemoveWidget, this, std::placeholders::_1);
-  EventRegister(e);
 }
 
-void Gui::Render() {
-  if(ImGui::Begin("Scene")){
-    for (auto &c : widgets_) {
-      c->Render();
-    }
-    ImGui::End();
-  } 
-  GarbageCollect();
-}
-
-void Gui::RenderAppWindow(AppInfo& info) const {
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-
-  if(ImGui::Begin("Application")){
+void Gui::RenderAppWindow(AppInfo &info) const {
+  if (ImGui::Begin("Application")) {
     ImGui::Text("%s\n%s", info.program_name, info.engine_name);
     ImGui::Separator();
     ImGui::Text("FPS: %5f (%8f ms)", (1.0f / info.fps), info.frametime);
     ImGui::End();
-  } 
+  }
+}
+
+void Gui::BeginFrame() const {
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
 }
 
 void Gui::EndFrame() const {
@@ -73,43 +51,28 @@ void Gui::EndFrame() const {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-u64 Gui::AddWidget(UniquePtr<IWidget> w) {
-  w->SetID(++s_count);
-  widgets_.push_back(std::move(w));
-  HW_CORE_DEBUG("Added Gui widget #{}", s_count);
-  return s_count;
-}
+bool Gui::BeginWindow(const char *title) { return ImGui::Begin(title); }
+void Gui::EndWindow() { ImGui::End(); }
 
-void Gui::GarbageCollect(){
-  for (u64 id : removals_){
-    auto elem = std::find_if(
-      widgets_.begin(), widgets_.end(),
-      [&id](const UniquePtr<IWidget> &c) { return c->GetID() == id; });
-    if (elem != widgets_.end()) {
-      HW_CORE_DEBUG("Removing Gui widget #{}", id);
-      widgets_.erase(elem);
-    } else {
-      HW_CORE_DEBUG("Couldn't remove Gui widget #{}", id);
-    }
-  }
-  removals_.clear();
-}
+bool Gui::BeginTreeNode(const char *title) { return ImGui::TreeNode(title); }
+bool Gui::BeginTreeNode() { return true; }
+void Gui::EndTreeNode() { ImGui::TreePop(); }
 
-void Gui::RemoveWidget(u64 id) {
-  this->removals_.push_back(id);
+bool Gui::DrawButton(const char *name) { return (ImGui::Button(name)); }
+bool Gui::DrawSliderFloat(const char *name, void *data, f32 min, f32 max) {
+  return (ImGui::SliderFloat(name, (f32 *)data, min, max));
 }
-
-void Gui::OnRemoveWidget(const WidgetCloseEvent &e) {
-  u64 id = e.GetID();
-  auto elem = std::find_if(
-      widgets_.begin(), widgets_.end(),
-      [&id](const UniquePtr<IWidget> &c) { return c->GetID() == id; });
-  if (elem != widgets_.end()) {
-    HW_CORE_DEBUG("Removing Gui widget #{}", id);
-    widgets_.erase(elem);
-  } else {
-    HW_CORE_DEBUG("Couldn't remove Gui widget #{}", id);
-  }
+bool Gui::DrawSliderFloat2(const char *name, void *data, f32 min, f32 max) {
+  return (ImGui::SliderFloat2(name, (f32 *)data, min, max));
+}
+bool Gui::DrawSliderFloat3(const char *name, void *data, f32 min, f32 max) {
+  return (ImGui::SliderFloat3(name, (f32 *)data, min, max));
+}
+bool Gui::DrawSliderFloat4(const char *name, void *data, f32 min, f32 max) {
+  return (ImGui::SliderFloat4(name, (f32 *)data, min, max));
+}
+bool Gui::DrawColorEdit4(const char *name, void *data) {
+  return (ImGui::ColorEdit4(name, (f32 *)data));
 }
 
 Gui::~Gui() {

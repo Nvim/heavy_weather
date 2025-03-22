@@ -18,7 +18,9 @@ public:
   Demo(weather::WindowProps &window_props, f64 fps,
        weather::graphics::RendererInitParams &render_params);
   ~Demo() override;
+#ifdef HW_ENABLE_GUI
   const weather::graphics::Gui &GetGui() const override;
+#endif
   const char *GetProgramName() const override;
 
 private:
@@ -33,7 +35,9 @@ private:
   EventCallback<MouseMovedEvent> mouse_callback_;
   UniquePtr<weather::graphics::Pipeline> pipeline_{nullptr};
   weather::graphics::Renderer renderer_;
+#ifdef HW_ENABLE_GUI
   weather::graphics::Gui gui_;
+#endif
   weather::graphics::SceneManager scene_manager_;
   glm::vec4 bgcolor_{0.15f, 0.15f, 0.15f, 1.0f};
 };

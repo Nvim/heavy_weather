@@ -1,9 +1,8 @@
 #pragma once
 
-#include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Buffer.hpp"
-#include "heavy_weather/rendering/Material.hpp"
+#include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/Transform.hpp"
 
 namespace weather::graphics {
@@ -11,12 +10,12 @@ namespace weather::graphics {
 class Mesh {
 public:
   Mesh(UniquePtr<Buffer> vbuf, UniquePtr<Buffer> ibuf)
-      : vbuffer_(std::move(vbuf)), ibuffer_(std::move(ibuf)){};
+      : vbuffer_(std::move(vbuf)), ibuffer_(std::move(ibuf)) {};
 
   const Buffer &VertexBuffer() const { return *vbuffer_; }
   const Buffer &IndexBuffer() const { return *ibuffer_; }
-  void *Color() { return material_.Get(); }
-  Material &Material() { return material_; }
+  void *Color() { return &material_.color; }
+  MaterialComponent &Material() { return material_; }
   Transform *Transform() { return &transform_; }
   u64 GetID() const { return id_; }
   void SetID(u64 id) { id_ = id; }
@@ -24,7 +23,7 @@ public:
 private:
   UniquePtr<Buffer> vbuffer_;
   UniquePtr<Buffer> ibuffer_;
-  struct Material material_;
+  struct MaterialComponent material_;
   struct Transform transform_;
   u64 id_{};
 };

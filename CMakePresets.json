@@ -60,5 +60,22 @@
       "inherits": "release",
       "cleanFirst": true
     }
+  ],
+  "testPresets": [
+    {
+      "name": "all",
+      "displayName": "All Tests",
+      "configurePreset": "debug-ninja",
+      "environment": {
+        "GTEST_COLOR": "1"
+      },
+      "output": {
+        "outputOnFailure": true,
+        "shortProgress": true
+      },
+      "execution": {
+        "jobs": 8
+      }
+    }
   ]
 }

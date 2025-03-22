@@ -1,6 +1,7 @@
 include(spdlog.cmake)
 include(glad.cmake)
 include(imgui.cmake)
+include(googletest.cmake)
 
 set(BUILD_GLFW
     OFF
