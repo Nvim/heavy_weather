@@ -3,7 +3,7 @@
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/event/Util.hpp"
-#include "heavy_weather/rendering/BuffersComponent.hpp"
+#include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
@@ -88,11 +88,11 @@ void SceneManager::SubmitAll() {
                                camera_.Near(), camera_.Far());
 
   auto meshes =
-      scene_.Query<TransformComponent, BuffersComponent, MaterialComponent>();
+      scene_.Query<TransformComponent, GeometryComponent, MaterialComponent>();
   HW_ASSERT(scene_.Count() == meshes.size());
   for (const auto &elem : meshes) {
     auto &transform = scene_.GetComponent<TransformComponent>(elem);
-    auto &bufs = scene_.GetComponent<BuffersComponent>(elem);
+    auto &bufs = scene_.GetComponent<GeometryComponent>(elem);
     auto &mat = scene_.GetComponent<MaterialComponent>(elem);
     HW_ASSERT(mat.material->GetShader() != nullptr);
 

@@ -8,22 +8,22 @@
 namespace weather::graphics {
 
 // Vertex Buffer + Index Buffer combo for rendering:
-struct BuffersComponent {
+struct GeometryComponent {
   UniquePtr<Buffer> vbuffer;
   UniquePtr<Buffer> ibuffer;
 
-  BuffersComponent(UniquePtr<Buffer> vbuffer, UniquePtr<Buffer> ibuffer)
+  GeometryComponent(UniquePtr<Buffer> vbuffer, UniquePtr<Buffer> ibuffer)
       : vbuffer(std::move(vbuffer)), ibuffer(std::move(ibuffer)) {}
-  BuffersComponent(BuffersComponent &&other) noexcept
+  GeometryComponent(GeometryComponent &&other) noexcept
       : vbuffer(std::move(other.vbuffer)), ibuffer(std::move(other.ibuffer)) {
-    HW_CORE_INFO("BuffersComponent Move constructor");
+    HW_CORE_INFO("GeometryComponent Move constructor");
     HW_ASSERT(this->ibuffer->GetSize() > 0);
     HW_ASSERT(this->ibuffer->Type() == BufferType::IndexBuffer);
     HW_ASSERT(this->vbuffer->GetSize() > 0);
     HW_ASSERT(this->vbuffer->Type() == BufferType::VertexBuffer);
   }
 
-  BuffersComponent &operator=(BuffersComponent && other)  noexcept {
+  GeometryComponent &operator=(GeometryComponent &&other) noexcept {
     if (this != &other) {
       // Take resources from 'other' and make them ours
       this->vbuffer = std::move(other).vbuffer;
@@ -32,8 +32,8 @@ struct BuffersComponent {
     return *this;
   }
 
-  BuffersComponent(const BuffersComponent &) = delete;
-  BuffersComponent &operator=(const BuffersComponent &) = delete;
+  GeometryComponent(const GeometryComponent &) = delete;
+  GeometryComponent &operator=(const GeometryComponent &) = delete;
 };
 
 } // namespace weather::graphics

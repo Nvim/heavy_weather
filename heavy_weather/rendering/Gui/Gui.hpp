@@ -24,7 +24,7 @@ class Gui {
 public:
   Gui(GuiDesc desc);
   // TODO: these should be private and App should be friend
-  void RenderAppWindow(AppInfo &info) const;
+  void RenderAppWindow(AppInfo &info, void *window) const;
   void BeginFrame() const;
   void EndFrame() const;
 

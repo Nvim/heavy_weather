@@ -4,7 +4,7 @@
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Backend/GL/GLAPI.hpp"
 #include "heavy_weather/rendering/BackendApi.hpp"
-#include "heavy_weather/rendering/BuffersComponent.hpp"
+#include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/glm.hpp>
@@ -21,7 +21,7 @@ public:
                          params.depth_test, params.debug_mode));
   };
 
-  BuffersComponent CreateBuffers(const MeshDescriptor &desc);
+  GeometryComponent CreateBuffers(const MeshDescriptor &desc);
   // UniquePtr<Mesh> CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i);
   void Clear(glm::vec4 col) { api_->Clear(col); }
   void ClearDepth() { api_->ClearDepthBuffer(); }

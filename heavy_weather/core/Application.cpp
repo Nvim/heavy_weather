@@ -68,7 +68,7 @@ void Application::Run() {
     };
 
     gui.BeginFrame();
-    gui.RenderAppWindow(info);
+    gui.RenderAppWindow(info, (void *)&this->GetWindow());
 #endif // HW_ENABLE_GUI
     this->OnRender(delta);
 #ifdef HW_ENABLE_GUI

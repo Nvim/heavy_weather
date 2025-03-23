@@ -1,7 +1,11 @@
 #include "Gui.hpp"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "heavy_weather/core/Application.hpp"
 #include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Window.hpp"
+#include "heavy_weather/event/Util.hpp"
+#include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "imgui.h"
 #include <glm/glm.hpp>
@@ -31,11 +35,14 @@ Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
   HW_ASSERT(ImGui_ImplOpenGL3_Init("#version 330"));
 }
 
-void Gui::RenderAppWindow(AppInfo &info) const {
+void Gui::RenderAppWindow(AppInfo &info, void *window) const {
   if (ImGui::Begin("Application")) {
     ImGui::Text("%s\n%s", info.program_name, info.engine_name);
     ImGui::Separator();
     ImGui::Text("FPS: %5f (%8f ms)", (1.0f / info.fps), info.frametime);
+    if (ImGui::Button("Exit")) {
+      EventDispatch(weather::WindowCloseEvent{window});
+    }
     ImGui::End();
   }
 }

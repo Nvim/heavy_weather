@@ -2,7 +2,7 @@
 
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
-#include "heavy_weather/rendering/BuffersComponent.hpp"
+#include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/ShaderProgram.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
@@ -10,7 +10,7 @@
 
 namespace weather::graphics {
 
-BuffersComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
+GeometryComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
   u32 *indices = desc.indices.first;
   u64 indices_sz = desc.indices.second;
   void *verts = desc.vertices.first;
@@ -24,8 +24,8 @@ BuffersComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
   BufferDescriptor idesc{indices_sz, index_count, BufferType::IndexBuffer,
                          nullptr};
 
-  return BuffersComponent{api_->CreateBuffer(vdesc, verts),
-                          api_->CreateBuffer(idesc, indices)};
+  return GeometryComponent{api_->CreateBuffer(vdesc, verts),
+                           api_->CreateBuffer(idesc, indices)};
 }
 
 void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
