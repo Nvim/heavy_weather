@@ -33,6 +33,11 @@ static inline u32 FormatTOGL(DataFormat format) {
   return 0;
 }
 
+static inline void BindUniform1i(int loc, void *data) {
+  auto d = *static_cast<i32 *>(data);
+  glUniform1i(loc, d);
+}
+
 static inline void BindUniform1f(int loc, void *data) {
   auto d = *static_cast<float *>(data);
   glUniform1f(loc, d);

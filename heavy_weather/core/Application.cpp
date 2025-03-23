@@ -10,8 +10,8 @@
 #include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include <heavy_weather/rendering/Backend/GL/GLAPI.hpp>
-#include <heavy_weather/rendering/Pipeline.hpp>
 #include <heavy_weather/rendering/Shader.hpp>
+#include <heavy_weather/rendering/ShaderProgram.hpp>
 #include <heavy_weather/rendering/Types.hpp>
 
 namespace weather {

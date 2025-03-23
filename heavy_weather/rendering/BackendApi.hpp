@@ -20,12 +20,12 @@ public:
   /* Resource creation: */
   virtual UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) = 0;
   virtual UniquePtr<Shader> CreateShader(ShaderDescriptor desc) = 0;
-  virtual UniquePtr<Pipeline> CreatePipeline(PipelineDescriptor &desc) = 0;
+  virtual SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) = 0;
 
   /* Resouce binding: */
   virtual void BindBuffer(const Buffer &buf) = 0;
-  virtual void UsePipeline(Pipeline &pipeline) = 0;
-  virtual void BindUniform(UniformDescriptor &desc) = 0;
+  virtual void UsePipeline(ShaderProgram &pipeline) = 0;
+  // virtual void BindUniform(UniformDescriptor &desc) = 0;
 
   // Draw Call using previously bound resources:
   // TODO: Clear as a single method, buffer common interface abstraction
@@ -36,7 +36,7 @@ public:
 
   /* Misc: */
   virtual void Resize(std::pair<u16, u16> new_sz) = 0;
-  virtual std::pair<u16, u16>ViewPort() const = 0;
+  virtual std::pair<u16, u16> ViewPort() const = 0;
 
   //
   BackendAPI(const BackendAPI &) = default;

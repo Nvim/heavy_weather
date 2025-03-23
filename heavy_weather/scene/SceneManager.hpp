@@ -13,6 +13,8 @@
 #include "heavy_weather/rendering/Types.hpp"
 #include <unordered_map>
 
+#define NEW_ENTITY 0
+
 namespace weather::graphics {
 
 class SceneManager {
@@ -34,7 +36,8 @@ public:
                Gui &gui,
 #endif
                CameraParams &camera_params);
-  void AddMesh(MeshDescriptor &desc);
+  u32 AddMesh(MeshDescriptor &desc, u32 entity);
+  u32 AddMaterial(SharedPtr<Material> desc, u32 entity);
   void Update(f64 delta);
   void SubmitAll();
 

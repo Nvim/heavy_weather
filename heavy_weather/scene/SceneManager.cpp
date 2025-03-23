@@ -7,8 +7,8 @@
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
-#include "heavy_weather/scene/components/WidgetComponent.hpp"
 #include "heavy_weather/scene/components/NameComponent.hpp"
+#include "heavy_weather/scene/components/WidgetComponent.hpp"
 #include <cstdio>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -36,11 +36,16 @@ void SceneManager::Update(f64 delta) {
   camera_.Update();
 }
 
-void SceneManager::AddMesh(MeshDescriptor &desc) {
+u32 SceneManager::AddMesh(MeshDescriptor &desc, u32 entity) {
   // register mesh to scene
-  u32 mesh = scene_.CreateEntity();
+  u32 mesh{};
+  if (entity == NEW_ENTITY) {
+    mesh = scene_.CreateEntity();
+  } else {
+    mesh = entity;
+  }
   scene_.AddComponent(mesh, renderer_.CreateBuffers(desc));
-  scene_.AddComponent(mesh, MaterialComponent{});
+  // scene_.AddComponent(mesh, MaterialComponent{});
   scene_.AddComponent(mesh, TransformComponent{});
   if (desc.name) {
     scene_.AddComponent(mesh, NameComponent{desc.name});
@@ -50,8 +55,28 @@ void SceneManager::AddMesh(MeshDescriptor &desc) {
 #ifdef HW_ENABLE_GUI
   scene_.AddComponent(mesh,
                       WidgetComponent{std::vector<WidgetFunc>{
-                          TransformControl, MaterialPicker, DeleteButton}});
+                          TransformControl, MaterialEditor, DeleteButton}});
 #endif
+
+  return mesh;
+}
+
+u32 SceneManager::AddMaterial(SharedPtr<Material> desc, u32 entity) {
+  u32 e{};
+  if (entity == NEW_ENTITY) {
+    e = scene_.CreateEntity();
+  } else {
+    e = entity;
+  }
+
+  if (scene_.HasComponent<MaterialComponent>(e)) {
+    auto m = scene_.GetComponent<MaterialComponent>(e);
+    m.material = desc;
+  } else {
+    scene_.AddComponent(e, MaterialComponent{desc});
+  }
+
+  return e;
 }
 
 void SceneManager::SubmitAll() {
@@ -69,22 +94,23 @@ void SceneManager::SubmitAll() {
     auto &transform = scene_.GetComponent<TransformComponent>(elem);
     auto &bufs = scene_.GetComponent<BuffersComponent>(elem);
     auto &mat = scene_.GetComponent<MaterialComponent>(elem);
-    // HW_ASSERT(mat->color == glm::vec4(0.1f, 0.3f, 0.7f, 1.0f));
+    HW_ASSERT(mat.material->GetShader() != nullptr);
 
     transform.ComputeMatrix();
     auto mvp = proj * view * transform.matrix;
-    Buffer& vbuf = *bufs.vbuffer;
-    Buffer& ibuf = *bufs.ibuffer;
+    Buffer &vbuf = *bufs.vbuffer;
+    Buffer &ibuf = *bufs.ibuffer;
     HW_ASSERT(vbuf.Type() == BufferType::VertexBuffer);
     HW_ASSERT(ibuf.Type() == BufferType::IndexBuffer);
-    renderer_.Submit(mvp, vbuf, ibuf, &mat);
+    renderer_.Submit(mvp, vbuf, ibuf, *mat.material.get());
   }
 
   char title[32];
   auto widgets = scene_.Query<WidgetComponent>();
   for (const auto &e : widgets) {
-    if(scene_.HasComponent<NameComponent>(e)) {
-      std::snprintf(title, 31, "%s", scene_.GetComponent<NameComponent>(e).name);
+    if (scene_.HasComponent<NameComponent>(e)) {
+      std::snprintf(title, 31, "%s",
+                    scene_.GetComponent<NameComponent>(e).name);
     } else {
       std::sprintf(title, "entity #%u", e);
     }

@@ -7,7 +7,7 @@
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
-#include "heavy_weather/rendering/Backend/GL/GLPipeline.hpp"
+#include "heavy_weather/rendering/Backend/GL/GLShaderProgram.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glad/glad.h>
@@ -17,9 +17,8 @@
 namespace weather::graphics {
 
 // TODO: Configurable Init
-GLBackendAPI::GLBackendAPI(u16 w, u16 h, bool depth, bool debug) :
-  config_{w, h, depth, debug, 0, 0}
-{ //
+GLBackendAPI::GLBackendAPI(u16 w, u16 h, bool depth, bool debug)
+    : config_{w, h, depth, debug, 0, 0} { //
   PlatformLoadBackend(Backend::OpenGL);
 
   i32 flags; // NOLINT
@@ -111,9 +110,11 @@ UniquePtr<Shader> GLBackendAPI::CreateShader(ShaderDescriptor desc) {
   return ptr;
 }
 
-UniquePtr<Pipeline> GLBackendAPI::CreatePipeline(PipelineDescriptor &desc) {
-  UniquePtr<Pipeline> pipeline = nullptr;
-  pipeline = std::unique_ptr<Pipeline>(new GLPipeline(desc));
+SharedPtr<ShaderProgram>
+GLBackendAPI::CreatePipeline(PipelineDescriptor &desc) {
+  SharedPtr<ShaderProgram> pipeline = nullptr;
+  pipeline = std::shared_ptr<ShaderProgram>(new GLShaderProgram(desc));
+  HW_ASSERT(pipeline != nullptr);
 
   ShaderCompileStatus status = pipeline->Init();
   if (status != ShaderCompileStatus::Success) {
@@ -150,36 +151,17 @@ void GLBackendAPI::BindBuffer(const Buffer &buf) {
   }
 }
 
-void GLBackendAPI::UsePipeline(Pipeline &pipeline) {
-  auto &glpipeline = dynamic_cast<GLPipeline &>(pipeline);
+void GLBackendAPI::UsePipeline(ShaderProgram &pipeline) {
+  auto &glpipeline = dynamic_cast<GLShaderProgram &>(pipeline);
   if (glpipeline.Status() != ShaderCompileStatus::Success) {
     HW_CORE_ERROR("Can't bind uninitialized pipeline");
     return;
   }
+  if (state_.program == pipeline.Handle()) {
+    return;
+  }
   glUseProgram(glpipeline.Handle());
   state_.program = pipeline.Handle();
-}
-
-void GLBackendAPI::BindUniform(UniformDescriptor &desc) {
-  int loc = glGetUniformLocation(state_.program, desc.name);
-  // clang-format off
-  switch (desc.format) {
-    case DataFormat::Float:
-    BindUniform1f(loc, desc.data); break;
-  case DataFormat::Float2:
-    BindUniform2f(loc, desc.data); break;
-  case DataFormat::Float3:
-    BindUniform3f(loc, desc.data); break;
-  case DataFormat::Float4:
-    BindUniform4f(loc, desc.data); break;
-  case DataFormat::Mat3:
-    BindUniformMat3f(loc, desc.data); break;
-  case DataFormat::Mat4:
-    BindUniformMat4f(loc, desc.data); break;
-  default:
-    HW_CORE_ERROR("Couldn't bind uniform for data type");
-  }
-  // clang-format on
 }
 
 void GLBackendAPI::Clear(glm::vec4 col) const {

@@ -23,7 +23,7 @@ struct PipelineDescriptor; // Vertex and fragment shader to use
 class VertexLayout;        // Vector of attributes (name, format, size)
 class Buffer;
 class Shader;
-class Pipeline;
+class ShaderProgram;
 
 enum class DataFormat : u8 {
   Int,

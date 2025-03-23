@@ -4,18 +4,21 @@
 #include "Demo.hpp"
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Entry.hpp"
-#include "heavy_weather/core/Input/InputSystem.hpp"
-#include "heavy_weather/core/Input/KeyCodes.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
+#include "heavy_weather/rendering/Material.hpp"
+#include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/scene/SceneManager.hpp"
 #include <functional>
+#include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
+#include <vector>
 
 // Shortcut for registering events
 #define BIND_EVENT_FUNC(func) std::bind(func, this, std::placeholders::_1)
@@ -35,6 +38,7 @@ weather::graphics::RendererInitParams renderer_init{
     Backend::OpenGL, {kWidth, kHeight}, true, true};
 
 weather::graphics::CameraParams camera_params{};
+
 } // namespace
 
 using namespace weather;
@@ -102,7 +106,6 @@ void Demo::InitGraphics() {
   // Buffers:
   graphics::VertexLayout layout{};
   layout.AddAttribute({"position", graphics::DataFormat::Float3});
-  // layout.AddAttribute({"color", graphics::DataFormat::Float4});
 
   graphics::MeshDescriptor mesh_desc{std::pair(vertices_1, sizeof(vertices_1)),
                                      std::pair(indices, sizeof(indices)),
@@ -121,19 +124,38 @@ void Demo::InitGraphics() {
                                     "demo.vert"};
   graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
                                     "demo.frag"};
+  graphics::ShaderDescriptor fade_fsdesc{graphics::ShaderType::FragmentShader,
+                                         "demo_fade.frag"};
 
-  scene_manager_.AddMesh(mesh_desc2);
-  scene_manager_.AddMesh(cube_mesh);
-  scene_manager_.AddMesh(mesh_desc);
-  pipeline_ = renderer_.CreatePipeline(vsdesc, fsdesc);
+  auto shader = renderer_.CreatePipeline(vsdesc, fsdesc);
+  auto fade_shader = renderer_.CreatePipeline(vsdesc, fade_fsdesc);
+
+  // Materials:
+  std::string name = "iMaterial";
+  std::string flag_name = "flag";
+  auto blue_material = std::make_shared<graphics::Material>(shader);
+  auto red_material = std::make_shared<graphics::Material>(fade_shader);
+  auto green_material = std::make_shared<graphics::Material>(shader);
+
+  blue_material->SetUniformValue<glm::vec4>(name,
+                                            glm::vec4{0.1f, 0.2f, 0.8f, 1.0f});
+  red_material->SetUniformValue<glm::vec4>(name,
+                                           glm::vec4{0.8f, 0.1f, 0.1f, 1.0f});
+  red_material->SetUniformValue<i32>(flag_name, 1);
+  green_material->SetUniformValue<glm::vec4>(name,
+                                             glm::vec4{0.1f, 0.8f, 0.2f, 1.0f});
+
+  u32 m1 = scene_manager_.AddMesh(mesh_desc2, NEW_ENTITY);
+  u32 m2 = scene_manager_.AddMesh(cube_mesh, NEW_ENTITY);
+  u32 m3 = scene_manager_.AddMesh(mesh_desc, NEW_ENTITY);
+
+  scene_manager_.AddMaterial(blue_material, m1);
+  scene_manager_.AddMaterial(red_material, m2);
+  scene_manager_.AddMaterial(green_material, m3);
 }
 
 void Demo::OnRender(f64 delta) {
   scene_manager_.Update(delta);
-  // auto time = PlatformGetTime();
-  renderer_.UsePipeline(*pipeline_);
-  // int loc = glGetUniformLocation(pipeline_->Handle(), "iGlobalTime");
-  // glUniform1f(loc, time);
   renderer_.Clear(bgcolor_);
   scene_manager_.SubmitAll();
 }

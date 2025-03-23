@@ -41,6 +41,12 @@ public:
   static bool DrawSliderFloat3(const char *name, void *data, f32 min, f32 max);
   static bool DrawSliderFloat4(const char *name, void *data, f32 min, f32 max);
   static bool DrawColorEdit4(const char *name, void *data);
+  static bool DrawInputFloat(const char *name, void *data);
+  static bool DrawInputFloat2(const char *name, void *data);
+  static bool DrawInputFloat3(const char *name, void *data);
+  static bool DrawInputFloat4(const char *name, void *data);
+  static bool DrawScalarInt(const char *name, void *data, i32 step);
+  static bool DrawScalarFloat(const char *name, void *data, f32 step);
 
   ~Gui();
   ImGuiIO *GetIO();

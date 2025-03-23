@@ -75,6 +75,25 @@ bool Gui::DrawColorEdit4(const char *name, void *data) {
   return (ImGui::ColorEdit4(name, (f32 *)data));
 }
 
+bool Gui::DrawInputFloat(const char *name, void *data) {
+  return (ImGui::InputFloat(name, (f32 *)data));
+}
+bool Gui::DrawInputFloat2(const char *name, void *data) {
+  return (ImGui::InputFloat2(name, (f32 *)data));
+}
+bool Gui::DrawInputFloat3(const char *name, void *data) {
+  return (ImGui::InputFloat3(name, (f32 *)data));
+}
+bool Gui::DrawInputFloat4(const char *name, void *data) {
+  return (ImGui::InputFloat4(name, (f32 *)data));
+}
+bool Gui::DrawScalarInt(const char *name, void *data, i32 step) {
+  return (ImGui::InputScalar(name, ImGuiDataType_S32, data, &step));
+}
+bool Gui::DrawScalarFloat(const char *name, void *data, f32 step) {
+  return (ImGui::InputScalar(name, ImGuiDataType_Float, data, &step));
+}
+
 Gui::~Gui() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();

@@ -6,7 +6,6 @@
 #include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
-#include "heavy_weather/rendering/Pipeline.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
 
@@ -33,7 +32,6 @@ private:
 
   //
   EventCallback<MouseMovedEvent> mouse_callback_;
-  UniquePtr<weather::graphics::Pipeline> pipeline_{nullptr};
   weather::graphics::Renderer renderer_;
 #ifdef HW_ENABLE_GUI
   weather::graphics::Gui gui_;

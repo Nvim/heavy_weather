@@ -5,7 +5,7 @@
 #include "heavy_weather/rendering/Backend/GL/GLAPI.hpp"
 #include "heavy_weather/rendering/BackendApi.hpp"
 #include "heavy_weather/rendering/BuffersComponent.hpp"
-#include "heavy_weather/rendering/Mesh.hpp"
+#include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/glm.hpp>
 
@@ -22,15 +22,15 @@ public:
   };
 
   BuffersComponent CreateBuffers(const MeshDescriptor &desc);
-  UniquePtr<Mesh> CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i);
+  // UniquePtr<Mesh> CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i);
   void Clear(glm::vec4 col) { api_->Clear(col); }
-  void ClearDepth() {api_->ClearDepthBuffer(); }
+  void ClearDepth() { api_->ClearDepthBuffer(); }
   // void Submit(Mesh &mesh, glm::mat4 &mvp);
   void Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
-              MaterialComponent *material);
-  UniquePtr<Pipeline> CreatePipeline(ShaderDescriptor vsdesc,
-                                     ShaderDescriptor fsdesc);
-  void UsePipeline(Pipeline &pipeline);
+              Material &material);
+  SharedPtr<ShaderProgram> CreatePipeline(ShaderDescriptor vsdesc,
+                                          ShaderDescriptor fsdesc);
+  void UsePipeline(ShaderProgram &pipeline);
   void Resize(std::pair<u16, u16> new_sz) { api_->Resize(new_sz); }
 
   std::pair<u16, u16> ViewPort() const { return api_->ViewPort(); }

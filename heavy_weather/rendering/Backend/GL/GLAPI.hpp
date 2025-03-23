@@ -32,11 +32,11 @@ public:
 
   UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) override;
   UniquePtr<Shader> CreateShader(ShaderDescriptor desc) override;
-  UniquePtr<Pipeline> CreatePipeline(PipelineDescriptor &desc) override;
+  SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
 
   void BindBuffer(const Buffer &buf) override;
-  void UsePipeline(Pipeline &pipeline) override;
-  void BindUniform(UniformDescriptor &desc) override;
+  void UsePipeline(ShaderProgram &pipeline) override;
+  // void BindUniform(UniformDescriptor &desc) override;
   void Render() override;
   void RenderIndexed(u64 count) override;
   void Clear(glm::vec4 col) const override;

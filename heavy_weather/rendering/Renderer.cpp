@@ -1,8 +1,9 @@
 #include "Renderer.hpp"
 
 #include "heavy_weather/engine.h"
+#include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/BuffersComponent.hpp"
-#include "heavy_weather/rendering/Pipeline.hpp"
+#include "heavy_weather/rendering/ShaderProgram.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <utility>
@@ -27,38 +28,35 @@ BuffersComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
                           api_->CreateBuffer(idesc, indices)};
 }
 
-UniquePtr<Mesh> Renderer::CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i) {
-  return std::make_unique<Mesh>(std::move(v), std::move(i));
-}
-
-// void Renderer::Submit(Mesh &mesh, glm::mat4 &mvp) {
-//   auto uniform_desc = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
-//   api_->BindUniform(uniform_desc);
-//   api_->BindUniform(mesh.Material().uniform);
-//   api_->BindBuffer(mesh.VertexBuffer());
-//   api_->BindBuffer(mesh.IndexBuffer());
-//   api_->RenderIndexed(mesh.IndexBuffer().GetCount());
-// }
-//
 void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
-                      MaterialComponent *material) {
-  auto uniform_desc = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
-  api_->BindUniform(uniform_desc);
-  UniformDescriptor mat{"iMaterial", DataFormat::Float4, &material->color};
-  api_->BindUniform(mat);
+                      Material &material) {
+  auto shader = material.GetShader();
+  UsePipeline(*shader);
+
+  f32 time = PlatformGetTime();
+  auto mvp_uniform = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
+  auto time_uniform =
+      UniformDescriptor{"iGlobalTime", DataFormat::Float, &time};
+  shader->BindUniform(time_uniform);
+  shader->BindUniform(mvp_uniform);
+
+  material.BindUniforms();
+
   api_->BindBuffer(vbuf);
   api_->BindBuffer(ibuf);
   api_->RenderIndexed(ibuf.GetCount());
 }
 
-UniquePtr<Pipeline> Renderer::CreatePipeline(ShaderDescriptor vsdesc,
-                                             ShaderDescriptor fsdesc) {
+SharedPtr<ShaderProgram> Renderer::CreatePipeline(ShaderDescriptor vsdesc,
+                                                  ShaderDescriptor fsdesc) {
   UniquePtr<graphics::Shader> vs = api_->CreateShader(std::move(vsdesc));
   UniquePtr<graphics::Shader> fs = api_->CreateShader(std::move(fsdesc));
   graphics::PipelineDescriptor pdesc = {std::move(vs), std::move(fs)};
-  return std::unique_ptr<Pipeline>(api_->CreatePipeline(pdesc));
+  return std::shared_ptr<ShaderProgram>(api_->CreatePipeline(pdesc));
 }
 
-void Renderer::UsePipeline(Pipeline &pipeline) { api_->UsePipeline(pipeline); }
+void Renderer::UsePipeline(ShaderProgram &pipeline) {
+  api_->UsePipeline(pipeline);
+}
 
 } // namespace weather::graphics

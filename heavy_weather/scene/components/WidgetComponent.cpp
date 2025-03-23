@@ -6,6 +6,7 @@
 
 namespace weather::graphics {
 void TransformControl(Gui &gui, ECS &scene, u32 entity) {
+  (void)gui;
   auto *tr = scene.GetComponentPtr<TransformComponent>(entity);
 
   if (Gui::BeginTreeNode("Transform")) {
@@ -22,19 +23,42 @@ void TransformControl(Gui &gui, ECS &scene, u32 entity) {
   }
 }
 
-void MaterialPicker(Gui &gui, ECS &scene, u32 entity) {
-  if (Gui::BeginTreeNode("Material")) {
-    Gui::DrawColorEdit4(
-        "color", &scene.GetComponentPtr<MaterialComponent>(entity)->color);
-    Gui::EndTreeNode();
-  }
-}
-
 void DeleteButton(Gui &gui, ECS &scene, u32 entity) {
+  (void)gui;
+  (void)scene;
   if (Gui::DrawButton("delete")) {
     EventDispatch(EntityRemovedEvent{entity});
     // scene.DestroyEntity(entity);
   }
 }
+
+#define GUI_PICKER(type, imgui_func)                                           \
+  for (auto it = m.material->GetRange<type>().first;                           \
+       it != m.material->GetRange<type>().second; it++) {                      \
+    imgui_func(it->first.c_str(), (f32 *)&it->second);                         \
+  }
+
+void MaterialEditor(Gui &gui, ECS &scene, u32 entity) {
+  (void)gui;
+  if (Gui::BeginTreeNode("Material")) {
+    auto m = scene.GetComponent<MaterialComponent>(entity);
+    for (auto it = m.material->GetRange<i32>().first;
+         it != m.material->GetRange<i32>().second; it++) {
+      Gui::DrawScalarInt(it->first.c_str(), &it->second, 1);
+    }
+    for (auto it = m.material->GetRange<f32>().first;
+         it != m.material->GetRange<f32>().second; it++) {
+      Gui::DrawScalarFloat(it->first.c_str(), &it->second, 1.0f);
+    }
+    GUI_PICKER(glm::vec2, Gui::DrawInputFloat2)
+    GUI_PICKER(glm::vec3, Gui::DrawInputFloat3)
+    GUI_PICKER(glm::vec4, Gui::DrawInputFloat4)
+    // TODO: Matrix Editor
+    // GUI_PICKER(glm::mat3, ImGui::InputFloat2)
+    // GUI_PICKER(glm::mat4, ImGui::InputFloat2)
+    Gui::EndTreeNode();
+  }
+}
+#undef GUI_PICKER
 
 } // namespace weather::graphics

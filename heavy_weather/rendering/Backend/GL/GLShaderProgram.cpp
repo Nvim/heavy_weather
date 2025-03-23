@@ -1,4 +1,4 @@
-#include "GLPipeline.hpp"
+#include "GLShaderProgram.hpp"
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLShader.hpp"
@@ -7,7 +7,7 @@
 
 namespace weather::graphics {
 
-ShaderCompileStatus GLPipeline::Init() {
+ShaderCompileStatus GLShaderProgram::Init() {
   HW_ASSERT(status_ == ShaderCompileStatus::NotCompiled);
 
   auto *vert = dynamic_cast<GLShader *>(vertex_.get());
@@ -32,4 +32,29 @@ ShaderCompileStatus GLPipeline::Init() {
   status_ = ShaderCompileStatus::Success;
   return status_;
 }
+
+void GLShaderProgram::BindUniform(UniformDescriptor &desc) {
+  int loc = glGetUniformLocation(handle_, desc.name);
+  // clang-format off
+  switch (desc.format) {
+  case DataFormat::Int:
+    BindUniform1i(loc, desc.data); break;
+  case DataFormat::Float:
+    BindUniform1f(loc, desc.data); break;
+  case DataFormat::Float2:
+    BindUniform2f(loc, desc.data); break;
+  case DataFormat::Float3:
+    BindUniform3f(loc, desc.data); break;
+  case DataFormat::Float4:
+    BindUniform4f(loc, desc.data); break;
+  case DataFormat::Mat3:
+    BindUniformMat3f(loc, desc.data); break;
+  case DataFormat::Mat4:
+    BindUniformMat4f(loc, desc.data); break;
+  default:
+    HW_CORE_ERROR("Couldn't bind uniform for data type");
+  }
+  // clang-format on
+}
+
 } // namespace weather::graphics
