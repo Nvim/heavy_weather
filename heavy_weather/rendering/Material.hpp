@@ -20,6 +20,7 @@ private:
   std::unordered_map<std::string, glm::vec4> float4s_;
   std::unordered_map<std::string, glm::mat3> mat3s_;
   std::unordered_map<std::string, glm::mat4> mat4s_;
+  // std::vector<SharedPtr<Texture>> textures_;
 
 public:
   Material(SharedPtr<ShaderProgram> shader) : shader_{std::move(shader)} {}
@@ -30,15 +31,15 @@ public:
   void BindUniforms();
 
   template <typename T>
-  void SetUniformValue(std::string &name, const T &value) {
+  void SetUniformValue(std::string &&name, const T &value) {
     // clang-format off
-    if constexpr      (std::is_same_v<T, i32>)       { ints_[name] =    value; }
-    else if constexpr (std::is_same_v<T, f32>)       { floats_[name] =  value; } 
-    else if constexpr (std::is_same_v<T, glm::vec2>) { float2s_[name] = value; } 
-    else if constexpr (std::is_same_v<T, glm::vec3>) { float3s_[name] = value; } 
-    else if constexpr (std::is_same_v<T, glm::vec4>) { float4s_[name] = value; } 
-    else if constexpr (std::is_same_v<T, glm::mat3>) { mat3s_[name] =   value; } 
-    else if constexpr (std::is_same_v<T, glm::mat4>) { mat4s_[name] =   value; } 
+    if constexpr      (std::is_same_v<T, i32>)       { ints_[std::move(name)] =    value; }
+    else if constexpr (std::is_same_v<T, f32>)       { floats_[std::move(name)] =  value; } 
+    else if constexpr (std::is_same_v<T, glm::vec2>) { float2s_[std::move(name)] = value; } 
+    else if constexpr (std::is_same_v<T, glm::vec3>) { float3s_[std::move(name)] = value; } 
+    else if constexpr (std::is_same_v<T, glm::vec4>) { float4s_[std::move(name)] = value; } 
+    else if constexpr (std::is_same_v<T, glm::mat3>) { mat3s_[std::move(name)] =   value; } 
+    else if constexpr (std::is_same_v<T, glm::mat4>) { mat4s_[std::move(name)] =   value; } 
     else { HW_CORE_ERROR("Couldn't set uniform value, bad type") }
     // clang-format on
   }

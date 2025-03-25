@@ -10,6 +10,7 @@
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <unordered_map>
 
@@ -38,6 +39,7 @@ public:
                CameraParams &camera_params);
   u32 AddMesh(MeshDescriptor &desc, u32 entity);
   u32 AddMaterial(SharedPtr<Material> desc, u32 entity);
+  u32 AddTexture(SharedPtr<Texture> tex, u32 entity);
   void Update(f64 delta);
   void SubmitAll();
 

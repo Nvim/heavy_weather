@@ -1,12 +1,14 @@
 #pragma once
 #include "heavy_weather/core/Application.hpp"
 #include "heavy_weather/core/Window.hpp"
+#include "heavy_weather/engine.h"
 #include "heavy_weather/event/EventCallback.hpp"
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
 
 using weather::KeyPressedEvent;
@@ -33,6 +35,8 @@ private:
   //
   EventCallback<MouseMovedEvent> mouse_callback_;
   weather::graphics::Renderer renderer_;
+  SharedPtr<weather::graphics::Texture> tex_;
+  SharedPtr<weather::graphics::Texture> tex_2;
 #ifdef HW_ENABLE_GUI
   weather::graphics::Gui gui_;
 #endif

@@ -7,6 +7,7 @@
 
 #include "Buffer.hpp"
 #include "Types.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include <glm/glm.hpp>
 #include <heavy_weather/engine.h>
 #include <utility>
@@ -20,6 +21,7 @@ public:
   /* Resource creation: */
   virtual UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) = 0;
   virtual UniquePtr<Shader> CreateShader(ShaderDescriptor desc) = 0;
+  virtual SharedPtr<Texture> CreateTexture(const std::string &path) = 0;
   virtual SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) = 0;
 
   /* Resouce binding: */

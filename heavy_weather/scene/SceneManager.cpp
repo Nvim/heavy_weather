@@ -44,7 +44,7 @@ u32 SceneManager::AddMesh(MeshDescriptor &desc, u32 entity) {
   } else {
     mesh = entity;
   }
-  scene_.AddComponent(mesh, renderer_.CreateBuffers(desc));
+  scene_.AddComponent(mesh, renderer_.CreateGeometry(desc));
   // scene_.AddComponent(mesh, MaterialComponent{});
   scene_.AddComponent(mesh, TransformComponent{});
   if (desc.name) {

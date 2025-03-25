@@ -6,11 +6,12 @@
 #include "heavy_weather/rendering/ShaderProgram.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
+#include <memory>
 #include <utility>
 
 namespace weather::graphics {
 
-GeometryComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
+GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
   u32 *indices = desc.indices.first;
   u64 indices_sz = desc.indices.second;
   void *verts = desc.vertices.first;
@@ -28,6 +29,10 @@ GeometryComponent Renderer::CreateBuffers(const MeshDescriptor &desc) {
                            api_->CreateBuffer(idesc, indices)};
 }
 
+SharedPtr<Texture> Renderer::CreateTexture(const std::string &path) {
+  return api_->CreateTexture(path);
+}
+
 void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
                       Material &material) {
   auto shader = material.GetShader();
@@ -36,7 +41,7 @@ void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
   f32 time = PlatformGetTime();
   auto mvp_uniform = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
   auto time_uniform =
-      UniformDescriptor{"iGlobalTime", DataFormat::Float, &time};
+      UniformDescriptor{"uGlobalTime", DataFormat::Float, &time};
   shader->BindUniform(time_uniform);
   shader->BindUniform(mvp_uniform);
 
