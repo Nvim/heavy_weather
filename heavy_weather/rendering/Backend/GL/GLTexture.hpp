@@ -6,12 +6,15 @@ namespace weather::graphics {
 
 class GLTexture : public Texture {
 public:
-  explicit GLTexture(const std::string &path);
+  // explicit GLTexture(const std::string &path);
+  explicit GLTexture(const std::string &path, const TextureParams &params = {});
   ~GLTexture() override;
 
   void Bind() const override;
-  void SetFilterFlag(TextureFilterFlag flag) override;
+  void SetMinFilterFlag(TextureFilterFlag flag) override;
+  void SetMagFilterFlag(TextureFilterFlag flag) override;
   void SetWrapFlag(TextureWrapFlag flag) override;
+  void SetParams(const TextureParams &params) override;
 
   GLTexture(const GLTexture &) = default;
   GLTexture(GLTexture &&) = delete;

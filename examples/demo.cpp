@@ -115,40 +115,42 @@ void Demo::InitGraphics() {
 
   // Shaders:
   graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
-                                    "demo.vert"};
+                                    "examples/resources/demo.vert"};
   graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
-                                    "demo.frag"};
+                                    "examples/resources/demo.frag"};
   graphics::ShaderDescriptor fade_fsdesc{graphics::ShaderType::FragmentShader,
-                                         "demo_fade.frag"};
+                                         "examples/resources/demo_fade.frag"};
 
   auto tex_shader = renderer_.CreatePipeline(vsdesc, fsdesc);
   auto fade_shader = renderer_.CreatePipeline(vsdesc, fade_fsdesc);
 
   // Texture:
-  tex_ = renderer_.CreateTexture("examples/container.png");
-  tex_2 = renderer_.CreateTexture("examples/grass.png");
+  tex_ = renderer_.CreateTexture("examples/resources/container.png");
+  tex_2 = renderer_.CreateTexture("examples/resources/grass.png");
   HW_ASSERT(tex_->Unit() == 0);
   HW_ASSERT(tex_2->Unit() == 1);
-  // tex_->Bind();
 
   // Materials:
-  // std::string tex_name = "uTexture";
-  auto red_material = std::make_shared<graphics::Material>(fade_shader);
+  auto fade_material = std::make_shared<graphics::Material>(fade_shader);
   auto texture_material = std::make_shared<graphics::Material>(tex_shader);
 
-  red_material->SetUniformValue<glm::vec4>("uMaterial",
-                                           glm::vec4{0.8f, 0.1f, 0.1f, 1.0f});
-  red_material->SetUniformValue<i32>("uFlag", 1);
+  fade_material->SetUniformValue<glm::vec4>("uMaterial",
+                                            glm::vec4{0.1f, 0.3f, 0.7f, 1.0f});
+  fade_material->SetUniformValue<i32>("uFlag", 1);
 
-  texture_material->SetUniformValue<i32>("uTexture", tex_->Unit());
-  texture_material->SetUniformValue<i32>("uTexture2", tex_2->Unit());
+  texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture",
+                                                                  tex_);
+  texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture2",
+                                                                  tex_2);
   texture_material->SetUniformValue<f32>("uBlendFactor", 0.5f);
 
-  u32 m2 = scene_manager_.AddMesh(cube_desc, NEW_ENTITY);
-  u32 m3 = scene_manager_.AddMesh(sq_desc, NEW_ENTITY);
+  u32 cube_mesh =
+      scene_manager_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
+  u32 square_mesh =
+      scene_manager_.AddMesh(sq_desc, glm::vec3{1.0f, 0.0f, 0.0f});
 
-  scene_manager_.AddMaterial(red_material, m2);
-  scene_manager_.AddMaterial(texture_material, m3);
+  scene_manager_.AddMaterial(fade_material, cube_mesh);
+  scene_manager_.AddMaterial(texture_material, square_mesh);
 }
 
 void Demo::OnRender(f64 delta) {

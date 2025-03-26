@@ -3,6 +3,7 @@
 #include "glm/glm.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/ShaderProgram.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include <unordered_map>
 #include <utility>
 namespace weather::graphics {
@@ -20,7 +21,7 @@ private:
   std::unordered_map<std::string, glm::vec4> float4s_;
   std::unordered_map<std::string, glm::mat3> mat3s_;
   std::unordered_map<std::string, glm::mat4> mat4s_;
-  // std::vector<SharedPtr<Texture>> textures_;
+  std::unordered_map<std::string, SharedPtr<Texture>> textures_;
 
 public:
   Material(SharedPtr<ShaderProgram> shader) : shader_{std::move(shader)} {}
@@ -40,6 +41,7 @@ public:
     else if constexpr (std::is_same_v<T, glm::vec4>) { float4s_[std::move(name)] = value; } 
     else if constexpr (std::is_same_v<T, glm::mat3>) { mat3s_[std::move(name)] =   value; } 
     else if constexpr (std::is_same_v<T, glm::mat4>) { mat4s_[std::move(name)] =   value; } 
+    else if constexpr (std::is_same_v<T, SharedPtr<Texture>>) { textures_[std::move(name)] =   value; } 
     else { HW_CORE_ERROR("Couldn't set uniform value, bad type") }
     // clang-format on
   }
@@ -61,6 +63,7 @@ public:
     else if constexpr (std::is_same_v<T, glm::vec4>) { GET_VALUE(float4s_, glm::vec4{0.f}); }
     else if constexpr (std::is_same_v<T, glm::mat3>) { GET_VALUE(mat3s_, glm::mat3{}); }
     else if constexpr (std::is_same_v<T, glm::mat4>) { GET_VALUE(mat4s_, glm::mat4{}); }
+    else if constexpr (std::is_same_v<T, SharedPtr<Texture>>) { GET_VALUE(textures_, SharedPtr<Texture>{nullptr}); } 
     else {
       HW_ASSERT_MSG(false, "Couldn't get uniform value, bad type");
     }
@@ -77,6 +80,7 @@ public:
     else if constexpr (std::is_same_v<T, glm::vec4>) { return std::pair(float4s_.begin(), float4s_.end()); }
     else if constexpr (std::is_same_v<T, glm::mat3>) { return std::pair(mat3s_.begin(), mat3s_.end()); }
     else if constexpr (std::is_same_v<T, glm::mat4>) { return std::pair(mat4s_.begin(), mat4s_.end()); }
+    else if constexpr (std::is_same_v<T, SharedPtr<Texture>>) { return std::pair(textures_.begin(), textures_.end()); }
     else {
       HW_ASSERT_MSG(false, "Couldn't get uniform value, bad type");
     }

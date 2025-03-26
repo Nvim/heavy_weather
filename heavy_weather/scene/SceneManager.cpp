@@ -36,7 +36,7 @@ void SceneManager::Update(f64 delta) {
   camera_.Update();
 }
 
-u32 SceneManager::AddMesh(MeshDescriptor &desc, u32 entity) {
+u32 SceneManager::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
   // register mesh to scene
   u32 mesh{};
   if (entity == NEW_ENTITY) {
@@ -46,7 +46,10 @@ u32 SceneManager::AddMesh(MeshDescriptor &desc, u32 entity) {
   }
   scene_.AddComponent(mesh, renderer_.CreateGeometry(desc));
   // scene_.AddComponent(mesh, MaterialComponent{});
-  scene_.AddComponent(mesh, TransformComponent{});
+  auto tr = TransformComponent{};
+  tr.translation = coords;
+  tr.dirty = true;
+  scene_.AddComponent(mesh, tr);
   if (desc.name) {
     scene_.AddComponent(mesh, NameComponent{desc.name});
   }
