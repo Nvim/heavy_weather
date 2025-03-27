@@ -56,9 +56,9 @@ u32 SceneManager::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
 
 // create and register a gui widget for the mesh
 #ifdef HW_ENABLE_GUI
-  scene_.AddComponent(mesh,
-                      WidgetComponent{std::vector<WidgetFunc>{
-                          TransformControl, MaterialEditor, DeleteButton}});
+  scene_.AddComponent(
+      mesh, WidgetComponent{std::vector<WidgetFunc>{
+                TransformControl, MaterialEditor, DeleteEntityButton}});
 #endif
 
   return mesh;

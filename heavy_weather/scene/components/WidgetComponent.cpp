@@ -23,7 +23,7 @@ void TransformControl(Gui &gui, ECS &scene, u32 entity) {
   }
 }
 
-void DeleteButton(Gui &gui, ECS &scene, u32 entity) {
+void DeleteEntityButton(Gui &gui, ECS &scene, u32 entity) {
   (void)gui;
   (void)scene;
   if (Gui::DrawButton("delete")) {

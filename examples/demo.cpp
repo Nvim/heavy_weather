@@ -15,10 +15,11 @@
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
-#include <functional>
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
-#include <vector>
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <thirdparty/tinygltf/tiny_gltf.h>
 
 // Shortcut for registering events
 #define BIND_EVENT_FUNC(func) std::bind(func, this, std::placeholders::_1)
@@ -125,8 +126,8 @@ void Demo::InitGraphics() {
   auto fade_shader = renderer_.CreatePipeline(vsdesc, fade_fsdesc);
 
   // Texture:
-  tex_ = renderer_.CreateTexture("examples/resources/container.png");
-  tex_2 = renderer_.CreateTexture("examples/resources/grass.png");
+  tex_ = renderer_.CreateTexture("examples/resources/textures/container.png");
+  tex_2 = renderer_.CreateTexture("examples/resources/textures/grass.png");
   HW_ASSERT(tex_->Unit() == 0);
   HW_ASSERT(tex_2->Unit() == 1);
 
@@ -151,6 +152,29 @@ void Demo::InitGraphics() {
 
   scene_manager_.AddMaterial(fade_material, cube_mesh);
   scene_manager_.AddMaterial(texture_material, square_mesh);
+
+  {
+    tinygltf::Model model;
+    tinygltf::TinyGLTF loader;
+    std::string err;
+    std::string warn;
+    bool ret = loader.LoadBinaryFromFile(
+        &model, &err, &warn,
+        "examples/resources/models/Box.glb"); // for binary glTF(.glb)
+
+    if (!warn.empty()) {
+      HW_APP_WARN("WARNING FROM GLTF: {}", warn);
+    }
+
+    if (!err.empty()) {
+      HW_APP_ERROR("ERROR FROM GLTF: {}", err);
+    }
+
+    if (!ret) {
+      HW_APP_ERROR("Failed to parse GLTF");
+    }
+    HW_APP_INFO("GLTF parsing works :)")
+  }
 }
 
 void Demo::OnRender(f64 delta) {

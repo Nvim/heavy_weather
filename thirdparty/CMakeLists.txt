@@ -3,6 +3,7 @@ include(glad.cmake)
 include(imgui.cmake)
 include(googletest.cmake)
 include(stb.cmake)
+include(tinygltf.cmake)
 
 set(BUILD_GLFW
     OFF

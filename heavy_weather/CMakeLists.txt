@@ -7,7 +7,15 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 list(FILTER SOURCES EXCLUDE REGEX ".*_test\\.cpp$")
 
 target_sources(engine PRIVATE ${SOURCES})
-target_link_libraries(engine PUBLIC cxx_setup spdlog glfw glad imgui stb::stb)
+target_link_libraries(
+  engine
+  PUBLIC cxx_setup
+         spdlog
+         glfw
+         glad
+         imgui
+         stb::stb
+         tinygltf)
 
 if(BUILD_TESTING)
   add_executable(sparse_test "${CMAKE_CURRENT_SOURCE_DIR}/ecs/sparse_test.cpp")
