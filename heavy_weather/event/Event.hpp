@@ -7,10 +7,8 @@ enum class EventCode : u8;
 
 struct Event {
 protected:
-  // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
-  bool handled_{false};
-
 public:
+  bool handled{false};
   Event() = default;
   Event(const Event &) = default;
   Event(Event &&) = delete;

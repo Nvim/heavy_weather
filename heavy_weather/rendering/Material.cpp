@@ -1,8 +1,6 @@
 #include "Material.hpp"
-#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Types.hpp"
-#include <type_traits>
 
 namespace weather::graphics {
 
@@ -25,7 +23,13 @@ void Material::BindUniforms() {
   // }
   UniformDescriptor d{};
   // clang-format off
-  d.format = DataFormat::Int; BIND_LOOP(ints_)
+  d.format = DataFormat::Int;
+  for (auto& tex : textures_) {
+    d.name = tex.first.c_str();
+    d.data = tex.second->UnitPtr();
+    shader_->BindUniform(d);
+  }
+  BIND_LOOP(ints_)
   d.format = DataFormat::Float; BIND_LOOP(floats_)
   d.format = DataFormat::Float2; BIND_LOOP(float2s_)
   d.format = DataFormat::Float3; BIND_LOOP(float3s_)

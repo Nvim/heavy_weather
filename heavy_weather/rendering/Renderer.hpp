@@ -6,6 +6,7 @@
 #include "heavy_weather/rendering/BackendApi.hpp"
 #include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glm/glm.hpp>
 
@@ -21,11 +22,10 @@ public:
                          params.depth_test, params.debug_mode));
   };
 
-  GeometryComponent CreateBuffers(const MeshDescriptor &desc);
-  // UniquePtr<Mesh> CreateMesh(UniquePtr<Buffer> v, UniquePtr<Buffer> i);
+  GeometryComponent CreateGeometry(const MeshDescriptor &desc);
+  SharedPtr<Texture> CreateTexture(const std::string &path);
   void Clear(glm::vec4 col) { api_->Clear(col); }
   void ClearDepth() { api_->ClearDepthBuffer(); }
-  // void Submit(Mesh &mesh, glm::mat4 &mvp);
   void Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
               Material &material);
   SharedPtr<ShaderProgram> CreatePipeline(ShaderDescriptor vsdesc,

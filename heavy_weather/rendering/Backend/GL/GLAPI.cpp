@@ -8,7 +8,9 @@
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLShaderProgram.hpp"
+#include "heavy_weather/rendering/Backend/GL/GLTexture.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -124,6 +126,10 @@ GLBackendAPI::CreatePipeline(PipelineDescriptor &desc) {
 
   return pipeline;
 }
+
+SharedPtr<Texture> GLBackendAPI::CreateTexture(const std::string &path) {
+  return std::shared_ptr<Texture>(new GLTexture(path));
+};
 
 // Use the vbo's vao to bind vbo
 void GLBackendAPI::BindVBO(u32 vbo, u32 vao) {

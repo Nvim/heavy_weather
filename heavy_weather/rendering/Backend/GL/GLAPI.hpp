@@ -32,6 +32,7 @@ public:
 
   UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) override;
   UniquePtr<Shader> CreateShader(ShaderDescriptor desc) override;
+  SharedPtr<Texture> CreateTexture(const std::string &path) override;
   SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
 
   void BindBuffer(const Buffer &buf) override;

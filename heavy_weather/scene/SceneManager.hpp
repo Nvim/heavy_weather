@@ -10,7 +10,9 @@
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include <glm/fwd.hpp>
 #include <unordered_map>
 
 #define NEW_ENTITY 0
@@ -36,8 +38,10 @@ public:
                Gui &gui,
 #endif
                CameraParams &camera_params);
-  u32 AddMesh(MeshDescriptor &desc, u32 entity);
+  u32 AddMesh(MeshDescriptor &desc, glm::vec3 coords = {0.0f, 0.0f, 0.0f},
+              u32 entity = NEW_ENTITY);
   u32 AddMaterial(SharedPtr<Material> desc, u32 entity);
+  u32 AddTexture(SharedPtr<Texture> tex, u32 entity);
   void Update(f64 delta);
   void SubmitAll();
 

@@ -11,8 +11,8 @@
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Material.hpp"
-#include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
 #include <functional>
@@ -88,70 +88,69 @@ Demo::~Demo() {
 }
 
 void Demo::InitGraphics() {
-  f32 vertices_1[] = {
-      -0.5f, -0.5f, 0.0f, //
-      0.5f,  -0.5f, 0.0f, //
-      0.0f,  0.5f,  0.0f  //
-  };
   f32 vertices_2[] = {
-      0.0f,   0.25f,  0.0f, //
-      0.0f,   -0.25f, 0.0f, //
-      -0.25f, 0.0f,   0.0f, //
-      0.25f,  0.0f,   0.0f  //
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, //
+      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, //
+      -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, //
+      0.5f,  0.5f,  0.0f, 1.0f, 1.0f  //
   };
 
-  u32 indices[] = {0, 1, 2}; // NOLINT
-  u32 square_indices[] = {0, 1, 3, 2, 1, 0};
+  u32 square_indices[] = {0, 1, 2, 1, 2, 3};
 
   // Buffers:
-  graphics::VertexLayout layout{};
-  layout.AddAttribute({"position", graphics::DataFormat::Float3});
+  graphics::VertexLayout sq_layout{};
+  sq_layout.AddAttribute({"position", graphics::DataFormat::Float3});
+  sq_layout.AddAttribute({"uvs", graphics::DataFormat::Float2});
 
-  graphics::MeshDescriptor mesh_desc{std::pair(vertices_1, sizeof(vertices_1)),
-                                     std::pair(indices, sizeof(indices)),
-                                     &layout, "triangle"};
-
-  graphics::MeshDescriptor mesh_desc2{
+  graphics::MeshDescriptor sq_desc{
       std::pair(vertices_2, sizeof(vertices_2)),
-      std::pair(square_indices, sizeof(square_indices)), &layout, "square"};
+      std::pair(square_indices, sizeof(square_indices)), &sq_layout, "square"};
 
-  graphics::MeshDescriptor cube_mesh{
+  graphics::VertexLayout cube_layout{};
+  cube_layout.AddAttribute({"position", graphics::DataFormat::Float3});
+
+  graphics::MeshDescriptor cube_desc{
       std::pair(cube_verts, sizeof(cube_verts)),
-      std::pair(cube_indices, sizeof(cube_indices)), &layout, "cube"};
+      std::pair(cube_indices, sizeof(cube_indices)), &cube_layout, "cube"};
 
   // Shaders:
   graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
-                                    "demo.vert"};
+                                    "examples/resources/demo.vert"};
   graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
-                                    "demo.frag"};
+                                    "examples/resources/demo.frag"};
   graphics::ShaderDescriptor fade_fsdesc{graphics::ShaderType::FragmentShader,
-                                         "demo_fade.frag"};
+                                         "examples/resources/demo_fade.frag"};
 
-  auto shader = renderer_.CreatePipeline(vsdesc, fsdesc);
+  auto tex_shader = renderer_.CreatePipeline(vsdesc, fsdesc);
   auto fade_shader = renderer_.CreatePipeline(vsdesc, fade_fsdesc);
 
+  // Texture:
+  tex_ = renderer_.CreateTexture("examples/resources/container.png");
+  tex_2 = renderer_.CreateTexture("examples/resources/grass.png");
+  HW_ASSERT(tex_->Unit() == 0);
+  HW_ASSERT(tex_2->Unit() == 1);
+
   // Materials:
-  std::string name = "iMaterial";
-  std::string flag_name = "flag";
-  auto blue_material = std::make_shared<graphics::Material>(shader);
-  auto red_material = std::make_shared<graphics::Material>(fade_shader);
-  auto green_material = std::make_shared<graphics::Material>(shader);
+  auto fade_material = std::make_shared<graphics::Material>(fade_shader);
+  auto texture_material = std::make_shared<graphics::Material>(tex_shader);
 
-  blue_material->SetUniformValue<glm::vec4>(name,
-                                            glm::vec4{0.1f, 0.2f, 0.8f, 1.0f});
-  red_material->SetUniformValue<glm::vec4>(name,
-                                           glm::vec4{0.8f, 0.1f, 0.1f, 1.0f});
-  red_material->SetUniformValue<i32>(flag_name, 1);
-  green_material->SetUniformValue<glm::vec4>(name,
-                                             glm::vec4{0.1f, 0.8f, 0.2f, 1.0f});
+  fade_material->SetUniformValue<glm::vec4>("uMaterial",
+                                            glm::vec4{0.1f, 0.3f, 0.7f, 1.0f});
+  fade_material->SetUniformValue<i32>("uFlag", 1);
 
-  u32 m1 = scene_manager_.AddMesh(mesh_desc2, NEW_ENTITY);
-  u32 m2 = scene_manager_.AddMesh(cube_mesh, NEW_ENTITY);
-  u32 m3 = scene_manager_.AddMesh(mesh_desc, NEW_ENTITY);
+  texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture",
+                                                                  tex_);
+  texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture2",
+                                                                  tex_2);
+  texture_material->SetUniformValue<f32>("uBlendFactor", 0.5f);
 
-  scene_manager_.AddMaterial(blue_material, m1);
-  scene_manager_.AddMaterial(red_material, m2);
-  scene_manager_.AddMaterial(green_material, m3);
+  u32 cube_mesh =
+      scene_manager_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
+  u32 square_mesh =
+      scene_manager_.AddMesh(sq_desc, glm::vec3{1.0f, 0.0f, 0.0f});
+
+  scene_manager_.AddMaterial(fade_material, cube_mesh);
+  scene_manager_.AddMaterial(texture_material, square_mesh);
 }
 
 void Demo::OnRender(f64 delta) {
