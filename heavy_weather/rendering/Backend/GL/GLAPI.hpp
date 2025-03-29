@@ -31,8 +31,11 @@ public:
   ~GLBackendAPI() override;
 
   UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) override;
-  UniquePtr<Shader> CreateShader(ShaderDescriptor desc) override;
-  SharedPtr<Texture> CreateTexture(const std::string &path) override;
+  // UniquePtr<Shader> CreateShader(ShaderDescriptor desc) override;
+  UniquePtr<Shader> CreateShader(SharedPtr<ShaderSource> src,
+                                 ShaderType type) override;
+  // SharedPtr<Texture> CreateTexture(const std::string &path) override;
+  SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) override;
   SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
 
   void BindBuffer(const Buffer &buf) override;

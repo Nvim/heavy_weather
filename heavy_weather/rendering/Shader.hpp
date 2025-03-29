@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 namespace weather::graphics {
 
@@ -9,13 +11,17 @@ namespace weather::graphics {
 // Can compile and retrieve errors
 class Shader {
 public:
-  explicit Shader(ShaderType type, std::string path)
-      : type_{type}, path_{std::move(path)} {}
+  explicit Shader(ShaderType type, SharedPtr<ShaderSource> src)
+      : type_{type}, source_{std::move(src)} {
+    HW_ASSERT(source_ != nullptr);
+    HW_ASSERT(!source_->Empty());
+  }
 
   virtual bool Compile() = 0;
   ShaderType Type() const { return type_; }
   ShaderCompileStatus Status() const { return compiled_; }
-  const std::string &Path() const { return path_; }
+  const std::filesystem::path &Path() const { return source_->Path(); }
+  const std::string &Source() const { return source_->Data(); }
 
   //
   virtual ~Shader() = default;
@@ -29,7 +35,7 @@ protected:
 
 private:
   ShaderType type_;
-  std::string path_;
+  SharedPtr<ShaderSource> source_;
   ShaderCompileStatus compiled_{NotCompiled}; // Has it been compiled yet
 };
 

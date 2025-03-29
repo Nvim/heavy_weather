@@ -1,13 +1,15 @@
 #pragma once
 
+#include "heavy_weather/engine.h"
 #include <heavy_weather/rendering/Texture.hpp>
 
 namespace weather::graphics {
 
 class GLTexture : public Texture {
 public:
-  // explicit GLTexture(const std::string &path);
-  explicit GLTexture(const std::string &path, const TextureParams &params = {});
+  // explicit GLTexture(const std::string &path, const TextureParams &params =
+  // {});
+  explicit GLTexture(SharedPtr<Image> img, const TextureParams &params = {});
   ~GLTexture() override;
 
   void Bind() const override;

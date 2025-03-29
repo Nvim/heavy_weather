@@ -2,7 +2,7 @@
 #include "heavy_weather/engine.h"
 #include <filesystem>
 
-namespace weather::graphics {
+namespace weather {
 
 /* Encapsulate stb_image library in a safer and easier API */
 class Image {
@@ -19,7 +19,6 @@ public:
   std::pair<u32, u32> Size() const;
   bool Empty() const;
   const std::filesystem::path &Path() const;
-  u8 At(u32 row, u32 col) const;
   u8 *Data();
   i32 Channels() const;
 
@@ -33,4 +32,4 @@ private:
   void InitEmpty(std::filesystem::path img_path);
 };
 
-} // namespace weather::graphics
+} // namespace weather

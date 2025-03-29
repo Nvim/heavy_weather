@@ -1,11 +1,13 @@
+#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
+#endif // !STB_IMAGE_IMPLEMENTATION
 #include "Image.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include <filesystem>
 #include <stb/stb_image.h>
 #include <utility>
 
-namespace weather::graphics {
+namespace weather {
 Image::Image() : image_data_{}, channels_{}, empty_{true} {}
 
 Image::Image(const std::filesystem::path &img_path) {
@@ -25,8 +27,8 @@ Image::Image(const std::filesystem::path &img_path) {
       path_ = img_path;
       empty_ = false;
       channels_ = channels;
-      HW_CORE_INFO("Image {} loaded. Width: {}, Height: {}, Channels: {}\n",
-                   path_.c_str(), size_.first, size_.second, channels_);
+      HW_CORE_DEBUG("Image {} loaded. {}x{}, {} Channels.", path_.c_str(),
+                    size_.first, size_.second, channels_);
     }
   }
 }
@@ -36,20 +38,6 @@ std::pair<u32, u32> Image::Size() const { return size_; }
 i32 Image::Channels() const { return channels_; }
 
 bool Image::Empty() const { return empty_; }
-
-u8 Image::At(u32 row, u32 col) const {
-  // if (empty_ || channels_ < 3 || channels_ > 4) {
-  // return ftxui::Color{};
-  // }
-  // y lines of:
-  // [00000000 00000000 00000000][00000000 00000000 00000000] ....
-  // each square bracket is one x
-  // const auto index{channels_ * (row * size_.col + col)};
-  // unsigned char *pixel_data = image_data_;
-  // return ftxui::Color(pixel_data[index], pixel_data[index + 1],
-  //                     pixel_data[index + 2]);
-  return 8; // TODO
-}
 
 const std::filesystem::path &Image::Path() const { return path_; }
 
@@ -69,4 +57,4 @@ Image::~Image() {
   }
 }
 
-} // namespace weather::graphics
+} // namespace weather

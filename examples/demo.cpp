@@ -8,6 +8,7 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
+#include "heavy_weather/loaders/Loader.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Material.hpp"
@@ -17,8 +18,15 @@
 #include "heavy_weather/scene/SceneManager.hpp"
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
+#ifndef TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_IMPLEMENTATION
+#endif // !TINYGLTF_IMPLEMENTATION
+#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif // !STB_IMAGE_WRITE_IMPLEMENTATION
+// #ifndef STB_IMAGE_IMPLEMENTATION
+// #define STB_IMAGE_IMPLEMENTATION
+// #endif // !STB_IMAGE_IMPLEMENTATION
 #include <thirdparty/tinygltf/tiny_gltf.h>
 
 // Shortcut for registering events
@@ -115,21 +123,34 @@ void Demo::InitGraphics() {
       std::pair(cube_indices, sizeof(cube_indices)), &cube_layout, "cube"};
 
   // Shaders:
-  graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
-                                    "examples/resources/demo.vert"};
-  graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
-                                    "examples/resources/demo.frag"};
-  graphics::ShaderDescriptor fade_fsdesc{graphics::ShaderType::FragmentShader,
-                                         "examples/resources/demo_fade.frag"};
+  // graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
+  //                                   "examples/resources/demo.vert"};
+  // graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
+  //                                   "examples/resources/demo.frag"};
+  // graphics::ShaderDescriptor
+  // fade_fsdesc{graphics::ShaderType::FragmentShader,
+  //                                        "examples/resources/demo_fade.frag"};
 
-  auto tex_shader = renderer_.CreatePipeline(vsdesc, fsdesc);
-  auto fade_shader = renderer_.CreatePipeline(vsdesc, fade_fsdesc);
+  img1_ = Loader<Image>::Load("examples/resources/textures/container.png");
+  img2_ = Loader<Image>::Load("examples/resources/textures/grass.png");
+  demo_vert_ = Loader<ShaderSource>::Load("examples/resources/demo.vert");
+  demo_frag_ = Loader<ShaderSource>::Load("examples/resources/demo.frag");
+  demo_fade_frag_ =
+      Loader<ShaderSource>::Load("examples/resources/demo_fade.frag");
+
+  HW_ASSERT(img1_ != nullptr);
+  HW_ASSERT(demo_vert_ != nullptr);
+  HW_ASSERT(demo_frag_ != nullptr);
+  HW_ASSERT(demo_fade_frag_ != nullptr);
+
+  auto tex_shader = renderer_.CreatePipeline(demo_vert_, demo_frag_);
+  auto fade_shader = renderer_.CreatePipeline(demo_vert_, demo_fade_frag_);
 
   // Texture:
-  tex_ = renderer_.CreateTexture("examples/resources/textures/container.png");
-  tex_2 = renderer_.CreateTexture("examples/resources/textures/grass.png");
+  tex_ = renderer_.CreateTexture(img1_);
+  tex_2_ = renderer_.CreateTexture(img2_);
   HW_ASSERT(tex_->Unit() == 0);
-  HW_ASSERT(tex_2->Unit() == 1);
+  HW_ASSERT(tex_2_->Unit() == 1);
 
   // Materials:
   auto fade_material = std::make_shared<graphics::Material>(fade_shader);
@@ -142,7 +163,7 @@ void Demo::InitGraphics() {
   texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture",
                                                                   tex_);
   texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture2",
-                                                                  tex_2);
+                                                                  tex_2_);
   texture_material->SetUniformValue<f32>("uBlendFactor", 0.5f);
 
   u32 cube_mesh =

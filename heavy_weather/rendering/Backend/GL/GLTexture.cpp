@@ -1,32 +1,17 @@
 #include "GLTexture.hpp"
 #include "heavy_weather/loaders/Image.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
-#include <filesystem>
 #include <glad/glad.h>
 
 static GLint WrapFlagToGL(weather::graphics::TextureWrapFlag flag);
 static GLint FilterFlagToGl(weather::graphics::TextureFilterFlag flag);
 
 namespace weather::graphics {
-GLTexture::GLTexture(const std::string &path, const TextureParams &params)
-    : Texture{path} {
-  std::filesystem::path p{path};
-  Image img{p};
-  if (img.Empty()) {
-    return;
-  }
-  auto last_dot = path.find_last_of('.');
-  auto last_slash = path.find_last_of('/');
-  if (last_dot == std::string::npos) {
-    last_dot = path.length();
-  }
-  if (last_slash == std::string::npos) {
-    last_slash = 0;
-  }
-  SetName(path.substr(last_slash, last_dot));
+GLTexture::GLTexture(SharedPtr<Image> img, const TextureParams &params)
+    : Texture{img} {
 
   GLint format = GL_RGB;
-  if (img.Channels() == 4) {
+  if (img->Channels() == 4) {
     format = GL_RGBA;
   }
 
@@ -34,8 +19,9 @@ GLTexture::GLTexture(const std::string &path, const TextureParams &params)
   glActiveTexture(GL_TEXTURE0 + Unit());
   SetParams(params); // Will bind the texture
 
-  glTexImage2D(GL_TEXTURE_2D, 0, format, (i32)img.Size().first,
-               (i32)img.Size().second, 0, format, GL_UNSIGNED_BYTE, img.Data());
+  glTexImage2D(GL_TEXTURE_2D, 0, format, (i32)img->Size().first,
+               (i32)img->Size().second, 0, format, GL_UNSIGNED_BYTE,
+               img->Data());
   glGenerateMipmap(GL_TEXTURE_2D);
 }
 

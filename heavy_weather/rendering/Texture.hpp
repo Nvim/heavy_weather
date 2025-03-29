@@ -1,7 +1,12 @@
 #pragma once
 
+#include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
+#include "heavy_weather/loaders/Image.hpp"
+#include <filesystem>
 #include <string>
+#include <utility>
 
 namespace weather::graphics {
 
@@ -29,7 +34,14 @@ struct TextureParams {
 
 class Texture {
 public:
-  Texture(const std::string &path) : path_{path}, unit_{counter++} {};
+  Texture(SharedPtr<Image> image) : img_{std::move(image)}, unit_{counter++} {
+    HW_ASSERT(img_ != nullptr);
+    HW_ASSERT(!img_->Empty());
+    if (img_->Path().has_stem()) {
+      SetName(img_->Path().stem().string());
+      HW_CORE_DEBUG("Texture created with name {}", name_);
+    }
+  };
   virtual ~Texture() = default;
 
   virtual void Bind() const = 0;
@@ -42,12 +54,12 @@ public:
   i32 Unit() const { return unit_; }
   i32 *UnitPtr() { return &unit_; }
   bool Loaded() const { return loaded_; }
-  const std::string &Path() const { return path_; }
+  const std::filesystem::path &Path() const { return img_->Path(); }
   const std::string &Name() const { return name_; }
 
 private:
   static inline i32 counter{0};
-  std::string path_;
+  SharedPtr<Image> img_;
   std::string name_;
   bool loaded_{false};
   u32 handle_{0};

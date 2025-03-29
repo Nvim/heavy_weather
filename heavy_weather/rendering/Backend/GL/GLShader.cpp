@@ -1,10 +1,10 @@
 #include "GLShader.hpp"
 #include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
 #include "heavy_weather/rendering/Types.hpp"
-#include <fstream>
 #include <heavy_weather/core/Asserts.hpp>
-#include <sstream>
+#include <utility>
 
 static GLenum GetType(weather::graphics::ShaderType type) {
   switch (type) {
@@ -25,30 +25,16 @@ GLShader::~GLShader() {
   }
 }
 
+GLShader::GLShader(ShaderType type, SharedPtr<ShaderSource> src)
+    : Shader{type, std::move(src)} {}
+
 bool GLShader::Compile() {
-  HW_ASSERT(this->Status() == ShaderCompileStatus::NotCompiled);
-  HW_ASSERT(!this->Path().empty())
-  std::ifstream shader_file;
-  std::string shader_code;
-  shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-  try {
-    shader_file.open(this->Path());
-    std::stringstream s;
+  HW_ASSERT(Status() == ShaderCompileStatus::NotCompiled);
+  HW_ASSERT(!Source().empty())
 
-    s << shader_file.rdbuf();
-    shader_file.close();
-
-    shader_code = s.str();
-  } catch (std::ifstream::failure &e) {
-
-    HW_CORE_ERROR("Failed load shader file: {}", this->Path());
-    this->SetCompiled(ShaderCompileStatus::Failed);
-    return false;
-  }
-
-  const char *shader_cstr = shader_code.c_str();
+  const char *source_cstr = Source().c_str();
   handle_ = glCreateShader(GetType(this->Type()));
-  glShaderSource(handle_, 1, &shader_cstr, nullptr);
+  glShaderSource(handle_, 1, &source_cstr, nullptr);
   glCompileShader(handle_);
 
   if (CheckError()) {

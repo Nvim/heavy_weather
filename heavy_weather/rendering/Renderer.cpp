@@ -29,8 +29,12 @@ GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
                            api_->CreateBuffer(idesc, indices)};
 }
 
-SharedPtr<Texture> Renderer::CreateTexture(const std::string &path) {
-  return api_->CreateTexture(path);
+// SharedPtr<Texture> Renderer::CreateTexture(const std::string &path) {
+//   return api_->CreateTexture(path);
+// }
+
+SharedPtr<Texture> Renderer::CreateTexture(SharedPtr<Image> img) {
+  return api_->CreateTexture(std::move(img));
 }
 
 void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
@@ -38,7 +42,7 @@ void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
   auto shader = material.GetShader();
   UsePipeline(*shader);
 
-  f32 time = PlatformGetTime();
+  f32 time = PlatformGetTime(); // TODO: get delta!
   auto mvp_uniform = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
   auto time_uniform =
       UniformDescriptor{"uGlobalTime", DataFormat::Float, &time};
@@ -52,11 +56,21 @@ void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
   api_->RenderIndexed(ibuf.GetCount());
 }
 
-SharedPtr<ShaderProgram> Renderer::CreatePipeline(ShaderDescriptor vsdesc,
-                                                  ShaderDescriptor fsdesc) {
-  UniquePtr<graphics::Shader> vs = api_->CreateShader(std::move(vsdesc));
-  UniquePtr<graphics::Shader> fs = api_->CreateShader(std::move(fsdesc));
-  graphics::PipelineDescriptor pdesc = {std::move(vs), std::move(fs)};
+// SharedPtr<ShaderProgram> Renderer::CreatePipeline(ShaderDescriptor vsdesc,
+//                                                   ShaderDescriptor fsdesc) {
+//   UniquePtr<graphics::Shader> vs = api_->CreateShader(std::move(vsdesc));
+//   UniquePtr<graphics::Shader> fs = api_->CreateShader(std::move(fsdesc));
+//   graphics::PipelineDescriptor pdesc = {std::move(vs), std::move(fs)};
+//   return std::shared_ptr<ShaderProgram>(api_->CreatePipeline(pdesc));
+// }
+
+SharedPtr<ShaderProgram> Renderer::CreatePipeline(SharedPtr<ShaderSource> vs,
+                                                  SharedPtr<ShaderSource> fs) {
+  UniquePtr<graphics::Shader> vert =
+      api_->CreateShader(std::move(vs), ShaderType::VertexShader);
+  UniquePtr<graphics::Shader> frag =
+      api_->CreateShader(std::move(fs), ShaderType::FragmentShader);
+  graphics::PipelineDescriptor pdesc = {std::move(vert), std::move(frag)};
   return std::shared_ptr<ShaderProgram>(api_->CreatePipeline(pdesc));
 }
 

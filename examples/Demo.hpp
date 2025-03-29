@@ -6,6 +6,7 @@
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
+#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
@@ -36,7 +37,12 @@ private:
   EventCallback<MouseMovedEvent> mouse_callback_;
   weather::graphics::Renderer renderer_;
   SharedPtr<weather::graphics::Texture> tex_;
-  SharedPtr<weather::graphics::Texture> tex_2;
+  SharedPtr<weather::graphics::Texture> tex_2_;
+  SharedPtr<weather::Image> img1_;
+  SharedPtr<weather::Image> img2_;
+  SharedPtr<weather::ShaderSource> demo_vert_;
+  SharedPtr<weather::ShaderSource> demo_frag_;
+  SharedPtr<weather::ShaderSource> demo_fade_frag_;
 #ifdef HW_ENABLE_GUI
   weather::graphics::Gui gui_;
 #endif

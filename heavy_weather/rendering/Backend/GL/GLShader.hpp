@@ -1,8 +1,8 @@
 #pragma once
 
+#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <heavy_weather/rendering/Shader.hpp>
-#include <utility>
 
 namespace weather::graphics {
 
@@ -11,8 +11,7 @@ namespace weather::graphics {
 
 class GLShader : public Shader {
 public:
-  explicit GLShader(ShaderType type, std::string path)
-      : Shader{type, std::move(path)} {}
+  explicit GLShader(ShaderType type, SharedPtr<ShaderSource> src);
 
   bool Compile() override;
   u32 Hanlde() const { return handle_; }
