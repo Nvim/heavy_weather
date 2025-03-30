@@ -9,6 +9,7 @@
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/scene/components/NameComponent.hpp"
 #include "heavy_weather/scene/components/WidgetComponent.hpp"
+#include "imgui.h"
 #include <cstdio>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -107,7 +108,11 @@ void SceneManager::SubmitAll() {
     HW_ASSERT(ibuf.Type() == BufferType::IndexBuffer);
     renderer_.Submit(mvp, vbuf, ibuf, *mat.material.get());
   }
+  GarbageCollect();
+}
 
+void SceneManager::OnGuiRender() {
+  ImGui::Begin("Scene");
   char title[32];
   auto widgets = scene_.Query<WidgetComponent>();
   for (const auto &e : widgets) {
@@ -124,7 +129,7 @@ void SceneManager::SubmitAll() {
       Gui::EndTreeNode();
     }
   }
-  GarbageCollect();
+  ImGui::End();
 }
 
 void SceneManager::OnEntityRemoved(const EntityRemovedEvent &e) {

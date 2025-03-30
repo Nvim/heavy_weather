@@ -59,6 +59,7 @@ void Application::Run() {
     start = PlatformGetTime();
 
     window_->Update();
+    this->OnRender(delta);
 #ifdef HW_ENABLE_GUI
     graphics::AppInfo info = {
         this->GetProgramName(),
@@ -69,9 +70,8 @@ void Application::Run() {
 
     gui.BeginFrame();
     gui.RenderAppWindow(info, (void *)&this->GetWindow());
-#endif // HW_ENABLE_GUI
-    this->OnRender(delta);
-#ifdef HW_ENABLE_GUI
+
+    this->OnGuiRender(delta);
     gui.EndFrame();
 #endif // HW_ENABLE_GUI
     end = PlatformGetTime();

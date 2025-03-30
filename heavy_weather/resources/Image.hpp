@@ -21,6 +21,7 @@ public:
   const std::filesystem::path &Path() const;
   u8 *Data();
   i32 Channels() const;
+  const std::string &Name() const { return name_; }
 
 private:
   u8 *image_data_;
@@ -28,6 +29,7 @@ private:
   i32 channels_;
   bool empty_;
   std::filesystem::path path_;
+  std::string name_;
 
   void InitEmpty(std::filesystem::path img_path);
 };

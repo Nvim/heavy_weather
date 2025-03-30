@@ -1,6 +1,6 @@
 #include "GLTexture.hpp"
-#include "heavy_weather/loaders/Image.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
+#include "heavy_weather/resources/Image.hpp"
 #include <glad/glad.h>
 
 static GLint WrapFlagToGL(weather::graphics::TextureWrapFlag flag);

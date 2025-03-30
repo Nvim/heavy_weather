@@ -6,6 +6,7 @@
 namespace weather {
 
 ShaderSource::ShaderSource(const std::filesystem::path &path) : path_{path} {
+  name_ = path.string();
   std::ifstream shader_file;
   shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {

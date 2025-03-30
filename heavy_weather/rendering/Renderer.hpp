@@ -2,14 +2,14 @@
 
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/engine.h"
-#include "heavy_weather/loaders/Image.hpp"
-#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLAPI.hpp"
 #include "heavy_weather/rendering/BackendApi.hpp"
 #include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/resources/Image.hpp"
+#include "heavy_weather/resources/ShaderSource.hpp"
 #include <glm/glm.hpp>
 
 namespace weather::graphics {

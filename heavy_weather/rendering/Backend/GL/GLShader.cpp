@@ -30,9 +30,9 @@ GLShader::GLShader(ShaderType type, SharedPtr<ShaderSource> src)
 
 bool GLShader::Compile() {
   HW_ASSERT(Status() == ShaderCompileStatus::NotCompiled);
-  HW_ASSERT(!Source().empty())
+  HW_ASSERT(!SourceStr().empty())
 
-  const char *source_cstr = Source().c_str();
+  const char *source_cstr = SourceStr().c_str();
   handle_ = glCreateShader(GetType(this->Type()));
   glShaderSource(handle_, 1, &source_cstr, nullptr);
   glCompileShader(handle_);

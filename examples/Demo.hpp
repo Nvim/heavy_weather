@@ -6,10 +6,12 @@
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
-#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
+#include "heavy_weather/resources/AssetLibrary.hpp"
+#include "heavy_weather/resources/Image.hpp"
+#include "heavy_weather/resources/ShaderSource.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
 
 using weather::KeyPressedEvent;
@@ -30,19 +32,19 @@ private:
   void OnKeyPressed(const KeyPressedEvent &evt);
   void OnResize(const weather::ResizeEvent &e);
   void OnRender(f64 delta) override;
+  void OnGuiRender(f64 delta) override;
 
   void InitGraphics();
 
   //
   EventCallback<MouseMovedEvent> mouse_callback_;
   weather::graphics::Renderer renderer_;
-  SharedPtr<weather::graphics::Texture> tex_;
-  SharedPtr<weather::graphics::Texture> tex_2_;
-  SharedPtr<weather::Image> img1_;
-  SharedPtr<weather::Image> img2_;
-  SharedPtr<weather::ShaderSource> demo_vert_;
-  SharedPtr<weather::ShaderSource> demo_frag_;
-  SharedPtr<weather::ShaderSource> demo_fade_frag_;
+  weather::AssetLibrary<weather::Image> imgs_;
+  weather::AssetLibrary<weather::graphics::Texture> textures_;
+  weather::AssetLibrary<weather::ShaderSource> shader_srcs_;
+  weather::AssetLibrary<weather::graphics::ShaderProgram> shaders_;
+  weather::AssetLibrary<weather::graphics::Material> materials_;
+
 #ifdef HW_ENABLE_GUI
   weather::graphics::Gui gui_;
 #endif

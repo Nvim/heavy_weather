@@ -3,13 +3,16 @@
 #include <utility>
 
 #include "heavy_weather/core/Asserts.hpp"
-#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/resources/AssetLibrary.hpp"
+#include "heavy_weather/resources/ShaderSource.hpp"
 namespace weather::graphics {
 
 // Represents a shader file on disk, holds it's shader type,
 // Can compile and retrieve errors
 class Shader {
+  friend class AssetLibrary<ShaderProgram>;
+
 public:
   explicit Shader(ShaderType type, SharedPtr<ShaderSource> src)
       : type_{type}, source_{std::move(src)} {
@@ -21,7 +24,8 @@ public:
   ShaderType Type() const { return type_; }
   ShaderCompileStatus Status() const { return compiled_; }
   const std::filesystem::path &Path() const { return source_->Path(); }
-  const std::string &Source() const { return source_->Data(); }
+  const std::string &SourceStr() const { return source_->Data(); }
+  const ShaderSource &Source() const { return *source_; }
 
   //
   virtual ~Shader() = default;

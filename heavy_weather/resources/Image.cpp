@@ -22,6 +22,7 @@ Image::Image(const std::filesystem::path &img_path) {
       HW_CORE_ERROR("Image couldn't be loaded");
       InitEmpty(img_path);
     } else {
+      name_ = img_path.string();
       image_data_ = data;
       size_ = {width, height};
       path_ = img_path;

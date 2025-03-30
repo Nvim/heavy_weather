@@ -10,10 +10,12 @@ public:
   const std::filesystem::path &Path() const { return path_; }
   const std::string &Data() const { return source_; }
   bool Empty() const { return empty_; }
+  const std::string &Name() const { return name_; }
 
 private:
   std::string source_;
   std::filesystem::path path_;
+  std::string name_;
   bool empty_{true};
 };
 

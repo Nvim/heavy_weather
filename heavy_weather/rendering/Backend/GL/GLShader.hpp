@@ -1,7 +1,7 @@
 #pragma once
 
-#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/resources/ShaderSource.hpp"
 #include <heavy_weather/rendering/Shader.hpp>
 
 namespace weather::graphics {

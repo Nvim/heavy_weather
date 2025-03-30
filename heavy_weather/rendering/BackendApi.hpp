@@ -7,9 +7,9 @@
 
 #include "Buffer.hpp"
 #include "Types.hpp"
-#include "heavy_weather/loaders/Image.hpp"
-#include "heavy_weather/loaders/ShaderSource.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
+#include "heavy_weather/resources/Image.hpp"
+#include "heavy_weather/resources/ShaderSource.hpp"
 #include <glm/glm.hpp>
 #include <heavy_weather/engine.h>
 #include <utility>

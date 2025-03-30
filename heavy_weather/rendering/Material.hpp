@@ -11,7 +11,7 @@ namespace weather::graphics {
 class Material {
 
 private:
-  // std::string name_;
+  std::string name_;
   SharedPtr<ShaderProgram> shader_;
   // bool dirty_{false};
   std::unordered_map<std::string, i32> ints_;
@@ -24,12 +24,17 @@ private:
   std::unordered_map<std::string, SharedPtr<Texture>> textures_;
 
 public:
-  Material(SharedPtr<ShaderProgram> shader) : shader_{std::move(shader)} {}
+  Material(SharedPtr<ShaderProgram> shader)
+      : name_{shader->Name()}, shader_{std::move(shader)} {}
+
+  Material(SharedPtr<ShaderProgram> shader, std::string &&name)
+      : name_{std::move(name)}, shader_{std::move(shader)} {}
 
   SharedPtr<ShaderProgram> GetShader() { return shader_; }
   void SetShader(const SharedPtr<ShaderProgram> &shader);
 
   void BindUniforms();
+  const std::string &Name() const { return name_; }
 
   template <typename T>
   void SetUniformValue(std::string &&name, const T &value) {

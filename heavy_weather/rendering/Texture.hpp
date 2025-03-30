@@ -3,7 +3,8 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
-#include "heavy_weather/loaders/Image.hpp"
+#include "heavy_weather/resources/AssetLibrary.hpp"
+#include "heavy_weather/resources/Image.hpp"
 #include <filesystem>
 #include <string>
 #include <utility>
@@ -33,6 +34,8 @@ struct TextureParams {
 };
 
 class Texture {
+  friend class AssetLibrary<Texture>;
+
 public:
   Texture(SharedPtr<Image> image) : img_{std::move(image)}, unit_{counter++} {
     HW_ASSERT(img_ != nullptr);

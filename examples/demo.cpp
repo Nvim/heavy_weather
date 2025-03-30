@@ -8,26 +8,27 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
-#include "heavy_weather/loaders/Loader.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/resources/Loader.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
+#include "imgui.h"
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
-#ifndef TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_IMPLEMENTATION
-#endif // !TINYGLTF_IMPLEMENTATION
-#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#endif // !STB_IMAGE_WRITE_IMPLEMENTATION
+// #ifndef TINYGLTF_IMPLEMENTATION
+// #define TINYGLTF_IMPLEMENTATION
+// #endif // !TINYGLTF_IMPLEMENTATION
+// #ifndef STB_IMAGE_WRITE_IMPLEMENTATION
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #endif // !STB_IMAGE_WRITE_IMPLEMENTATION
 // #ifndef STB_IMAGE_IMPLEMENTATION
 // #define STB_IMAGE_IMPLEMENTATION
 // #endif // !STB_IMAGE_IMPLEMENTATION
-#include <thirdparty/tinygltf/tiny_gltf.h>
+// #include <thirdparty/tinygltf/tiny_gltf.h>
 
 // Shortcut for registering events
 #define BIND_EVENT_FUNC(func) std::bind(func, this, std::placeholders::_1)
@@ -122,48 +123,42 @@ void Demo::InitGraphics() {
       std::pair(cube_verts, sizeof(cube_verts)),
       std::pair(cube_indices, sizeof(cube_indices)), &cube_layout, "cube"};
 
-  // Shaders:
-  // graphics::ShaderDescriptor vsdesc{graphics::ShaderType::VertexShader,
-  //                                   "examples/resources/demo.vert"};
-  // graphics::ShaderDescriptor fsdesc{graphics::ShaderType::FragmentShader,
-  //                                   "examples/resources/demo.frag"};
-  // graphics::ShaderDescriptor
-  // fade_fsdesc{graphics::ShaderType::FragmentShader,
-  //                                        "examples/resources/demo_fade.frag"};
+  auto demo_vert = shader_srcs_.Load("examples/resources/demo.vert");
+  auto demo_frag = shader_srcs_.Load("examples/resources/demo.frag");
+  auto demo_fade_frag = shader_srcs_.Load("examples/resources/demo_fade.frag");
+  auto img1 = imgs_.Load("examples/resources/textures/container.png");
+  auto img2 = imgs_.Load("examples/resources/textures/grass.png");
 
-  img1_ = Loader<Image>::Load("examples/resources/textures/container.png");
-  img2_ = Loader<Image>::Load("examples/resources/textures/grass.png");
-  demo_vert_ = Loader<ShaderSource>::Load("examples/resources/demo.vert");
-  demo_frag_ = Loader<ShaderSource>::Load("examples/resources/demo.frag");
-  demo_fade_frag_ =
-      Loader<ShaderSource>::Load("examples/resources/demo_fade.frag");
+  auto tex_shader = renderer_.CreatePipeline(demo_vert, demo_frag);
+  auto fade_shader = renderer_.CreatePipeline(demo_vert, demo_fade_frag);
 
-  HW_ASSERT(img1_ != nullptr);
-  HW_ASSERT(demo_vert_ != nullptr);
-  HW_ASSERT(demo_frag_ != nullptr);
-  HW_ASSERT(demo_fade_frag_ != nullptr);
-
-  auto tex_shader = renderer_.CreatePipeline(demo_vert_, demo_frag_);
-  auto fade_shader = renderer_.CreatePipeline(demo_vert_, demo_fade_frag_);
+  shaders_.Add(tex_shader);
+  shaders_.Add(fade_shader);
 
   // Texture:
-  tex_ = renderer_.CreateTexture(img1_);
-  tex_2_ = renderer_.CreateTexture(img2_);
-  HW_ASSERT(tex_->Unit() == 0);
-  HW_ASSERT(tex_2_->Unit() == 1);
+  auto tex1 = renderer_.CreateTexture(img1);
+  auto tex2 = renderer_.CreateTexture(img2);
+  HW_ASSERT(tex1->Unit() == 0);
+  HW_ASSERT(tex2->Unit() == 1);
+
+  textures_.Add(tex1);
+  textures_.Add(tex2);
 
   // Materials:
   auto fade_material = std::make_shared<graphics::Material>(fade_shader);
   auto texture_material = std::make_shared<graphics::Material>(tex_shader);
+
+  materials_.Add(fade_material);
+  materials_.Add(texture_material);
 
   fade_material->SetUniformValue<glm::vec4>("uMaterial",
                                             glm::vec4{0.1f, 0.3f, 0.7f, 1.0f});
   fade_material->SetUniformValue<i32>("uFlag", 1);
 
   texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture",
-                                                                  tex_);
+                                                                  tex1);
   texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture2",
-                                                                  tex_2_);
+                                                                  tex2);
   texture_material->SetUniformValue<f32>("uBlendFactor", 0.5f);
 
   u32 cube_mesh =
@@ -174,34 +169,46 @@ void Demo::InitGraphics() {
   scene_manager_.AddMaterial(fade_material, cube_mesh);
   scene_manager_.AddMaterial(texture_material, square_mesh);
 
-  {
-    tinygltf::Model model;
-    tinygltf::TinyGLTF loader;
-    std::string err;
-    std::string warn;
-    bool ret = loader.LoadBinaryFromFile(
-        &model, &err, &warn,
-        "examples/resources/models/Box.glb"); // for binary glTF(.glb)
-
-    if (!warn.empty()) {
-      HW_APP_WARN("WARNING FROM GLTF: {}", warn);
-    }
-
-    if (!err.empty()) {
-      HW_APP_ERROR("ERROR FROM GLTF: {}", err);
-    }
-
-    if (!ret) {
-      HW_APP_ERROR("Failed to parse GLTF");
-    }
-    HW_APP_INFO("GLTF parsing works :)")
-  }
+  // {
+  //   tinygltf::Model model;
+  //   tinygltf::TinyGLTF loader;
+  //   std::string err;
+  //   std::string warn;
+  //   bool ret = loader.LoadBinaryFromFile(
+  //       &model, &err, &warn,
+  //       "examples/resources/models/Box.glb"); // for binary glTF(.glb)
+  //
+  //   if (!warn.empty()) {
+  //     HW_APP_WARN("WARNING FROM GLTF: {}", warn);
+  //   }
+  //
+  //   if (!err.empty()) {
+  //     HW_APP_ERROR("ERROR FROM GLTF: {}", err);
+  //   }
+  //
+  //   if (!ret) {
+  //     HW_APP_ERROR("Failed to parse GLTF");
+  //   }
+  //   HW_APP_INFO("GLTF parsing works :)")
+  // }
 }
 
 void Demo::OnRender(f64 delta) {
   scene_manager_.Update(delta);
   renderer_.Clear(bgcolor_);
   scene_manager_.SubmitAll();
+}
+
+void Demo::OnGuiRender(f64 delta) {
+  (void)delta;
+  scene_manager_.OnGuiRender();
+  ImGui::Begin("Assets");
+  shader_srcs_.OnGuiRender();
+  imgs_.OnGuiRender();
+  textures_.OnGuiRender();
+  shaders_.OnGuiRender();
+  materials_.OnGuiRender();
+  ImGui::End();
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT

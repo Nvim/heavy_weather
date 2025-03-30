@@ -44,6 +44,7 @@ public:
   u32 AddTexture(SharedPtr<Texture> tex, u32 entity);
   void Update(f64 delta);
   void SubmitAll();
+  void OnGuiRender();
 
   // Delete all
   SceneManager(const SceneManager &) = delete;
