@@ -13,7 +13,8 @@ class Material {
 private:
   std::string name_;
   SharedPtr<ShaderProgram> shader_;
-  // bool dirty_{false};
+  static inline std::unordered_map<std::string, i32>
+      instance_count; // instance count per name
   std::unordered_map<std::string, i32> ints_;
   std::unordered_map<std::string, f32> floats_;
   std::unordered_map<std::string, glm::vec2> float2s_;
@@ -30,12 +31,19 @@ public:
   Material(SharedPtr<ShaderProgram> shader, std::string &&name)
       : name_{std::move(name)}, shader_{std::move(shader)} {}
 
+  Material(const Material &);
+  Material(Material &&) noexcept;
+  Material &operator=(const Material &);
+  Material &operator=(Material &&) noexcept;
+
   SharedPtr<ShaderProgram> GetShader() { return shader_; }
   void SetShader(const SharedPtr<ShaderProgram> &shader);
   const std::unordered_map<std::string, SharedPtr<Texture>> &
   GetTextures() const {
     return textures_;
   }
+
+  i64 GetInstanceCount() const;
 
   void BindUniforms();
   const std::string &Name() const { return name_; }

@@ -48,7 +48,8 @@ public:
   AssetLibrary<Texture> textures_;
   AssetLibrary<ShaderSource> shader_srcs_;
   AssetLibrary<ShaderProgram> shaders_;
-  AssetLibrary<Material> materials_;
+  AssetLibrary<Material> material_prefabs_; // "Default" instances from file
+  std::vector<SharedPtr<Material>> material_instances_; // Actual instances
 
 private:
   Renderer *renderer_{};

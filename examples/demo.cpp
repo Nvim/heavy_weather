@@ -127,15 +127,22 @@ void Demo::InitGraphics() {
         scene_manager_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
     u32 square_mesh =
         scene_manager_.AddMesh(sq_desc, glm::vec3{1.0f, 0.0f, 0.0f});
+    sq_desc.name = "square2";
+    u32 square_mesh2 =
+        scene_manager_.AddMesh(sq_desc, glm::vec3{0.0f, 1.0f, 0.0f});
 
     auto texture_material = asset_mgr_.LoadResource<graphics::Material>(
         "examples/resources/materials/texture.json");
-    HW_ASSERT(texture_material != nullptr);
+    auto texture_material2 = asset_mgr_.LoadResource<graphics::Material>(
+        "examples/resources/materials/texture.json");
+    HW_ASSERT(texture_material != nullptr && texture_material != nullptr);
+    HW_ASSERT(texture_material != texture_material2);
     auto fade_material = asset_mgr_.LoadResource<graphics::Material>(
         "examples/resources/materials/fade.json");
     HW_ASSERT(fade_material != nullptr);
     scene_manager_.AddMaterial(fade_material, cube_mesh);
     scene_manager_.AddMaterial(texture_material, square_mesh);
+    scene_manager_.AddMaterial(texture_material2, square_mesh2);
   }
 
   // {
@@ -176,7 +183,7 @@ void Demo::OnGuiRender(f64 delta) {
   asset_mgr_.imgs_.OnGuiRender();
   asset_mgr_.textures_.OnGuiRender();
   asset_mgr_.shaders_.OnGuiRender();
-  asset_mgr_.materials_.OnGuiRender();
+  asset_mgr_.material_prefabs_.OnGuiRender();
   ImGui::End();
 }
 

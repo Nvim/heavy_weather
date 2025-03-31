@@ -4,6 +4,62 @@
 
 namespace weather::graphics {
 
+Material::Material(const Material &other)
+    : shader_(other.shader_), ints_(other.ints_), floats_(other.floats_),
+      float2s_(other.float2s_), float3s_(other.float3s_),
+      float4s_(other.float4s_), mat3s_(other.mat3s_), mat4s_(other.mat4s_),
+      textures_(other.textures_) {
+  // no need to find, other exists
+  name_ = fmt::format("{}#{}", other.name_,
+                      Material::instance_count[other.name_]++);
+}
+Material::Material(Material &&other) noexcept
+    : shader_(std::move(other.shader_)), ints_(std::move(other.ints_)),
+      floats_(std::move(other.floats_)), float2s_(std::move(other.float2s_)),
+      float3s_(std::move(other.float3s_)), float4s_(std::move(other.float4s_)),
+      mat3s_(std::move(other.mat3s_)), mat4s_(std::move(other.mat4s_)),
+      textures_(std::move(other.textures_)) {
+  name_ = fmt::format("{}#{}", other.name_,
+                      Material::instance_count[other.name_] + 1);
+  Material::instance_count[name_]--;
+}
+Material &Material::operator=(const Material &other) {
+  if (&other != this) {
+    name_ = fmt::format("{}#{}", other.name_,
+                        Material::instance_count[other.name_]++);
+    shader_ = other.shader_;
+    ints_ = other.ints_;
+    floats_ = other.floats_;
+    float2s_ = other.float2s_;
+    float3s_ = other.float3s_;
+    float4s_ = other.float4s_;
+    mat3s_ = other.mat3s_;
+    mat4s_ = other.mat4s_;
+    textures_ = other.textures_;
+  }
+  return *this;
+}
+
+Material &Material::operator=(Material &&other) noexcept {
+  if (&other != this) {
+    name_ = fmt::format("{}#{}", other.name_,
+                        Material::instance_count[other.name_]++);
+    shader_ = std::move(other.shader_);
+    ints_ = std::move(other.ints_);
+    floats_ = std::move(other.floats_);
+    float2s_ = std::move(other.float2s_);
+    float3s_ = std::move(other.float3s_);
+    float4s_ = std::move(other.float4s_);
+    mat3s_ = std::move(other.mat3s_);
+    mat4s_ = std::move(other.mat4s_);
+    textures_ = std::move(other.textures_);
+    Material::instance_count[name_]--;
+  }
+  return *this;
+}
+
+i64 Material::GetInstanceCount() const { return instance_count[name_]; }
+
 void Material::SetShader(const SharedPtr<ShaderProgram> &shader) {
   HW_ASSERT_MSG(shader.get() != nullptr, "can't use null shader");
   // TODO: add a way to check that shader was compiled successfully

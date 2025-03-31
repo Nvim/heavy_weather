@@ -5,6 +5,7 @@
 #include <fstream>
 #include <glm/detail/qualifier.hpp>
 #include <glm/fwd.hpp>
+#include <memory>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -59,8 +60,9 @@ AssetManager::LoadTexture(const std::filesystem::path &path) {
 
 SharedPtr<Material>
 AssetManager::LoadMaterial(const std::filesystem::path &path) {
-  if (materials_.Has(path)) {
-    return materials_.Get(path);
+  if (material_prefabs_.Has(path)) {
+    // Skip loading from file if we already loaded the file once:
+    return std::make_shared<Material>(*material_prefabs_.Get(path));
   }
   HW_CORE_DEBUG("AssetManager: Creating new Material for path `{}`.",
                 path.string());
@@ -154,8 +156,9 @@ AssetManager::LoadMaterial(const std::filesystem::path &path) {
     }
   }
   // TODO: matrices
-  materials_.Add(m);
-  return m;
+  material_instances_.push_back(std::make_shared<Material>(*m));
+  material_prefabs_.Add(m);
+  return material_instances_.back();
 }
 
 static bool ValidateMaterialJSON(const json &data) {

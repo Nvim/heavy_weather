@@ -94,7 +94,7 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
   if (ImGui::TreeNode("Materials")) {
     for (const auto &mat : assets_) {
       if (ImGui::TreeNode(mat.first.c_str())) {
-        ImGui::Text("Use count: %ld", mat.second.use_count());
+        ImGui::Text("Use count: %ld", mat.second->GetInstanceCount());
         DisplayShaderPipeline(*mat.second->GetShader(), mat.second.use_count());
         for (const auto &tex : mat.second->GetTextures()) {
           if (ImGui::TreeNode(tex.first.c_str())) {
