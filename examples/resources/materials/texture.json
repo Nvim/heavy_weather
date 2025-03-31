@@ -1,0 +1,19 @@
+{
+  "name": "Textured",
+  "vertex": "examples/resources/demo.vert",
+  "fragment": "examples/resources/demo.frag",
+  "uniforms": {
+    "ints": {},
+    "floats": {
+      "uBlendFactor": 0.5
+    },
+    "float2s": {},
+    "float3s": {},
+    "mat3s": {},
+    "mat4s": {}
+  },
+  "textures": {
+    "uTexture": "examples/resources/textures/container.png",
+    "uTexture2": "examples/resources/textures/grass.png"
+  }
+}

@@ -32,6 +32,10 @@ public:
 
   SharedPtr<ShaderProgram> GetShader() { return shader_; }
   void SetShader(const SharedPtr<ShaderProgram> &shader);
+  const std::unordered_map<std::string, SharedPtr<Texture>> &
+  GetTextures() const {
+    return textures_;
+  }
 
   void BindUniforms();
   const std::string &Name() const { return name_; }

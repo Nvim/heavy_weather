@@ -59,6 +59,8 @@ public:
   bool Loaded() const { return loaded_; }
   const std::filesystem::path &Path() const { return img_->Path(); }
   const std::string &Name() const { return name_; }
+  std::pair<u32, u32> Size() const { return img_->Size(); };
+  u32 Handle() const { return handle_; }
 
 private:
   static inline i32 counter{0};
@@ -69,7 +71,6 @@ private:
   i32 unit_;
 
 protected:
-  u32 Handle() const { return handle_; }
   u32 *HandlePtr() { return &handle_; }
 };
 

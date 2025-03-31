@@ -15,7 +15,8 @@ target_link_libraries(
          glad
          imgui
          stb::stb
-         tinygltf)
+         tinygltf
+         nlohmann_json::nlohmann_json)
 
 if(BUILD_TESTING)
   add_executable(sparse_test "${CMAKE_CURRENT_SOURCE_DIR}/ecs/sparse_test.cpp")

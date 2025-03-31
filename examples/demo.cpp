@@ -12,9 +12,8 @@
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
-#include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
-#include "heavy_weather/resources/Loader.hpp"
+#include "heavy_weather/resources/AssetManager.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
 #include "imgui.h"
 #include <glm/fwd.hpp>
@@ -123,51 +122,21 @@ void Demo::InitGraphics() {
       std::pair(cube_verts, sizeof(cube_verts)),
       std::pair(cube_indices, sizeof(cube_indices)), &cube_layout, "cube"};
 
-  auto demo_vert = shader_srcs_.Load("examples/resources/demo.vert");
-  auto demo_frag = shader_srcs_.Load("examples/resources/demo.frag");
-  auto demo_fade_frag = shader_srcs_.Load("examples/resources/demo_fade.frag");
-  auto img1 = imgs_.Load("examples/resources/textures/container.png");
-  auto img2 = imgs_.Load("examples/resources/textures/grass.png");
+  {
+    u32 cube_mesh =
+        scene_manager_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
+    u32 square_mesh =
+        scene_manager_.AddMesh(sq_desc, glm::vec3{1.0f, 0.0f, 0.0f});
 
-  auto tex_shader = renderer_.CreatePipeline(demo_vert, demo_frag);
-  auto fade_shader = renderer_.CreatePipeline(demo_vert, demo_fade_frag);
-
-  shaders_.Add(tex_shader);
-  shaders_.Add(fade_shader);
-
-  // Texture:
-  auto tex1 = renderer_.CreateTexture(img1);
-  auto tex2 = renderer_.CreateTexture(img2);
-  HW_ASSERT(tex1->Unit() == 0);
-  HW_ASSERT(tex2->Unit() == 1);
-
-  textures_.Add(tex1);
-  textures_.Add(tex2);
-
-  // Materials:
-  auto fade_material = std::make_shared<graphics::Material>(fade_shader);
-  auto texture_material = std::make_shared<graphics::Material>(tex_shader);
-
-  materials_.Add(fade_material);
-  materials_.Add(texture_material);
-
-  fade_material->SetUniformValue<glm::vec4>("uMaterial",
-                                            glm::vec4{0.1f, 0.3f, 0.7f, 1.0f});
-  fade_material->SetUniformValue<i32>("uFlag", 1);
-
-  texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture",
-                                                                  tex1);
-  texture_material->SetUniformValue<SharedPtr<graphics::Texture>>("uTexture2",
-                                                                  tex2);
-  texture_material->SetUniformValue<f32>("uBlendFactor", 0.5f);
-
-  u32 cube_mesh =
-      scene_manager_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
-  u32 square_mesh =
-      scene_manager_.AddMesh(sq_desc, glm::vec3{1.0f, 0.0f, 0.0f});
-
-  scene_manager_.AddMaterial(fade_material, cube_mesh);
-  scene_manager_.AddMaterial(texture_material, square_mesh);
+    auto texture_material = asset_mgr_.LoadResource<graphics::Material>(
+        "examples/resources/materials/texture.json");
+    HW_ASSERT(texture_material != nullptr);
+    auto fade_material = asset_mgr_.LoadResource<graphics::Material>(
+        "examples/resources/materials/fade.json");
+    HW_ASSERT(fade_material != nullptr);
+    scene_manager_.AddMaterial(fade_material, cube_mesh);
+    scene_manager_.AddMaterial(texture_material, square_mesh);
+  }
 
   // {
   //   tinygltf::Model model;
@@ -203,11 +172,11 @@ void Demo::OnGuiRender(f64 delta) {
   (void)delta;
   scene_manager_.OnGuiRender();
   ImGui::Begin("Assets");
-  shader_srcs_.OnGuiRender();
-  imgs_.OnGuiRender();
-  textures_.OnGuiRender();
-  shaders_.OnGuiRender();
-  materials_.OnGuiRender();
+  asset_mgr_.shader_srcs_.OnGuiRender();
+  asset_mgr_.imgs_.OnGuiRender();
+  asset_mgr_.textures_.OnGuiRender();
+  asset_mgr_.shaders_.OnGuiRender();
+  asset_mgr_.materials_.OnGuiRender();
   ImGui::End();
 }
 

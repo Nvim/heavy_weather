@@ -2,6 +2,7 @@
 
 #include "Shader.hpp"
 #include "Types.hpp"
+#include <filesystem>
 #include <heavy_weather/core/Asserts.hpp>
 #include <heavy_weather/engine.h>
 
@@ -15,10 +16,11 @@ public:
   ShaderProgram &operator=(ShaderProgram &&) = delete;
 
   explicit ShaderProgram(PipelineDescriptor &desc) {
-    HW_ASSERT(desc.FragmentShader.get()->Type() == ShaderType::FragmentShader);
-    HW_ASSERT(desc.VertexShader.get()->Type() == ShaderType::VertexShader);
-    name_ = desc.VertexShader.get()->Path().stem().string() +
-            desc.FragmentShader.get()->Path().stem().string();
+    auto &vs = *desc.VertexShader.get();
+    auto &fs = *desc.FragmentShader.get();
+    HW_ASSERT(fs.Type() == ShaderType::FragmentShader);
+    HW_ASSERT(vs.Type() == ShaderType::VertexShader);
+    name_ = CreateName(vs.Path(), fs.Path());
     vertex_ = std::move(desc.VertexShader);
     fragment_ = std::move(desc.FragmentShader);
   }
@@ -31,6 +33,10 @@ public:
   const std::string &Name() const { return name_; }
 
   virtual void BindUniform(UniformDescriptor &desc) = 0;
+  static std::string CreateName(const std::filesystem::path &vs,
+                                const std::filesystem::path &fs) {
+    return vs.stem().string() + fs.stem().string();
+  }
 
 protected:
   SharedPtr<Shader> vertex_{nullptr};

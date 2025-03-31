@@ -13,7 +13,7 @@ public:
   // Add if not present, else do nothing
   void Add(SharedPtr<T> data) {
     if (!Has(data.get()->Name())) {
-      HW_CORE_INFO("Loading asset {}.", data.get()->Name());
+      HW_CORE_DEBUG("AssetLibrary: Adding asset {}.", data.get()->Name());
       // assets_.at(data.get()->Name()) = data;
       assets_[data.get()->Name()] = data;
     }
@@ -22,6 +22,7 @@ public:
   // Load resource from disk, add it to library and return ptr to it
   SharedPtr<T> Load(const std::string &path) {
     if (!Has(path)) {
+      HW_CORE_DEBUG("AssetLibrary: Loading resource {} using Loader", path);
       assets_[path] = Loader<T>::Load(path);
     }
     return assets_[path];
@@ -38,7 +39,7 @@ public:
   SharedPtr<T> Get(const std::string &name) {
     auto at = assets_.find(name);
     if (at != assets_.end()) {
-      return at;
+      return at->second;
     }
     HW_ASSERT(false);
     return nullptr;

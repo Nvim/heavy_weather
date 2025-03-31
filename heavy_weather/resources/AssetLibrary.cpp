@@ -69,8 +69,8 @@ template <> void AssetLibrary<weather::graphics::Texture>::OnGuiRender() {
         ImGui::Text("Use count: %ld", t.second.use_count());
         DisplayImage(*t.second->img_, t.second->img_.use_count());
         ImGui::Image(t.second->Handle(),
-                     {static_cast<float>(t.second->img_->Size().first),
-                      static_cast<float>(t.second->img_->Size().second)});
+                     {static_cast<float>(t.second->Size().first),
+                      static_cast<float>(t.second->Size().second)});
         if (ImGui::Button("Reload")) {
           HW_CORE_DEBUG("Reloading texture {}", t.second.get()->Name());
         }
@@ -96,6 +96,14 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
       if (ImGui::TreeNode(mat.first.c_str())) {
         ImGui::Text("Use count: %ld", mat.second.use_count());
         DisplayShaderPipeline(*mat.second->GetShader(), mat.second.use_count());
+        for (const auto &tex : mat.second->GetTextures()) {
+          if (ImGui::TreeNode(tex.first.c_str())) {
+            ImGui::Image(tex.second->Handle(),
+                         {static_cast<float>(tex.second->Size().first),
+                          static_cast<float>(tex.second->Size().second)});
+            ImGui::TreePop();
+          }
+        }
         ImGui::Text("Uniforms: TODO");
         if (ImGui::Button("Reload")) {
           HW_CORE_DEBUG("Reloading material {}", mat.second.get()->Name());

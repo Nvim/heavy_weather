@@ -10,6 +10,7 @@
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/resources/AssetLibrary.hpp"
+#include "heavy_weather/resources/AssetManager.hpp"
 #include "heavy_weather/resources/Image.hpp"
 #include "heavy_weather/resources/ShaderSource.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
@@ -39,11 +40,12 @@ private:
   //
   EventCallback<MouseMovedEvent> mouse_callback_;
   weather::graphics::Renderer renderer_;
-  weather::AssetLibrary<weather::Image> imgs_;
-  weather::AssetLibrary<weather::graphics::Texture> textures_;
-  weather::AssetLibrary<weather::ShaderSource> shader_srcs_;
-  weather::AssetLibrary<weather::graphics::ShaderProgram> shaders_;
-  weather::AssetLibrary<weather::graphics::Material> materials_;
+  weather::AssetManager asset_mgr_{&renderer_};
+  // weather::AssetLibrary<weather::Image> imgs_;
+  // weather::AssetLibrary<weather::graphics::Texture> textures_;
+  // weather::AssetLibrary<weather::ShaderSource> shader_srcs_;
+  // weather::AssetLibrary<weather::graphics::ShaderProgram> shaders_;
+  // weather::AssetLibrary<weather::graphics::Material> materials_;
 
 #ifdef HW_ENABLE_GUI
   weather::graphics::Gui gui_;

@@ -4,6 +4,7 @@ include(imgui.cmake)
 include(googletest.cmake)
 include(stb.cmake)
 include(tinygltf.cmake)
+include(json.cmake)
 
 set(BUILD_GLFW
     OFF

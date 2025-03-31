@@ -1,0 +1,23 @@
+{
+  "name": "Fade",
+  "vertex": "examples/resources/demo.vert",
+  "fragment": "examples/resources/demo_fade.frag",
+  "uniforms": {
+    "ints": {
+      "uFlag": 1
+    },
+    "floats": {},
+    "float2s": {},
+    "float3s": {},
+    "float4s": {
+      "uMaterial": [
+        0.1,
+        0.3,
+        0.7,
+        1.0
+      ]
+    },
+    "mat3s": {},
+    "mat4s": {}
+  }
+}
