@@ -131,8 +131,7 @@ AssetManager::LoadMaterial(const std::filesystem::path &path) {
     std::unordered_map<std::string, std::array<f32, 2>> f2s =
         data["uniforms"].at("float2s");
     for (const auto &kv : f2s) {
-      m->SetUniformValue<glm::vec2>(kv.first.c_str(),
-                                    glm::vec2{kv.second[0], kv.second[1]});
+      m->SetUniformValue(kv.first.c_str(), kv.second);
     }
   }
   if (data["uniforms"].contains("float3s") &&
@@ -140,9 +139,7 @@ AssetManager::LoadMaterial(const std::filesystem::path &path) {
     std::unordered_map<std::string, std::array<f32, 3>> f3s =
         data["uniforms"].at("float3s");
     for (const auto &kv : f3s) {
-      m->SetUniformValue<glm::vec3>(
-          kv.first.c_str(),
-          glm::vec3{kv.second[0], kv.second[1], kv.second[2]});
+      m->SetUniformValue<std::array<f32, 3>>(kv.first.c_str(), kv.second);
     }
   }
   if (data["uniforms"].contains("float4s") &&
@@ -150,9 +147,7 @@ AssetManager::LoadMaterial(const std::filesystem::path &path) {
     std::unordered_map<std::string, std::array<f32, 4>> f4s =
         data["uniforms"].at("float4s");
     for (const auto &kv : f4s) {
-      m->SetUniformValue<glm::vec4>(
-          kv.first.c_str(),
-          glm::vec4{kv.second[0], kv.second[1], kv.second[2], kv.second[3]});
+      m->SetUniformValue<std::array<f32, 4>>(kv.first.c_str(), kv.second);
     }
   }
   // TODO: matrices

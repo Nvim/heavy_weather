@@ -56,6 +56,9 @@ public:
     else if constexpr (std::is_same_v<T, glm::vec2>) { float2s_[std::move(name)] = value; } 
     else if constexpr (std::is_same_v<T, glm::vec3>) { float3s_[std::move(name)] = value; } 
     else if constexpr (std::is_same_v<T, glm::vec4>) { float4s_[std::move(name)] = value; } 
+    else if constexpr (std::is_same_v<T, std::array<f32, 2>>) { float2s_[std::move(name)] = glm::vec2{value[0], value[1]}; } 
+    else if constexpr (std::is_same_v<T, std::array<f32, 3>>) { float3s_[std::move(name)] = glm::vec3{value[0], value[1], value[2]}; } 
+    else if constexpr (std::is_same_v<T, std::array<f32, 4>>) { float4s_[std::move(name)] = glm::vec4{value[0], value[1], value[2], value[3]}; } 
     else if constexpr (std::is_same_v<T, glm::mat3>) { mat3s_[std::move(name)] =   value; } 
     else if constexpr (std::is_same_v<T, glm::mat4>) { mat4s_[std::move(name)] =   value; } 
     else if constexpr (std::is_same_v<T, SharedPtr<Texture>>) { textures_[std::move(name)] =   value; } 
