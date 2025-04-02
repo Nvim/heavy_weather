@@ -2,6 +2,7 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Material.hpp"
+#include "imgui.h"
 #include <fstream>
 #include <glm/detail/qualifier.hpp>
 #include <glm/fwd.hpp>
@@ -18,6 +19,17 @@ using ShaderProgram = graphics::ShaderProgram;
 using Renderer = graphics::Renderer;
 
 static bool ValidateMaterialJSON(const json &data);
+
+void AssetManager::OnGuiRender(const GuiRenderEvent& evt){
+  (void)evt;
+  ImGui::Begin("Assets");
+  shader_srcs_.OnGuiRender();
+  imgs_.OnGuiRender();
+  textures_.OnGuiRender();
+  shaders_.OnGuiRender();
+  material_prefabs_.OnGuiRender();
+  ImGui::End();
+}
 
 /*
  * 'Primitive' types can be loaded by the AssetLibrary using static Loader.

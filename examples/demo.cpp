@@ -7,6 +7,8 @@
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
+#include "heavy_weather/event/GuiRenderEvent.hpp"
+#include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
@@ -177,14 +179,8 @@ void Demo::OnRender(f64 delta) {
 
 void Demo::OnGuiRender(f64 delta) {
   (void)delta;
+  EventDispatch(GuiRenderEvent{});
   scene_manager_.OnGuiRender();
-  ImGui::Begin("Assets");
-  asset_mgr_.shader_srcs_.OnGuiRender();
-  asset_mgr_.imgs_.OnGuiRender();
-  asset_mgr_.textures_.OnGuiRender();
-  asset_mgr_.shaders_.OnGuiRender();
-  asset_mgr_.material_prefabs_.OnGuiRender();
-  ImGui::End();
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT

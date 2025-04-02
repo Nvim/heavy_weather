@@ -9,7 +9,10 @@
  * */
 
 #include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/event/EventCallback.hpp"
+#include "heavy_weather/event/GuiRenderEvent.hpp"
 #include "heavy_weather/engine.h"
+#include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
@@ -27,7 +30,10 @@ class AssetManager {
   using Renderer = graphics::Renderer;
 
 public:
-  AssetManager(Renderer *renderer) : renderer_{renderer} {}
+  AssetManager(Renderer *renderer) : renderer_{renderer} {
+    EventCallback<GuiRenderEvent> c = [this](const GuiRenderEvent&e){this->OnGuiRender(e);};
+    EventRegister(c);
+  }
 
   template <typename T>
   SharedPtr<T> LoadResource(const std::filesystem::path &path) {
@@ -44,15 +50,17 @@ public:
     // clang-format on
   };
 
+  void OnGuiRender(const GuiRenderEvent& evt);
+
+
+private:
+  Renderer *renderer_{};
   AssetLibrary<Image> imgs_;
   AssetLibrary<Texture> textures_;
   AssetLibrary<ShaderSource> shader_srcs_;
   AssetLibrary<ShaderProgram> shaders_;
   AssetLibrary<Material> material_prefabs_; // "Default" instances from file
   std::vector<SharedPtr<Material>> material_instances_; // Actual instances
-
-private:
-  Renderer *renderer_{};
   //
   SharedPtr<Image> LoadImage(const std::filesystem::path &path);
   SharedPtr<ShaderSource> LoadShaderSource(const std::filesystem::path &path);
