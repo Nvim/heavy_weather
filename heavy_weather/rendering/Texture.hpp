@@ -37,7 +37,8 @@ class Texture {
   friend class AssetLibrary<Texture>;
 
 public:
-  Texture(SharedPtr<Image> image) : img_{std::move(image)}, unit_{counter++} {
+  explicit Texture(SharedPtr<Image> image)
+      : img_{std::move(image)}, unit_{counter++} {
     HW_ASSERT(img_ != nullptr);
     HW_ASSERT(!img_->Empty());
     if (img_->Path().has_stem()) {
@@ -52,6 +53,7 @@ public:
   virtual void SetMagFilterFlag(TextureFilterFlag flag) = 0;
   virtual void SetWrapFlag(TextureWrapFlag flag) = 0;
   virtual void SetParams(const TextureParams &params) = 0;
+  virtual void Reload() = 0;
   void SetName(const std::string &name) { name_ = name; }
 
   i32 Unit() const { return unit_; }
@@ -61,6 +63,10 @@ public:
   const std::string &Name() const { return name_; }
   std::pair<u32, u32> Size() const { return img_->Size(); };
   u32 Handle() const { return handle_; }
+
+  static std::string ComputeName(const std::filesystem::path& path) {
+    return path.stem().string();
+  }
 
 private:
   static inline i32 counter{0};
@@ -72,6 +78,7 @@ private:
 
 protected:
   u32 *HandlePtr() { return &handle_; }
+  Image &GetImage() const { return *img_; }
 };
 
 } // namespace weather::graphics

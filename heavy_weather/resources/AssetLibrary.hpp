@@ -4,6 +4,7 @@
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/resources/Loader.hpp"
+#include <algorithm>
 #include <unordered_map>
 
 namespace weather {
@@ -35,13 +36,35 @@ public:
     return (assets_.find(name) != assets_.end());
   }
 
+  bool HasPath(const std::filesystem::path &path) {
+    auto r =
+        std::find_if(assets_.begin(), assets_.end(), [&path](const auto &elem) {
+          return elem.second->Path() == path;
+        });
+    return r != assets_.end();
+  }
+
   // nullptr if absent
   SharedPtr<T> Get(const std::string &name) {
     auto at = assets_.find(name);
     if (at != assets_.end()) {
       return at->second;
     }
-    HW_ASSERT(false);
+    std::string errmsg = fmt::format("Couldn't find asset {}", name);
+    HW_ASSERT_MSG(false, errmsg.c_str());
+    return nullptr;
+  }
+
+  SharedPtr<T> GetPath(const std::filesystem::path &path) {
+    auto r =
+        std::find_if(assets_.begin(), assets_.end(), [&path](const auto &elem) {
+          HW_CORE_WARN("Comparing paths {} and {}", path.c_str(),
+                       elem.second->Path().c_str());
+          return (elem.second->Path() == path);
+        });
+    if (r != assets_.end()) {
+      return r->second;
+    }
     return nullptr;
   }
 

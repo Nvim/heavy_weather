@@ -32,7 +32,7 @@ class AssetManager {
 public:
   AssetManager(Renderer *renderer) : renderer_{renderer} {
     EventCallback<GuiRenderEvent> c = [this](const GuiRenderEvent&e){this->OnGuiRender(e);};
-    EventRegister(c);
+    EventRegister(c, this);
   }
 
   template <typename T>

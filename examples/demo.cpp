@@ -80,11 +80,11 @@ Demo::Demo(WindowProps &window_props, f64 fps,
 {
   // Event callbacks:
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
-  EventRegister(mouse_callback_);
+  EventRegister(mouse_callback_, this);
   EventCallback<KeyPressedEvent> k = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
-  EventRegister(k);
+  EventRegister(k, this);
   EventCallback<ResizeEvent> r = BIND_EVENT_FUNC(&Demo::OnResize);
-  EventRegister(r);
+  EventRegister(r, this);
 
   // Graphics:
   InitGraphics();

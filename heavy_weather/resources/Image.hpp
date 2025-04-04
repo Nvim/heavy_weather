@@ -16,6 +16,7 @@ public:
 
   ~Image();
 
+  void Reload();
   std::pair<u32, u32> Size() const;
   bool Empty() const;
   const std::filesystem::path &Path() const;

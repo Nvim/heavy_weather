@@ -1,4 +1,7 @@
 #include "GLTexture.hpp"
+#include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/event/EventSystem.hpp"
+#include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/resources/Image.hpp"
 #include <glad/glad.h>
@@ -23,9 +26,41 @@ GLTexture::GLTexture(SharedPtr<Image> img, const TextureParams &params)
                (i32)img->Size().second, 0, format, GL_UNSIGNED_BYTE,
                img->Data());
   glGenerateMipmap(GL_TEXTURE_2D);
+
+  EventCallback<ResourceReloadEvent<Image>> evt =
+      [this](const ResourceReloadEvent<Image> &evt) {
+        this->OnResourceReload(evt);
+      };
+  EventRegister(evt, this);
 }
 
-void GLTexture::Bind() const { glBindTexture(GL_TEXTURE_2D, Handle()); }
+void GLTexture::Reload() {
+  HW_CORE_DEBUG("Texture: reloading");
+  GetImage().Reload();
+}
+
+void GLTexture::OnResourceReload(const ResourceReloadEvent<Image> &evt) {
+  if (evt.GetResource()->Path() != Path()) {
+    HW_CORE_DEBUG("Texture: Ignoring ResourceReloadEvent<Image>: different paths");
+    return;
+  }
+  HW_CORE_DEBUG("Texture: Handling ResourceReloadEvent<Image>");
+  GLint format = GL_RGB;
+  Image& img = GetImage();
+  if (img.Channels() == 4) {
+    format = GL_RGBA;
+  }
+  //
+  Bind();
+  glTexImage2D(GL_TEXTURE_2D, 0, format, (i32)img.Size().first,
+               (i32)img.Size().second, 0, format, GL_UNSIGNED_BYTE, img.Data());
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void GLTexture::Bind() const {
+  glActiveTexture(GL_TEXTURE0 + Unit());
+  glBindTexture(GL_TEXTURE_2D, Handle());
+}
 
 GLTexture::~GLTexture() { glDeleteTextures(1, HandlePtr()); }
 

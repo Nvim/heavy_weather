@@ -29,7 +29,7 @@ SceneManager::SceneManager(Renderer &renderer,
       renderer_{renderer} {
   EventCallback<EntityRemovedEvent> evt =
       std::bind(&SceneManager::OnEntityRemoved, this, std::placeholders::_1);
-  EventRegister(evt);
+  EventRegister(evt, this);
 }
 
 void SceneManager::Update(f64 delta) {

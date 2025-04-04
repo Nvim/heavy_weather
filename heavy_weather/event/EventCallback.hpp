@@ -21,6 +21,7 @@ class EventCallbackWrapperInterface {
 public:
   virtual void Trigger(const Event &e) const = 0;
   virtual const std::string &GetID() const = 0;
+  virtual void* GetInstance() const = 0; 
   virtual ~EventCallbackWrapperInterface() = default;
 };
 
@@ -28,8 +29,8 @@ public:
 template <typename EventType>
 class EventCallbackWrapper : public EventCallbackWrapperInterface {
 public:
-  explicit EventCallbackWrapper(const EventCallback<EventType> &callback)
-      : name_(callback.target_type().name()), callback_(callback) {}
+  explicit EventCallbackWrapper(const EventCallback<EventType> &callback, void* instance=nullptr)
+      : name_(callback.target_type().name()), callback_(callback), instance_{instance} {}
 
   void Trigger(const Event &e) const override {
     if (e.GetEvtCode() == EventType::kCode) {
@@ -37,11 +38,13 @@ public:
     }
   }
   const std::string &GetID() const override { return name_; }
+  void* GetInstance() const override {return instance_;}
   ~EventCallbackWrapper() override = default;
 
 private:
   std::string name_;
   EventCallback<EventType> callback_;
+  void* instance_;
 };
 
 } // namespace weather

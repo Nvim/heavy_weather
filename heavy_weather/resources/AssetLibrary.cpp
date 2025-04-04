@@ -72,7 +72,8 @@ template <> void AssetLibrary<weather::graphics::Texture>::OnGuiRender() {
                      {static_cast<float>(t.second->Size().first),
                       static_cast<float>(t.second->Size().second)});
         if (ImGui::Button("Reload")) {
-          HW_CORE_DEBUG("Reloading texture {}", t.second.get()->Name());
+          HW_CORE_DEBUG("Reloading texture {}", t.second->Name());
+          t.second->Reload();
         }
         ImGui::TreePop();
       }
@@ -106,7 +107,7 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
         }
         ImGui::Text("Uniforms: TODO");
         if (ImGui::Button("Reload")) {
-          HW_CORE_DEBUG("Reloading material {}", mat.second.get()->Name());
+          HW_CORE_DEBUG("Reloading material {}", mat.second->Name());
         }
         ImGui::TreePop();
       }
