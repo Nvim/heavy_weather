@@ -22,4 +22,5 @@ void main()
 
   // FragColor = mix(texture(uTexture), col, 0.6);
   FragColor = col;
+  // FragColor = vec4(0.6, 0.05, 0.7, 1.0);
 }

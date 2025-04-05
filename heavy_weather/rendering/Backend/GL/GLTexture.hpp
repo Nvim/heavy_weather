@@ -20,7 +20,7 @@ public:
   void SetParams(const TextureParams &params) override;
   void Reload() override;
 
-  void OnResourceReload(const ResourceReloadEvent<Image>& evt);
+  void OnResourceReload(const ResourceReloadEvent<Image> &evt) override;
 
   GLTexture(const GLTexture &) = default;
   GLTexture(GLTexture &&) = delete;

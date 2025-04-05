@@ -30,8 +30,7 @@ static void DisplayImage(const Image &i, i64 use_count) {
   }
 }
 
-static void DisplayShaderPipeline(const graphics::ShaderProgram &p,
-                                  i64 use_count) {
+static void DisplayShaderPipeline(graphics::ShaderProgram &p, i64 use_count) {
   if (ImGui::TreeNode(p.Name().c_str())) {
     ImGui::Text("Use count: %ld", use_count);
     ImGui::Text("Vertex Shader: %s", p.VertexShader().Path().c_str());
@@ -40,6 +39,7 @@ static void DisplayShaderPipeline(const graphics::ShaderProgram &p,
     DisplayShaderSource(p.FragmentShader().Source(), use_count);
     if (ImGui::Button("Reload")) {
       HW_CORE_DEBUG("Reloading shader pipeline {}", p.Name());
+      p.Reload();
     }
     ImGui::TreePop();
   }
@@ -96,7 +96,8 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
     for (const auto &mat : assets_) {
       if (ImGui::TreeNode(mat.first.c_str())) {
         ImGui::Text("Use count: %ld", mat.second->GetInstanceCount());
-        DisplayShaderPipeline(*mat.second->GetShader(), mat.second.use_count());
+        DisplayShaderPipeline(*mat.second->GetShader(),
+                              mat.second->GetShader().use_count());
         for (const auto &tex : mat.second->GetTextures()) {
           if (ImGui::TreeNode(tex.first.c_str())) {
             ImGui::Image(tex.second->Handle(),

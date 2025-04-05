@@ -58,8 +58,6 @@ public:
   SharedPtr<T> GetPath(const std::filesystem::path &path) {
     auto r =
         std::find_if(assets_.begin(), assets_.end(), [&path](const auto &elem) {
-          HW_CORE_WARN("Comparing paths {} and {}", path.c_str(),
-                       elem.second->Path().c_str());
           return (elem.second->Path() == path);
         });
     if (r != assets_.end()) {

@@ -26,12 +26,6 @@ GLTexture::GLTexture(SharedPtr<Image> img, const TextureParams &params)
                (i32)img->Size().second, 0, format, GL_UNSIGNED_BYTE,
                img->Data());
   glGenerateMipmap(GL_TEXTURE_2D);
-
-  EventCallback<ResourceReloadEvent<Image>> evt =
-      [this](const ResourceReloadEvent<Image> &evt) {
-        this->OnResourceReload(evt);
-      };
-  EventRegister(evt, this);
 }
 
 void GLTexture::Reload() {
@@ -40,13 +34,13 @@ void GLTexture::Reload() {
 }
 
 void GLTexture::OnResourceReload(const ResourceReloadEvent<Image> &evt) {
-  if (evt.GetResource()->Path() != Path()) {
-    HW_CORE_DEBUG("Texture: Ignoring ResourceReloadEvent<Image>: different paths");
+  if (evt.GetType() != ResourceType::IMAGE ||
+      evt.GetResource()->Path() != Path()) {
     return;
   }
   HW_CORE_DEBUG("Texture: Handling ResourceReloadEvent<Image>");
   GLint format = GL_RGB;
-  Image& img = GetImage();
+  Image &img = GetImage();
   if (img.Channels() == 4) {
     format = GL_RGBA;
   }
