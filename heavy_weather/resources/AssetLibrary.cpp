@@ -11,9 +11,6 @@ static void DisplayShaderSource(const ShaderSource &s, i64 use_count) {
   if (ImGui::TreeNode(s.Path().string().c_str())) {
     ImGui::Text("Use count: %ld", use_count);
     ImGui::Text("%s", s.Data().c_str());
-    if (ImGui::Button("Reload")) {
-      HW_CORE_DEBUG("Reloading shader {}", s.Path().string());
-    }
     ImGui::TreePop();
   }
 }
@@ -23,9 +20,6 @@ static void DisplayImage(const Image &i, i64 use_count) {
     ImGui::Text("Use count: %ld", use_count);
     ImGui::Text("%dx%d. %d Channels.", i.Size().first, i.Size().second,
                 i.Channels());
-    if (ImGui::Button("Reload")) {
-      HW_CORE_DEBUG("Reloading image {}", i.Path().string());
-    }
     ImGui::TreePop();
   }
 }
@@ -108,7 +102,13 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
         }
         ImGui::Text("Uniforms: TODO");
         if (ImGui::Button("Reload")) {
-          HW_CORE_DEBUG("Reloading material {}", mat.second->Name());
+          /* *
+           * TODO: Specify what should be done here:
+           * - Reload prefab only, or all instances as well?
+           * - Dispatch reload to shaders/textures ?
+           * */
+          HW_CORE_DEBUG("Reloading material {} [NOT IMPLEMENTED]",
+                        mat.second->Name());
         }
         ImGui::TreePop();
       }
