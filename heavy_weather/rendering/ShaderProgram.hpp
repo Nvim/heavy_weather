@@ -2,6 +2,8 @@
 
 #include "Shader.hpp"
 #include "Types.hpp"
+#include "heavy_weather/event/ResourceReloadEvent.hpp"
+#include "heavy_weather/event/Util.hpp"
 #include <filesystem>
 #include <heavy_weather/core/Asserts.hpp>
 #include <heavy_weather/engine.h>
@@ -23,8 +25,13 @@ public:
     name_ = CreateName(vs.Path(), fs.Path());
     vertex_ = std::move(desc.VertexShader);
     fragment_ = std::move(desc.FragmentShader);
+
+    reload_cb_ = [this](const ResourceReloadEvent<Shader> &e) {
+      this->OnResourceReload(e);
+    };
+    EventRegister(reload_cb_, this);
   }
-  virtual ~ShaderProgram() = default;
+  virtual ~ShaderProgram() { EventUnregister(reload_cb_); }
   virtual ShaderCompileStatus Init() = 0;
 
   const Shader &VertexShader() const { return *vertex_; }
@@ -38,11 +45,15 @@ public:
     return vs.stem().string() + fs.stem().string();
   }
 
+  virtual void Reload() = 0;
+  virtual void OnResourceReload(const ResourceReloadEvent<Shader> &evt) = 0;
+
 protected:
   SharedPtr<Shader> vertex_{nullptr};
   SharedPtr<Shader> fragment_{nullptr};
 
 private:
   std::string name_;
+  EventCallback<ResourceReloadEvent<Shader>> reload_cb_;
 };
 } // namespace weather::graphics

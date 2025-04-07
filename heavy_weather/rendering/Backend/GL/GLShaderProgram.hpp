@@ -1,5 +1,6 @@
 #pragma once
 
+#include "heavy_weather/event/ResourceReloadEvent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <heavy_weather/core/Asserts.hpp>
 #include <heavy_weather/engine.h>
@@ -22,8 +23,14 @@ public:
 
   void BindUniform(UniformDescriptor &desc) override;
 
+  void Reload() override;
+  void OnResourceReload(const ResourceReloadEvent<Shader> &evt) override;
+
 private:
+  u8 waiting_{0}; // ResourceReloadEvent<Shader> needed to trigger a re-linking
   u32 handle_{};
   ShaderCompileStatus status_{ShaderCompileStatus::NotCompiled};
+
+  void LinkAndValidate();
 };
 } // namespace weather::graphics

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "heavy_weather/event/ResourceReloadEvent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/resources/ShaderSource.hpp"
 #include <heavy_weather/rendering/Shader.hpp>
@@ -15,6 +16,7 @@ public:
 
   bool Compile() override;
   u32 Hanlde() const { return handle_; }
+  void OnResourceReload(const ResourceReloadEvent<ShaderSource> &evt) override;
 
   //
   ~GLShader() override;

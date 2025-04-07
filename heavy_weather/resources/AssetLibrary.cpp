@@ -11,9 +11,6 @@ static void DisplayShaderSource(const ShaderSource &s, i64 use_count) {
   if (ImGui::TreeNode(s.Path().string().c_str())) {
     ImGui::Text("Use count: %ld", use_count);
     ImGui::Text("%s", s.Data().c_str());
-    if (ImGui::Button("Reload")) {
-      HW_CORE_DEBUG("Reloading shader {}", s.Path().string());
-    }
     ImGui::TreePop();
   }
 }
@@ -23,15 +20,11 @@ static void DisplayImage(const Image &i, i64 use_count) {
     ImGui::Text("Use count: %ld", use_count);
     ImGui::Text("%dx%d. %d Channels.", i.Size().first, i.Size().second,
                 i.Channels());
-    if (ImGui::Button("Reload")) {
-      HW_CORE_DEBUG("Reloading image {}", i.Path().string());
-    }
     ImGui::TreePop();
   }
 }
 
-static void DisplayShaderPipeline(const graphics::ShaderProgram &p,
-                                  i64 use_count) {
+static void DisplayShaderPipeline(graphics::ShaderProgram &p, i64 use_count) {
   if (ImGui::TreeNode(p.Name().c_str())) {
     ImGui::Text("Use count: %ld", use_count);
     ImGui::Text("Vertex Shader: %s", p.VertexShader().Path().c_str());
@@ -40,6 +33,7 @@ static void DisplayShaderPipeline(const graphics::ShaderProgram &p,
     DisplayShaderSource(p.FragmentShader().Source(), use_count);
     if (ImGui::Button("Reload")) {
       HW_CORE_DEBUG("Reloading shader pipeline {}", p.Name());
+      p.Reload();
     }
     ImGui::TreePop();
   }
@@ -72,7 +66,8 @@ template <> void AssetLibrary<weather::graphics::Texture>::OnGuiRender() {
                      {static_cast<float>(t.second->Size().first),
                       static_cast<float>(t.second->Size().second)});
         if (ImGui::Button("Reload")) {
-          HW_CORE_DEBUG("Reloading texture {}", t.second.get()->Name());
+          HW_CORE_DEBUG("Reloading texture {}", t.second->Name());
+          t.second->Reload();
         }
         ImGui::TreePop();
       }
@@ -95,7 +90,8 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
     for (const auto &mat : assets_) {
       if (ImGui::TreeNode(mat.first.c_str())) {
         ImGui::Text("Use count: %ld", mat.second->GetInstanceCount());
-        DisplayShaderPipeline(*mat.second->GetShader(), mat.second.use_count());
+        DisplayShaderPipeline(*mat.second->GetShader(),
+                              mat.second->GetShader().use_count());
         for (const auto &tex : mat.second->GetTextures()) {
           if (ImGui::TreeNode(tex.first.c_str())) {
             ImGui::Image(tex.second->Handle(),
@@ -106,7 +102,13 @@ template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
         }
         ImGui::Text("Uniforms: TODO");
         if (ImGui::Button("Reload")) {
-          HW_CORE_DEBUG("Reloading material {}", mat.second.get()->Name());
+          /* *
+           * TODO: Specify what should be done here:
+           * - Reload prefab only, or all instances as well?
+           * - Dispatch reload to shaders/textures ?
+           * */
+          HW_CORE_DEBUG("Reloading material {} [NOT IMPLEMENTED]",
+                        mat.second->Name());
         }
         ImGui::TreePop();
       }

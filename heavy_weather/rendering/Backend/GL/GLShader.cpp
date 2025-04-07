@@ -1,6 +1,7 @@
 #include "GLShader.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
+#include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <heavy_weather/core/Asserts.hpp>
@@ -43,6 +44,25 @@ bool GLShader::Compile() {
   }
   this->SetCompiled(ShaderCompileStatus::Failed);
   return false;
+}
+
+void GLShader::OnResourceReload(const ResourceReloadEvent<ShaderSource> &evt) {
+  if (evt.GetType() != ResourceType::SHADER_SOURCE ||
+      this->Path() != evt.GetResource()->Path()) {
+    return;
+  }
+  HW_CORE_DEBUG("Shader: Handling ResourceReloadEvent for path {}",
+                Path().c_str());
+  // this->SetCompiled(ShaderCompileStatus::NotCompiled);
+  const char *source_cstr = SourceStr().c_str();
+  glShaderSource(handle_, 1, &source_cstr, nullptr);
+  glCompileShader(handle_);
+
+  if (CheckError()) {
+    this->SetCompiled(ShaderCompileStatus::Success);
+  }
+  this->SetCompiled(ShaderCompileStatus::Failed);
+  EventDispatch(ResourceReloadEvent<Shader>{this});
 }
 
 bool GLShader::CheckError() const {

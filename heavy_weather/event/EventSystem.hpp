@@ -36,7 +36,8 @@ enum class EventCode : u8 {
   EVENT_BUTTON_RELEASED,
   EVENT_MOUSE_MOVED,
   EVENT_ENTITY_REMOVED,
-  EVENT_GUI_RENDER
+  EVENT_GUI_RENDER,
+  EVENT_RESOURCE_RELOAD,
 };
 
 class EventCallbackWrapperInterface;
@@ -75,8 +76,10 @@ public:
           vec.begin(), vec.end(),
           [&callback](
               const std::unique_ptr<EventCallbackWrapperInterface> &elem) {
-            return elem->GetID() == callback->GetID();
+            return elem->GetID() == callback->GetID() &&
+                   elem->GetInstance() == callback->GetInstance();
           });
+
       if (it == vec.end()) {
         map_[code].push_back(std::move(callback));
       }
@@ -85,7 +88,8 @@ public:
     }
   }
 
-  void Unregister(EventCode code, const std::string &callback_id) {
+  void Unregister(EventCode code, const std::string &callback_id,
+                  void *instance) {
     auto entry = map_.find(code);
     if (entry == map_.end()) {
       return;
@@ -98,9 +102,11 @@ public:
     // -> if yes, replace by a function that stops after 1st occurence
     auto it = std::remove_if(
         vec.begin(), vec.end(),
-        [&callback_id](
+        [&callback_id, &instance](
             const std::unique_ptr<EventCallbackWrapperInterface> &elem) {
-          return elem->GetID() == callback_id;
+          // return elem->GetID() == callback_id;
+          return elem->GetID() == callback_id &&
+                 elem->GetInstance() == instance;
         });
     vec.erase(it, vec.end()); // actually delete
   }

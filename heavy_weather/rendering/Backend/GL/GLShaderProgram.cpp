@@ -17,20 +17,29 @@ ShaderCompileStatus GLShaderProgram::Init() {
 
   glAttachShader(handle_, vert->Hanlde());
   glAttachShader(handle_, frag->Hanlde());
-  glLinkProgram(handle_);
-  glValidateProgram(handle_);
-
-  i32 success{};
-  glGetProgramiv(handle_, GL_LINK_STATUS, &success);
-  if (!success) {
-    char info[512];                                   // NOLINT
-    glGetProgramInfoLog(handle_, 512, nullptr, info); // NOLINT
-    HW_CORE_ERROR("Couldn't link GL shaders: {}", info);
-    status_ = ShaderCompileStatus::Failed;
-    return status_;
-  }
-  status_ = ShaderCompileStatus::Success;
+  LinkAndValidate();
   return status_;
+}
+
+void GLShaderProgram::Reload() {
+  waiting_ = 2; // TODO: change this when adding more shader stages
+
+  // TODO: queue these for multithreaded processing:
+  vertex_->ReloadSrc();
+  fragment_->ReloadSrc();
+}
+
+void GLShaderProgram::OnResourceReload(const ResourceReloadEvent<Shader> &evt) {
+  if (evt.GetResource() != vertex_.get() &&
+      evt.GetResource() != fragment_.get()) {
+    return;
+  }
+  if (waiting_ != 0) {
+    waiting_--;
+  }
+  if (waiting_ == 0) {
+    LinkAndValidate();
+  }
 }
 
 void GLShaderProgram::BindUniform(UniformDescriptor &desc) {
@@ -55,6 +64,24 @@ void GLShaderProgram::BindUniform(UniformDescriptor &desc) {
     HW_CORE_ERROR("Couldn't bind uniform for data type");
   }
   // clang-format on
+}
+
+void GLShaderProgram::LinkAndValidate() {
+  glLinkProgram(handle_);
+  glValidateProgram(handle_);
+
+  // TODO: glDeleteShader should be called on both shader objects as there's
+  // no need to keep them once linked. But this would mean re-creating them
+  // when reloading
+  i32 success{};
+  glGetProgramiv(handle_, GL_LINK_STATUS, &success);
+  if (!success) {
+    char info[512];                                   // NOLINT
+    glGetProgramInfoLog(handle_, 512, nullptr, info); // NOLINT
+    HW_CORE_ERROR("Couldn't link GL shaders: {}", info);
+    status_ = ShaderCompileStatus::Failed;
+  }
+  status_ = ShaderCompileStatus::Success;
 }
 
 } // namespace weather::graphics

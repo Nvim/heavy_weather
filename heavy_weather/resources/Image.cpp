@@ -1,5 +1,7 @@
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
+#include "heavy_weather/event/ResourceReloadEvent.hpp"
+#include "heavy_weather/event/Util.hpp"
 #endif // !STB_IMAGE_IMPLEMENTATION
 #include "Image.hpp"
 #include "heavy_weather/core/Logger.hpp"
@@ -32,6 +34,29 @@ Image::Image(const std::filesystem::path &img_path) {
                     size_.first, size_.second, channels_);
     }
   }
+}
+
+void Image::Reload() {
+  HW_CORE_DEBUG("Image: reloading");
+  if (!std::filesystem::exists(path_)) {
+    HW_CORE_ERROR("Couldn't reload Image: path doesn't exits anymore");
+    return;
+  }
+  // if (!empty_ && image_data_ ) {
+    // stbi_image_free(image_data_);
+  // }
+  i32 width{}, height{}, channels{};
+  u8 *data = stbi_load(path_.c_str(), &width, &height, &channels, 0);
+  if (!data) {
+    HW_CORE_ERROR("Couldn't reload Image: STB error");
+    return;
+  }
+  image_data_ = data;
+  size_ = {width, height};
+  channels_ = channels;
+  HW_CORE_DEBUG("Image {} reloaded successfully. {}x{}, {} Channels.",
+                path_.c_str(), size_.first, size_.second, channels_);
+  EventDispatch(ResourceReloadEvent<Image>{this});
 }
 
 std::pair<u32, u32> Image::Size() const { return size_; }

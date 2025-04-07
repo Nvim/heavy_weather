@@ -2,6 +2,7 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Material.hpp"
+#include "heavy_weather/rendering/Renderer.hpp"
 #include "imgui.h"
 #include <fstream>
 #include <glm/detail/qualifier.hpp>
@@ -20,7 +21,14 @@ using Renderer = graphics::Renderer;
 
 static bool ValidateMaterialJSON(const json &data);
 
-void AssetManager::OnGuiRender(const GuiRenderEvent& evt){
+AssetManager::AssetManager(Renderer *renderer) : renderer_{renderer} {
+  EventCallback<GuiRenderEvent> c = [this](const GuiRenderEvent &e) {
+    this->OnGuiRender(e);
+  };
+  EventRegister(c, this);
+}
+
+void AssetManager::OnGuiRender(const GuiRenderEvent &evt) {
   (void)evt;
   ImGui::Begin("Assets");
   shader_srcs_.OnGuiRender();
@@ -58,23 +66,18 @@ AssetManager::LoadTexture(const std::filesystem::path &path) {
   HW_ASSERT(img != nullptr);
   auto tex = renderer_->CreateTexture(img);
   textures_.Add(tex);
-  return tex;
+  return textures_.Get(Texture::ComputeName(path));
 }
-
-// SharedPtr<ShaderProgram>
-// AssetManager::LoadShaderProgram(const std::string &concat_name) {
-//   if (shaders_.Has(concat_name)) {
-//     return shaders_.Get(concat_name);
-//   }
-//   HW_CORE_DEBUG("AssetManager: Creating new ShaderProgram for concat `{}`.",
-//                 concat_name);
-// }
 
 SharedPtr<Material>
 AssetManager::LoadMaterial(const std::filesystem::path &path) {
-  if (material_prefabs_.Has(path)) {
+  SharedPtr<Material> m = material_prefabs_.GetPath(path);
+  if (m != nullptr) {
     // Skip loading from file if we already loaded the file once:
-    return std::make_shared<Material>(*material_prefabs_.Get(path));
+    SharedPtr<Material> mm = std::make_shared<Material>(*m);
+    HW_ASSERT(mm->Path() == path);
+    // mm->SetPath(path);
+    return mm;
   }
   HW_CORE_DEBUG("AssetManager: Creating new Material for path `{}`.",
                 path.string());
@@ -106,20 +109,20 @@ AssetManager::LoadMaterial(const std::filesystem::path &path) {
   HW_ASSERT(pipeline != nullptr);
 
   // Create material and set each uniform:
-  SharedPtr<Material> m = std::make_shared<Material>(pipeline, std::move(name));
+  m = std::make_shared<Material>(pipeline, std::move(name), path);
+  HW_ASSERT(m->Path() == path);
 
   if (data.contains("textures")) {
     std::unordered_map<std::string, std::string> textures = data["textures"];
     for (const auto &kv : textures) {
       SharedPtr<Texture> tex{nullptr};
-      if (textures_.Has(kv.second)) {
-        tex = textures_.Get(kv.second);
+      if (textures_.Has(Texture::ComputeName(kv.second))) {
+        tex = textures_.Get(Texture::ComputeName(kv.second));
       } else {
         tex = LoadResource<Texture>(kv.second);
+        HW_ASSERT(textures_.Has(Texture::ComputeName(kv.second)));
       }
       HW_ASSERT(tex != nullptr);
-      HW_CORE_WARN("Binding texture {} to {}", kv.second.c_str(),
-                   kv.first.c_str());
       m->SetUniformValue<SharedPtr<graphics::Texture>>(kv.first.c_str(), tex);
     }
   }

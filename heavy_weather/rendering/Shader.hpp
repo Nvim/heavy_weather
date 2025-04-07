@@ -3,6 +3,9 @@
 #include <utility>
 
 #include "heavy_weather/core/Asserts.hpp"
+#include "heavy_weather/event/EventCallback.hpp"
+#include "heavy_weather/event/ResourceReloadEvent.hpp"
+#include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/resources/AssetLibrary.hpp"
 #include "heavy_weather/resources/ShaderSource.hpp"
@@ -18,6 +21,10 @@ public:
       : type_{type}, source_{std::move(src)} {
     HW_ASSERT(source_ != nullptr);
     HW_ASSERT(!source_->Empty());
+    reload_cb_ = [this](const ResourceReloadEvent<ShaderSource> &e) {
+      this->OnResourceReload(e);
+    };
+    EventRegister(reload_cb_, this);
   }
 
   virtual bool Compile() = 0;
@@ -27,8 +34,12 @@ public:
   const std::string &SourceStr() const { return source_->Data(); }
   const ShaderSource &Source() const { return *source_; }
 
+  void ReloadSrc() { source_->Reload(); }
+  virtual void
+  OnResourceReload(const ResourceReloadEvent<ShaderSource> &evt) = 0;
+
   //
-  virtual ~Shader() = default;
+  virtual ~Shader() { EventUnregister(reload_cb_); };
   Shader(const Shader &) = default;
   Shader(Shader &&) = delete;
   Shader &operator=(const Shader &) = default;
@@ -41,6 +52,7 @@ private:
   ShaderType type_;
   SharedPtr<ShaderSource> source_;
   ShaderCompileStatus compiled_{NotCompiled}; // Has it been compiled yet
+  EventCallback<ResourceReloadEvent<ShaderSource>> reload_cb_;
 };
 
 } // namespace weather::graphics

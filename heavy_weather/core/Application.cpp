@@ -28,8 +28,8 @@ Application::Application(WindowProps &window_props, f64 fps) {
   }
   resize_callback_ = [this](const ResizeEvent &e) { this->OnResize(e); };
   close_callback_ = [this](const WindowCloseEvent &e) { this->OnClose(e); };
-  EventRegister(resize_callback_);
-  EventRegister(close_callback_);
+  EventRegister(resize_callback_, this);
+  EventRegister(close_callback_, this);
 
   HW_CORE_INFO("App started. W: {}, H: {}", window_->GetProps().width,
                window_->GetProps().height);
