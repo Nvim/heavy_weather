@@ -17,7 +17,6 @@
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/resources/AssetManager.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
-#include "imgui.h"
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
 // #ifndef TINYGLTF_IMPLEMENTATION
@@ -99,52 +98,48 @@ Demo::~Demo() {
 }
 
 void Demo::InitGraphics() {
-  f32 vertices_2[] = {
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, //
-      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, //
-      -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, //
-      0.5f,  0.5f,  0.0f, 1.0f, 1.0f  //
-  };
-
-  u32 square_indices[] = {0, 1, 2, 1, 2, 3};
-
-  // Buffers:
-  graphics::VertexLayout sq_layout{};
-  sq_layout.AddAttribute({"position", graphics::DataFormat::Float3});
-  sq_layout.AddAttribute({"uvs", graphics::DataFormat::Float2});
-
-  graphics::MeshDescriptor sq_desc{
-      std::pair(vertices_2, sizeof(vertices_2)),
-      std::pair(square_indices, sizeof(square_indices)), &sq_layout, "square"};
-
   graphics::VertexLayout cube_layout{};
   cube_layout.AddAttribute({"position", graphics::DataFormat::Float3});
+  cube_layout.AddAttribute({"normal", graphics::DataFormat::Float3});
+  cube_layout.AddAttribute({"uvs", graphics::DataFormat::Float2});
 
   graphics::MeshDescriptor cube_desc{
-      std::pair(cube_verts, sizeof(cube_verts)),
-      std::pair(cube_indices, sizeof(cube_indices)), &cube_layout, "cube"};
+      std::pair(cube_verts_normals_uvs, sizeof(cube_verts_normals_uvs)),
+      std::pair(cube_indices_big, sizeof(cube_indices_big)), &cube_layout,
+      "cube"};
 
   {
     u32 cube_mesh =
-        scene_manager_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
+        scene_manager_.AddMesh(cube_desc, glm::vec3{-1.5f, 0.0f, 0.0f});
+    cube_desc.name = "cube2";
     u32 square_mesh =
-        scene_manager_.AddMesh(sq_desc, glm::vec3{1.0f, 0.0f, 0.0f});
-    sq_desc.name = "square2";
+        scene_manager_.AddMesh(cube_desc, glm::vec3{1.5f, 0.0f, 0.0f});
+    cube_desc.name = "cube3";
     u32 square_mesh2 =
-        scene_manager_.AddMesh(sq_desc, glm::vec3{0.0f, 1.0f, 0.0f});
+        scene_manager_.AddMesh(cube_desc, glm::vec3{0.0f, 1.5f, 0.0f});
 
-    auto texture_material = asset_mgr_.LoadResource<graphics::Material>(
-        "examples/resources/materials/texture.json");
-    auto texture_material2 = asset_mgr_.LoadResource<graphics::Material>(
-        "examples/resources/materials/texture.json");
-    HW_ASSERT(texture_material != nullptr && texture_material != nullptr);
-    HW_ASSERT(texture_material != texture_material2);
-    auto fade_material = asset_mgr_.LoadResource<graphics::Material>(
-        "examples/resources/materials/fade.json");
-    HW_ASSERT(fade_material != nullptr);
-    scene_manager_.AddMaterial(fade_material, cube_mesh);
-    scene_manager_.AddMaterial(texture_material, square_mesh);
-    scene_manager_.AddMaterial(texture_material2, square_mesh2);
+    auto lit_paving_mat = asset_mgr_.LoadResource<graphics::Material>(
+        "examples/resources/materials/lit.json");
+    auto lit_paving2_mat = asset_mgr_.LoadResource<graphics::Material>(
+        "examples/resources/materials/lit.json");
+    auto lit_cobble_mat = asset_mgr_.LoadResource<graphics::Material>(
+        "examples/resources/materials/lit.json");
+
+    lit_cobble_mat->SetTexture(
+        asset_mgr_.LoadResource<graphics::Texture>(
+            "examples/resources/textures/cobblestone_bc.png"),
+        "TexDiffuse");
+    lit_paving_mat->SetTexture(asset_mgr_.LoadResource<graphics::Texture>(
+                                   "examples/resources/textures/paving_bc.png"),
+                               "TexDiffuse");
+    lit_paving2_mat->SetTexture(
+        asset_mgr_.LoadResource<graphics::Texture>(
+            "examples/resources/textures/paving2_bc.png"),
+        "TexDiffuse");
+
+    scene_manager_.AddMaterial(lit_cobble_mat, cube_mesh);
+    scene_manager_.AddMaterial(lit_paving_mat, square_mesh);
+    scene_manager_.AddMaterial(lit_paving2_mat, square_mesh2);
   }
 
   // {

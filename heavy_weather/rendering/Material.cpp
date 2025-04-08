@@ -1,4 +1,5 @@
 #include "Material.hpp"
+#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Types.hpp"
 
@@ -14,11 +15,11 @@ Material::Material(const Material &other)
                       Material::instance_count[other.name_]++);
 }
 Material::Material(Material &&other) noexcept
-    : path_(std::move(other.path_)), shader_(std::move(other.shader_)), ints_(std::move(other.ints_)),
-      floats_(std::move(other.floats_)), float2s_(std::move(other.float2s_)),
-      float3s_(std::move(other.float3s_)), float4s_(std::move(other.float4s_)),
-      mat3s_(std::move(other.mat3s_)), mat4s_(std::move(other.mat4s_)),
-      textures_(std::move(other.textures_)) {
+    : path_(std::move(other.path_)), shader_(std::move(other.shader_)),
+      ints_(std::move(other.ints_)), floats_(std::move(other.floats_)),
+      float2s_(std::move(other.float2s_)), float3s_(std::move(other.float3s_)),
+      float4s_(std::move(other.float4s_)), mat3s_(std::move(other.mat3s_)),
+      mat4s_(std::move(other.mat4s_)), textures_(std::move(other.textures_)) {
   name_ = fmt::format("{}#{}", other.name_,
                       Material::instance_count[other.name_] + 1);
   Material::instance_count[name_]--;
@@ -66,6 +67,16 @@ void Material::SetShader(const SharedPtr<ShaderProgram> &shader) {
   HW_ASSERT_MSG(shader.get() != nullptr, "can't use null shader");
   // TODO: add a way to check that shader was compiled successfully
   shader_ = shader;
+}
+
+void Material::SetTexture(const SharedPtr<Texture> &tex,
+                          const std::string &uniform) {
+  // const auto& name = tex->Name();
+  auto it = textures_.find(uniform);
+  if (it == textures_.end()) {
+    HW_CORE_WARN("Material doesn't accept textures for uniform name {}.");
+  }
+  textures_[uniform] = tex;
 }
 
 #define BIND_LOOP(map)                                                         \

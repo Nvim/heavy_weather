@@ -32,7 +32,8 @@ public:
   Material(SharedPtr<ShaderProgram> shader, std::string &&name)
       : name_{std::move(name)}, shader_{std::move(shader)} {}
 
-  Material(SharedPtr<ShaderProgram> shader, std::string &&name, const std::filesystem::path& path)
+  Material(SharedPtr<ShaderProgram> shader, std::string &&name,
+           const std::filesystem::path &path)
       : name_{std::move(name)}, path_{path}, shader_{std::move(shader)} {}
 
   Material(const Material &);
@@ -42,7 +43,8 @@ public:
 
   SharedPtr<ShaderProgram> GetShader() { return shader_; }
   void SetShader(const SharedPtr<ShaderProgram> &shader);
-  void SetPath(const std::filesystem::path& path) { path_ = path; }
+  void SetTexture(const SharedPtr<Texture> &tex, const std::string &uniform);
+  void SetPath(const std::filesystem::path &path) { path_ = path; }
   const std::unordered_map<std::string, SharedPtr<Texture>> &
   GetTextures() const {
     return textures_;

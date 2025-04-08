@@ -106,12 +106,13 @@ void SceneManager::SubmitAll() {
     Buffer &ibuf = *bufs.ibuffer;
     HW_ASSERT(vbuf.Type() == BufferType::VertexBuffer);
     HW_ASSERT(ibuf.Type() == BufferType::IndexBuffer);
-    renderer_.Submit(mvp, vbuf, ibuf, *mat.material.get());
+    renderer_.Submit(mvp, transform.matrix, vbuf, ibuf, *mat.material.get());
   }
   GarbageCollect();
 }
 
 void SceneManager::OnGuiRender() {
+#ifdef HW_ENABLE_GUI
   ImGui::Begin("Scene");
   char title[32];
   auto widgets = scene_.Query<WidgetComponent>();
@@ -130,6 +131,7 @@ void SceneManager::OnGuiRender() {
     }
   }
   ImGui::End();
+#endif
 }
 
 void SceneManager::OnEntityRemoved(const EntityRemovedEvent &e) {

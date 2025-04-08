@@ -1,7 +1,7 @@
 {
   "name": "Textured",
-  "vertex": "examples/resources/demo.vert",
-  "fragment": "examples/resources/demo.frag",
+  "vertex": "examples/resources/shaders/demo.vert",
+  "fragment": "examples/resources/shaders/demo.frag",
   "uniforms": {
     "ints": {},
     "floats": {

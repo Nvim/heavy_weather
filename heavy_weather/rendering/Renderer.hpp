@@ -26,8 +26,8 @@ public:
 
   void Clear(glm::vec4 col) { api_->Clear(col); }
   void ClearDepth() { api_->ClearDepthBuffer(); }
-  void Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
-              Material &material);
+  void Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
+              const Buffer &ibuf, Material &material);
 
   GeometryComponent CreateGeometry(const MeshDescriptor &desc);
   // SharedPtr<Texture> CreateTexture(const std::string &path);

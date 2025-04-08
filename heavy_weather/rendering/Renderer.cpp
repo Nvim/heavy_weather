@@ -29,40 +29,31 @@ GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
                            api_->CreateBuffer(idesc, indices)};
 }
 
-// SharedPtr<Texture> Renderer::CreateTexture(const std::string &path) {
-//   return api_->CreateTexture(path);
-// }
-
 SharedPtr<Texture> Renderer::CreateTexture(SharedPtr<Image> img) {
   return api_->CreateTexture(std::move(img));
 }
 
-void Renderer::Submit(glm::mat4 &mvp, const Buffer &vbuf, const Buffer &ibuf,
-                      Material &material) {
+void Renderer::Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
+                      const Buffer &ibuf, Material &material) {
   auto shader = material.GetShader();
   UsePipeline(*shader);
 
   f32 time = PlatformGetTime(); // TODO: get delta!
   auto mvp_uniform = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
+  auto model_uniform = UniformDescriptor{"Model", DataFormat::Mat4, &model};
   auto time_uniform =
       UniformDescriptor{"uGlobalTime", DataFormat::Float, &time};
   shader->BindUniform(time_uniform);
   shader->BindUniform(mvp_uniform);
+  shader->BindUniform(model_uniform);
 
   material.BindUniforms();
 
   api_->BindBuffer(vbuf);
   api_->BindBuffer(ibuf);
   api_->RenderIndexed(ibuf.GetCount());
+  // api_->Render();
 }
-
-// SharedPtr<ShaderProgram> Renderer::CreatePipeline(ShaderDescriptor vsdesc,
-//                                                   ShaderDescriptor fsdesc) {
-//   UniquePtr<graphics::Shader> vs = api_->CreateShader(std::move(vsdesc));
-//   UniquePtr<graphics::Shader> fs = api_->CreateShader(std::move(fsdesc));
-//   graphics::PipelineDescriptor pdesc = {std::move(vs), std::move(fs)};
-//   return std::shared_ptr<ShaderProgram>(api_->CreatePipeline(pdesc));
-// }
 
 SharedPtr<ShaderProgram> Renderer::CreatePipeline(SharedPtr<ShaderSource> vs,
                                                   SharedPtr<ShaderSource> fs) {

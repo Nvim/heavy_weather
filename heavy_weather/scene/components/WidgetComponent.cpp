@@ -42,6 +42,8 @@ void MaterialEditor(Gui &gui, ECS &scene, u32 entity) {
   (void)gui;
   if (Gui::BeginTreeNode("Material")) {
     auto m = scene.GetComponent<MaterialComponent>(entity);
+
+    // Int/Float pickers:
     for (auto it = m.material->GetRange<i32>().first;
          it != m.material->GetRange<i32>().second; it++) {
       Gui::DrawScalarInt(it->first.c_str(), &it->second, 1);
@@ -56,6 +58,9 @@ void MaterialEditor(Gui &gui, ECS &scene, u32 entity) {
     // TODO: Matrix Editor
     // GUI_PICKER(glm::mat3, ImGui::InputFloat2)
     // GUI_PICKER(glm::mat4, ImGui::InputFloat2)
+
+    // Texture picker:
+    // TODO
     Gui::EndTreeNode();
   }
 }

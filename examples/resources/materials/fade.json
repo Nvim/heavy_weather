@@ -1,7 +1,7 @@
 {
   "name": "Fade",
-  "vertex": "examples/resources/demo.vert",
-  "fragment": "examples/resources/demo_fade.frag",
+  "vertex": "examples/resources/shaders/demo.vert",
+  "fragment": "examples/resources/shaders/demo_fade.frag",
   "uniforms": {
     "ints": {
       "uFlag": 1

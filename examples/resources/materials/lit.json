@@ -1,0 +1,22 @@
+{
+  "name": "Lit",
+  "vertex": "examples/resources/shaders/demo_lit.vert",
+  "fragment": "examples/resources/shaders/demo_lit.frag",
+  "uniforms": {
+    "ints": {},
+    "floats": {},
+    "float2s": {},
+    "float3s": {
+      "lightPos": [
+        5.0,
+        5.0,
+        1.0
+      ]
+    },
+    "mat3s": {},
+    "mat4s": {}
+  },
+  "textures": {
+    "TexDiffuse": "examples/resources/textures/paving_bc.png"
+  }
+}

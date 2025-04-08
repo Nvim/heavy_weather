@@ -194,7 +194,7 @@ void GLBackendAPI::Clear(glm::vec4 col) const {
 
 void GLBackendAPI::ClearDepthBuffer() const { glClear(GL_DEPTH_BUFFER_BIT); }
 
-void GLBackendAPI::Render() { glDrawArrays(GL_TRIANGLES, 0, 3); }
+void GLBackendAPI::Render() { glDrawArrays(GL_TRIANGLES, 0, 36); }
 
 void GLBackendAPI::RenderIndexed(u64 count) {
   i32 i = count;
