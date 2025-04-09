@@ -1,7 +1,5 @@
 #include "GLIndexBuffer.hpp"
-#include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
-#include "heavy_weather/rendering/Types.hpp"
 
 #include <glad/glad.h>
 

@@ -1,10 +1,8 @@
 #include "Camera.hpp"
 #include "heavy_weather/core/Input/InputSystem.hpp"
-#include "heavy_weather/core/Logger.hpp"
-
 #include <algorithm>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/trigonometric.hpp>
 #include <heavy_weather/core/Input/KeyCodes.hpp>
 
 namespace weather::graphics {

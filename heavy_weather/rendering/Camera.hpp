@@ -1,11 +1,9 @@
 #pragma once
 
-#include "heavy_weather/event/KeyPressedEvent.hpp"
-#include "heavy_weather/event/MouseMovedEvent.hpp"
-#include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <heavy_weather/engine.h>
-#include <utility>
 
 namespace weather::graphics {
 

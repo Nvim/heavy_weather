@@ -13,8 +13,6 @@
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <memory>
 
 namespace weather::graphics {
 
@@ -100,18 +98,6 @@ UniquePtr<Buffer> GLBackendAPI::CreateBuffer(BufferDescriptor desc,
   return buf;
 }
 
-// UniquePtr<Shader> GLBackendAPI::CreateShader(ShaderDescriptor desc) {
-//   UniquePtr<Shader> ptr = nullptr;
-//   ptr = std::unique_ptr<Shader>(new GLShader(desc.type, desc.path));
-//
-//   bool status = ptr->Compile();
-//   if (!status || ptr->Status() != ShaderCompileStatus::Success) {
-//     HW_CORE_ERROR("Shader creation failed!");
-//     return nullptr;
-//   }
-//   return ptr;
-// }
-
 UniquePtr<Shader> GLBackendAPI::CreateShader(SharedPtr<ShaderSource> src,
                                              ShaderType type) {
   UniquePtr<Shader> ptr = nullptr;
@@ -139,10 +125,6 @@ GLBackendAPI::CreatePipeline(PipelineDescriptor &desc) {
 
   return pipeline;
 }
-
-// SharedPtr<Texture> GLBackendAPI::CreateTexture(const std::string &path) {
-//   return std::shared_ptr<Texture>(new GLTexture(path));
-// };
 
 SharedPtr<Texture> GLBackendAPI::CreateTexture(SharedPtr<Image> img) {
   return std::shared_ptr<Texture>(new GLTexture(img));

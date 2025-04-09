@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Types.hpp"
-#include "VertexLayout.hpp"
 
 namespace weather::graphics {
 

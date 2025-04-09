@@ -1,11 +1,8 @@
 #pragma once
 
 #include "heavy_weather/rendering/Types.hpp"
-#include <glm/glm.hpp>
-#include <heavy_weather/rendering/BackendApi.hpp>
-
 #include <heavy_weather/engine.h>
-#include <utility>
+#include <heavy_weather/rendering/BackendApi.hpp>
 
 namespace weather::graphics {
 
@@ -31,16 +28,13 @@ public:
   ~GLBackendAPI() override;
 
   UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) override;
-  // UniquePtr<Shader> CreateShader(ShaderDescriptor desc) override;
   UniquePtr<Shader> CreateShader(SharedPtr<ShaderSource> src,
                                  ShaderType type) override;
-  // SharedPtr<Texture> CreateTexture(const std::string &path) override;
   SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) override;
   SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
 
   void BindBuffer(const Buffer &buf) override;
   void UsePipeline(ShaderProgram &pipeline) override;
-  // void BindUniform(UniformDescriptor &desc) override;
   void Render() override;
   void RenderIndexed(u64 count) override;
   void Clear(glm::vec4 col) const override;

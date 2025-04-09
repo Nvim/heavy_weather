@@ -4,6 +4,7 @@
 
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/rendering/VertexLayout.hpp"
 
 namespace weather::graphics {
 

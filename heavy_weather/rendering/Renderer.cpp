@@ -2,14 +2,24 @@
 
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
+#include "heavy_weather/rendering/Backend/GL/GLAPI.hpp"
+#include "heavy_weather/rendering/Buffer.hpp"
 #include "heavy_weather/rendering/GeometryComponent.hpp"
+#include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/ShaderProgram.hpp"
-#include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/rendering/VertexLayout.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <memory>
 #include <utility>
 
 namespace weather::graphics {
+
+Renderer::Renderer(RendererInitParams &params) {
+  HW_ASSERT_MSG(params.backend == Backend::OpenGL, "Only OpenGL is supported");
+  api_ = std::unique_ptr<BackendAPI>(
+      new GLBackendAPI(params.viewport.first, params.viewport.second,
+                       params.depth_test, params.debug_mode));
+};
 
 GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
   u32 *indices = desc.indices.first;

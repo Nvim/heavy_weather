@@ -5,16 +5,19 @@
  */
 #pragma once
 
-#include "Buffer.hpp"
 #include "Types.hpp"
-#include "heavy_weather/rendering/Texture.hpp"
-#include "heavy_weather/resources/Image.hpp"
-#include "heavy_weather/resources/ShaderSource.hpp"
-#include <glm/glm.hpp>
+#include <glm/vec4.hpp>
 #include <heavy_weather/engine.h>
-#include <utility>
 
-namespace weather::graphics {
+namespace weather {
+class Image;
+class ShaderSource;
+
+namespace graphics {
+
+class Texture;
+class Buffer;
+
 class BackendAPI {
 public:
   explicit BackendAPI() = default;
@@ -51,4 +54,5 @@ public:
   BackendAPI &operator=(const BackendAPI &) = default;
   BackendAPI &operator=(BackendAPI &&) = delete;
 };
-} // namespace weather::graphics
+} // namespace graphics
+} // namespace weather

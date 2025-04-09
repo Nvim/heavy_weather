@@ -15,6 +15,7 @@
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/rendering/VertexLayout.hpp"
 #include "heavy_weather/resources/AssetManager.hpp"
 #include "heavy_weather/scene/SceneManager.hpp"
 #include <glm/fwd.hpp>

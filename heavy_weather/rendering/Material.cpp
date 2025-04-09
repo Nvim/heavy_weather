@@ -1,9 +1,19 @@
 #include "Material.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
-#include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/rendering/ShaderProgram.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
 
 namespace weather::graphics {
+Material::Material(SharedPtr<ShaderProgram> shader)
+    : name_{shader->Name()}, shader_{std::move(shader)} {}
+
+Material::Material(SharedPtr<ShaderProgram> shader, std::string &&name)
+    : name_{std::move(name)}, shader_{std::move(shader)} {}
+
+Material::Material(SharedPtr<ShaderProgram> shader, std::string &&name,
+                   const std::filesystem::path &path)
+    : name_{std::move(name)}, path_{path}, shader_{std::move(shader)} {}
 
 Material::Material(const Material &other)
     : path_(other.path_), shader_(other.shader_), ints_(other.ints_),
@@ -62,6 +72,14 @@ Material &Material::operator=(Material &&other) noexcept {
 }
 
 i64 Material::GetInstanceCount() const { return instance_count[name_]; }
+SharedPtr<ShaderProgram> Material::GetShader() { return shader_; }
+void Material::SetPath(const std::filesystem::path &path) { path_ = path; }
+const std::unordered_map<std::string, SharedPtr<Texture>> &
+Material::GetTextures() const {
+  return textures_;
+}
+const std::string &Material::Name() const { return name_; }
+const std::filesystem::path &Material::Path() const { return path_; }
 
 void Material::SetShader(const SharedPtr<ShaderProgram> &shader) {
   HW_ASSERT_MSG(shader.get() != nullptr, "can't use null shader");
