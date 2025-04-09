@@ -7,6 +7,7 @@
 #include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
+#include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/scene/components/NameComponent.hpp"

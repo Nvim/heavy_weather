@@ -9,15 +9,15 @@
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
-#include "heavy_weather/rendering/Renderer.hpp"
-#include "heavy_weather/rendering/Texture.hpp"
-#include "heavy_weather/rendering/Types.hpp"
 #include <glm/fwd.hpp>
-#include <unordered_map>
 
 #define NEW_ENTITY 0
 
 namespace weather::graphics {
+
+class Texture;
+class Renderer;
+class Material;
 
 class SceneManager {
 private:
@@ -28,7 +28,6 @@ private:
   Gui &gui_;
 #endif
   Renderer &renderer_;
-  std::unordered_map<u64, u64> nodetogui_;
   // TODO: removals should prevent duplicates
   std::vector<u32> removals_; // Used to delay removals to the end of frame
 
