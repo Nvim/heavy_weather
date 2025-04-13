@@ -1,8 +1,3 @@
-/*
- * Renderer uses the rendering API to render a triangle.
- * Later, it will be split in different classes and abstractions.
- * For now simplicity
- */
 #pragma once
 
 #include "Types.hpp"
@@ -25,15 +20,14 @@ public:
 
   /* Resource creation: */
   virtual UniquePtr<Buffer> CreateBuffer(BufferDescriptor desc, void *data) = 0;
-  // virtual UniquePtr<Shader> CreateShader(ShaderDescriptor desc) = 0;
   virtual UniquePtr<Shader> CreateShader(SharedPtr<ShaderSource> src,
                                          ShaderType type) = 0;
-  // virtual SharedPtr<Texture> CreateTexture(const std::string &path) = 0;
   virtual SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) = 0;
   virtual SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) = 0;
 
   /* Resouce binding: */
   virtual void BindBuffer(const Buffer &buf) = 0;
+  virtual void WriteBufferData(const Buffer &buf, void *data, u64 data_sz) = 0;
   virtual void UsePipeline(ShaderProgram &pipeline) = 0;
   // virtual void BindUniform(UniformDescriptor &desc) = 0;
 

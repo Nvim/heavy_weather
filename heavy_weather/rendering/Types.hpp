@@ -39,20 +39,30 @@ enum class DataFormat : u8 {
 };
 
 enum class BufferType : u8 {
-  VertexBuffer,
-  IndexBuffer,
+  VertexBuffer,  /* Vertex attributes */
+  IndexBuffer,   /* Vertex array indices */
+  UniformBuffer, /* Uniform block storage */
+  // TODO: Support these someday
+  // GL_ATOMIC_COUNTER_BUFFER,     /* Atomic counter storage */
+  // GL_COPY_READ_BUFFER,          /* Buffer copy source */
+  // GL_COPY_WRITE_BUFFER,         /* Buffer copy destination */
+  // GL_DISPATCH_INDIRECT_BUFFER,  /* Indirect compute dispatch commands */
+  // GL_DRAW_INDIRECT_BUFFER,      /* Indirect command arguments */
+  // GL_PIXEL_PACK_BUFFER,         /* Pixel read target */
+  // GL_PIXEL_UNPACK_BUFFER,       /* Texture data source */
+  // GL_QUERY_BUFFER,              /* Query result buffer */
+  // GL_SHADER_STORAGE_BUFFER,     /* Read-write storage for shaders */
+  // GL_TEXTURE_BUFFER,            /* Texture data buffer */
+  // GL_TRANSFORM_FEEDBACK_BUFFER, /* Transform feedback buffer */
+  Unknown,
 };
 
-/*
- * Shader = Returned by renderer->CreateShader(path, type) = compiled shader
- * Pipeline = Program made of two shader objects. renderer->CreatePipeline(vs,
- * fs) = Linked program To bind shaders, renderer->UsePipeline(pipeline)
- * */
 struct BufferDescriptor {
-  u64 size;
-  u64 count;
-  BufferType type;
-  VertexLayout *layout;
+  u64 size{0};
+  u64 count{0};
+  i32 binding = 0;
+  BufferType type{BufferType::Unknown};
+  VertexLayout *layout = nullptr;
 };
 
 enum class ShaderType : u8 { VertexShader, FragmentShader };

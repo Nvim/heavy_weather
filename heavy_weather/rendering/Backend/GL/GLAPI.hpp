@@ -11,6 +11,7 @@ struct GLState {
   u32 vao = 0;
   u32 vbo = 0;
   u32 ebo = 0;
+  u32 ubo = 0;
   u32 program = 0;
 };
 
@@ -33,6 +34,7 @@ public:
   SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) override;
   SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
 
+  void WriteBufferData(const Buffer &buf, void *data, u64 data_sz) override;
   void BindBuffer(const Buffer &buf) override;
   void UsePipeline(ShaderProgram &pipeline) override;
   void Render() override;
@@ -55,12 +57,15 @@ private:
     state_.ebo = s.ebo;
     state_.vbo = s.vbo;
     state_.vao = s.vao;
+    state_.ubo = s.ubo;
     state_.program = s.program;
   };
 
   UniquePtr<Buffer> CreateVertexBuffer(BufferDescriptor desc, void *data);
   UniquePtr<Buffer> CreateIndexBuffer(BufferDescriptor desc, void *data);
+  UniquePtr<Buffer> CreateUniformBuffer(BufferDescriptor desc, void *data);
   void BindVBO(u32 vbo, u32 vao);
   void BindEBO(u32 ebo);
+  void BindUBO(u32 ubo, u32 base);
 };
 } // namespace weather::graphics

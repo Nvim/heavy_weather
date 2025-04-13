@@ -1,10 +1,14 @@
-#version 330 core
+#version 450 core
+// TODO: compatibility for 330 (binding not supported)
 
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 uvs;
 
-uniform mat4 MVP;
+layout (std140, binding=0) uniform Matrices {
+  mat4 projection;
+  mat4 view;
+};
 uniform mat4 Model;
 
 out vec3 Normal;
@@ -14,6 +18,7 @@ out vec3 FragPos; // Fragment position in world space
 void main()
 {
   // gl_Position = vec4(pos.x+iRotation, pos.y, pos.z, 1.0);
+  mat4 MVP = projection * view * Model;
   gl_Position = MVP * vec4(pos, 1.0f);
   FragPos = vec3(Model * vec4(pos, 1.0));
   TexUvs = uvs;

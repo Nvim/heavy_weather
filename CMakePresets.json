@@ -39,13 +39,13 @@
       "name": "debug",
       "displayName": "Debug",
       "configurePreset": "debug-ninja",
-      "jobs": 8
+      "jobs": 12
     },
     {
       "name": "release",
       "displayName": "Release",
       "configurePreset": "rel-ninja",
-      "jobs": 8
+      "jobs": 12
     },
     {
       "name": "debug-clean",

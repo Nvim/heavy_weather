@@ -13,10 +13,6 @@ class VertexLayout {
 public:
   VertexLayout() = default;
 
-  void AddAttribute(const pair<std::string, DataFormat> &attrib) {
-    attributes_.push_back(attrib);
-    stride_ += FormatSize(attrib.second);
-  }
   // Number of attributes
   u32 AttribCount() const { return attributes_.size(); }
   // Size of a vertex
@@ -30,11 +26,13 @@ public:
     return attributes_.end();
   }
 
+  void AddAttribute(const pair<std::string, DataFormat> &attrib);
+
   // No reassignment and move as its not needed
   VertexLayout(const VertexLayout &) = default;
-  VertexLayout(VertexLayout &&) = delete;
   VertexLayout &operator=(const VertexLayout &) = default;
-  VertexLayout &operator=(VertexLayout &&) = delete;
+  VertexLayout(VertexLayout &&) noexcept;
+  VertexLayout &operator=(VertexLayout &&) noexcept;
   ~VertexLayout() = default;
 
 private:

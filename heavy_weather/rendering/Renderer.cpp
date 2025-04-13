@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 
+#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLAPI.hpp"
@@ -7,6 +8,7 @@
 #include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/ShaderProgram.hpp"
+#include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <memory>
@@ -14,12 +16,49 @@
 
 namespace weather::graphics {
 
+static bool ValidateBufferDesc(const BufferDescriptor &desc) {
+  if (desc.type == BufferType::Unknown) {
+    return false;
+  }
+  if (desc.type == BufferType::UniformBuffer) {
+    if (desc.size == 0 || desc.count != 1 || desc.layout == nullptr) {
+      return false;
+    }
+  }
+  if (desc.type == BufferType::VertexBuffer) {
+    if (desc.size == 0 || desc.count == 0 || desc.layout == nullptr) {
+      return false;
+    }
+  }
+  if (desc.type == BufferType::IndexBuffer) {
+    if (desc.size == 0 || desc.count == 0 || desc.layout != nullptr) {
+      return false;
+    }
+  }
+  return true;
+}
+
 Renderer::Renderer(RendererInitParams &params) {
   HW_ASSERT_MSG(params.backend == Backend::OpenGL, "Only OpenGL is supported");
   api_ = std::unique_ptr<BackendAPI>(
       new GLBackendAPI(params.viewport.first, params.viewport.second,
                        params.depth_test, params.debug_mode));
 };
+
+UniquePtr<Buffer> Renderer::CreateBuffer(const BufferDescriptor &desc,
+                                         void *data) {
+  if (!ValidateBufferDesc(desc)) {
+    HW_CORE_ERROR("Couldn't create buffer: invalid descriptor");
+    HW_ASSERT(false);
+    return nullptr;
+  }
+  return api_->CreateBuffer(desc, data);
+}
+
+void Renderer::WriteBufferData(const Buffer &buf, void *data, u64 data_sz) {
+  HW_ASSERT(data != nullptr && buf.Type() != BufferType::Unknown);
+  api_->WriteBufferData(buf, data, data_sz);
+}
 
 GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
   u32 *indices = desc.indices.first;
@@ -30,10 +69,19 @@ GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
   auto vert_count = desc.vertices.second / desc.layout->Stride();
   auto index_count = indices_sz / sizeof(u32);
 
-  BufferDescriptor vdesc{vert_sz, vert_count, BufferType::VertexBuffer,
-                         desc.layout};
-  BufferDescriptor idesc{indices_sz, index_count, BufferType::IndexBuffer,
-                         nullptr};
+  BufferDescriptor vdesc;
+  {
+    vdesc.size = vert_sz;
+    vdesc.count = vert_count;
+    vdesc.type = BufferType::VertexBuffer;
+    vdesc.layout = desc.layout;
+  }
+  BufferDescriptor idesc;
+  {
+    idesc.size = indices_sz;
+    idesc.count = index_count;
+    idesc.type = BufferType::IndexBuffer;
+  }
 
   return GeometryComponent{api_->CreateBuffer(vdesc, verts),
                            api_->CreateBuffer(idesc, indices)};
@@ -61,7 +109,7 @@ void Renderer::Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
 
   api_->BindBuffer(vbuf);
   api_->BindBuffer(ibuf);
-  api_->RenderIndexed(ibuf.GetCount());
+  api_->RenderIndexed(ibuf.Count());
   // api_->Render();
 }
 

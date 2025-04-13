@@ -7,6 +7,7 @@
 
 #include "heavy_weather/ecs/ecs.hpp"
 #include "heavy_weather/event/EntityRemoved.hpp"
+#include "heavy_weather/rendering/Buffer.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Gui/Gui.hpp"
 #include <glm/fwd.hpp>
@@ -55,6 +56,7 @@ public:
 private:
   void OnEntityRemoved(const EntityRemovedEvent &e);
   void GarbageCollect();
+  UniquePtr<Buffer> matrices_ubo_{nullptr};
 };
 
 } // namespace weather::graphics

@@ -11,9 +11,9 @@ GeometryComponent::GeometryComponent(UniquePtr<Buffer> vbuffer,
 GeometryComponent::GeometryComponent(GeometryComponent &&other) noexcept
     : vbuffer(std::move(other.vbuffer)), ibuffer(std::move(other.ibuffer)) {
   HW_CORE_INFO("GeometryComponent Move constructor");
-  HW_ASSERT(this->ibuffer->GetSize() > 0);
+  HW_ASSERT(this->ibuffer->Size() > 0);
   HW_ASSERT(this->ibuffer->Type() == BufferType::IndexBuffer);
-  HW_ASSERT(this->vbuffer->GetSize() > 0);
+  HW_ASSERT(this->vbuffer->Size() > 0);
   HW_ASSERT(this->vbuffer->Type() == BufferType::VertexBuffer);
 }
 

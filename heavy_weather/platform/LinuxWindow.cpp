@@ -36,7 +36,7 @@ void PlatformSleep(u64 time) {
 }
 
 f64 PlatformGetTime() {
-  struct timespec now {};
+  struct timespec now{};
   clock_gettime(CLOCK_MONOTONIC, &now);
   f64 time = now.tv_sec + now.tv_nsec * 0.000000001; // NOLINT
   if (s_glfw_init) {

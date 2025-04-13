@@ -18,7 +18,7 @@ GLVertexBuffer::GLVertexBuffer(BufferDescriptor desc, void *vertices, u32 vao)
   u64 offset = 0;
   auto stride = layout_.Stride();
 
-  glBufferData(GL_ARRAY_BUFFER, this->GetSize(), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, this->Size(), vertices, GL_STATIC_DRAW);
   for (auto pair = layout_.Begin(), end = layout_.End(); pair != end; ++pair) {
     DataFormat format = pair->second;
     auto count = FormatCount(format);
@@ -33,7 +33,11 @@ GLVertexBuffer::GLVertexBuffer(BufferDescriptor desc, void *vertices, u32 vao)
   }
 
   HW_CORE_TRACE("Created VBO #{}: VAO: {}. Count: {}. Size: {}", handle_, vao_,
-                this->GetCount(), this->GetSize());
+                this->Count(), this->Size());
+}
+
+void GLVertexBuffer::SetLayout(VertexLayout &&layout) {
+  this->layout_ = std::move(layout);
 }
 
 GLVertexBuffer::~GLVertexBuffer() {

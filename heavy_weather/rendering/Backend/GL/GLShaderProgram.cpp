@@ -18,6 +18,8 @@ ShaderCompileStatus GLShaderProgram::Init() {
   glAttachShader(handle_, vert->Hanlde());
   glAttachShader(handle_, frag->Hanlde());
   LinkAndValidate();
+  // u32 matrices_idx = glGetUniformBlockIndex(handle_, "Matrices");
+  // glUniformBlockBinding(handle_, matrices_idx, 0); // TODO: DONT'T HARDCODE
   return status_;
 }
 

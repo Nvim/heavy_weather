@@ -10,6 +10,10 @@ void APIENTRY weather::graphics::LogDebugMessage(
     GLsizei length, const char *message, const void *user_param) {
   // clang-format off
   // ignore non-significant error/warning codes
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+  (void)source; (void)type; (void)id; (void)severity; (void)length;
+  (void)message; (void)user_param;
+#else
   if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
   (void)length;
   (void)user_param;
@@ -57,4 +61,5 @@ void APIENTRY weather::graphics::LogDebugMessage(
   std::string s =
       fmt::format("OPENGL {}(Code #{}): {}. {}. {}", sev, id, message, t, src);
   HW_CORE_INFO("{}", s)
+#endif
 }

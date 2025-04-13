@@ -9,6 +9,7 @@
 #include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLShaderProgram.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLTexture.hpp"
+#include "heavy_weather/rendering/Backend/GL/GLUniformBuffer.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
@@ -23,6 +24,7 @@ GLBackendAPI::GLBackendAPI(u16 w, u16 h, bool depth, bool debug)
 
   i32 flags; // NOLINT
   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+#ifdef GL_CONTEXT_FLAG_DEBUG_BIT
   if (debug && flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
     HW_CORE_DEBUG("OpenGL debug context enabled")
     glEnable(GL_DEBUG_OUTPUT);
@@ -31,6 +33,7 @@ GLBackendAPI::GLBackendAPI(u16 w, u16 h, bool depth, bool debug)
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr,
                           GL_TRUE);
   }
+#endif
 
   glGetIntegerv(GL_MAJOR_VERSION, &config_.maj);
   glGetIntegerv(GL_MINOR_VERSION, &config_.min);
@@ -84,6 +87,14 @@ UniquePtr<Buffer> GLBackendAPI::CreateIndexBuffer(BufferDescriptor desc,
   return buf;
 }
 
+UniquePtr<Buffer> GLBackendAPI::CreateUniformBuffer(BufferDescriptor desc,
+                                                    void *data) {
+  auto *b = new GLUniformBuffer(desc, data); // NOLINT
+  auto handle = b->Hanlde();
+  state_.ubo = handle;
+  return std::unique_ptr<Buffer>(b);
+}
+
 UniquePtr<Buffer> GLBackendAPI::CreateBuffer(BufferDescriptor desc,
                                              void *data) {
   UniquePtr<Buffer> buf = nullptr;
@@ -91,6 +102,8 @@ UniquePtr<Buffer> GLBackendAPI::CreateBuffer(BufferDescriptor desc,
     buf = CreateIndexBuffer(desc, data);
   } else if (desc.type == BufferType::VertexBuffer) {
     buf = CreateVertexBuffer(desc, data);
+  } else if (desc.type == BufferType::UniformBuffer) {
+    buf = CreateUniformBuffer(desc, data);
   } else {
     HW_CORE_ERROR("Couldn't create buffer: Unkown type");
   }
@@ -146,6 +159,15 @@ void GLBackendAPI::BindEBO(u32 ebo) {
   state_.ebo = ebo;
 }
 
+void GLBackendAPI::BindUBO(u32 ubo, u32 base) {
+  (void)base; // TODO: remove base if it works
+  if (state_.ubo == ubo) {
+    return;
+  }
+  glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+  state_.ubo = ubo;
+}
+
 void GLBackendAPI::BindBuffer(const Buffer &buf) {
   if (buf.Type() == BufferType::VertexBuffer) {
     const auto &glbuf = dynamic_cast<const GLVertexBuffer &>(buf);
@@ -153,7 +175,20 @@ void GLBackendAPI::BindBuffer(const Buffer &buf) {
   } else if (buf.Type() == BufferType::IndexBuffer) {
     const auto &glbuf = dynamic_cast<const GLIndexBuffer &>(buf);
     BindEBO(glbuf.Hanlde());
+  } else if (buf.Type() == BufferType::UniformBuffer) {
+    const auto &glbuf = dynamic_cast<const GLUniformBuffer &>(buf);
+    BindUBO(glbuf.Hanlde(), glbuf.Binding());
   }
+}
+
+void GLBackendAPI::WriteBufferData(const Buffer &buf, void *data, u64 data_sz) {
+  HW_ASSERT_MSG(buf.Type() == BufferType::UniformBuffer,
+                "Only UBO writing is supported for now");
+  const auto &glbuf = dynamic_cast<const GLUniformBuffer &>(buf);
+  HW_ASSERT_MSG(glbuf.Size() == data_sz,
+                "Can't write to UBO: sizes don't match");
+  BindUBO(glbuf.Hanlde(), glbuf.Binding());
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, glbuf.Size(), data);
 }
 
 void GLBackendAPI::UsePipeline(ShaderProgram &pipeline) {

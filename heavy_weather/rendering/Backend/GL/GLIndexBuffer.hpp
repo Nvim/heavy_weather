@@ -15,6 +15,8 @@ public:
   GLIndexBuffer(GLIndexBuffer &&) = delete;
   GLIndexBuffer &operator=(const GLIndexBuffer &) = delete;
   GLIndexBuffer &operator=(GLIndexBuffer &&) = delete;
+  const VertexLayout *Layout() const override;
+  void SetLayout(VertexLayout &&layout) override;
 
 private:
   u32 handle_; // ID given by GL on creation

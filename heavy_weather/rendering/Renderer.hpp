@@ -25,11 +25,13 @@ public:
               const Buffer &ibuf, Material &material);
 
   GeometryComponent CreateGeometry(const MeshDescriptor &desc);
+  UniquePtr<Buffer> CreateBuffer(const BufferDescriptor &desc, void *data);
   SharedPtr<Texture> CreateTexture(SharedPtr<Image> img);
   SharedPtr<ShaderProgram> CreatePipeline(SharedPtr<ShaderSource> vs,
                                           SharedPtr<ShaderSource> fs);
 
   void UsePipeline(ShaderProgram &pipeline);
+  void WriteBufferData(const Buffer &buf, void *data, u64 data_sz);
   void Resize(std::pair<u16, u16> new_sz) { api_->Resize(new_sz); }
   std::pair<u16, u16> ViewPort() const { return api_->ViewPort(); }
 

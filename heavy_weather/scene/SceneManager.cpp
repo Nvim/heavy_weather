@@ -10,6 +10,7 @@
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
+#include "heavy_weather/rendering/VertexLayout.hpp"
 #include "heavy_weather/scene/components/NameComponent.hpp"
 #include "heavy_weather/scene/components/WidgetComponent.hpp"
 #include "imgui.h"
@@ -33,6 +34,19 @@ SceneManager::SceneManager(Renderer &renderer,
   EventCallback<EntityRemovedEvent> evt =
       std::bind(&SceneManager::OnEntityRemoved, this, std::placeholders::_1);
   EventRegister(evt, this);
+
+  graphics::VertexLayout ubo_layout{};
+  ubo_layout.AddAttribute({"projection", graphics::DataFormat::Mat4});
+  ubo_layout.AddAttribute({"view", graphics::DataFormat::Mat4});
+  BufferDescriptor desc;
+  {
+    desc.size = 2 * sizeof(glm::mat4);
+    desc.count = 1;
+    desc.binding = 0;
+    desc.type = BufferType::UniformBuffer;
+    desc.layout = &ubo_layout;
+  };
+  matrices_ubo_ = renderer_.CreateBuffer(desc, nullptr);
 }
 
 void SceneManager::Update(f64 delta) {
@@ -86,6 +100,10 @@ u32 SceneManager::AddMaterial(SharedPtr<Material> desc, u32 entity) {
   return e;
 }
 
+struct Matrices {
+  glm::mat4 proj;
+  glm::mat4 view;
+};
 void SceneManager::SubmitAll() {
   renderer_.ClearDepth();
   auto view = camera_.GetMatrix();
@@ -93,6 +111,8 @@ void SceneManager::SubmitAll() {
                                float(renderer_.ViewPort().first) /
                                    float(renderer_.ViewPort().second),
                                camera_.Near(), camera_.Far());
+  Matrices matrices{proj, view};
+  renderer_.WriteBufferData(*matrices_ubo_, &matrices, 2 * sizeof(glm::mat4));
 
   auto meshes =
       scene_.Query<TransformComponent, GeometryComponent, MaterialComponent>();
