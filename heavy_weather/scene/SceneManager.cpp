@@ -5,6 +5,7 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Buffer.hpp"
 #include "heavy_weather/rendering/GeometryComponent.hpp"
+#include "heavy_weather/rendering/LightSourceComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
@@ -35,19 +36,66 @@ SceneManager::SceneManager(Renderer &renderer,
       std::bind(&SceneManager::OnEntityRemoved, this, std::placeholders::_1);
   EventRegister(evt, this);
 
-  graphics::VertexLayout ubo_layout{};
-  ubo_layout.AddAttribute({"projection", graphics::DataFormat::Mat4});
-  ubo_layout.AddAttribute({"view", graphics::DataFormat::Mat4});
-  BufferDescriptor desc;
+  // matrices ubo:
   {
-    desc.size = 2 * sizeof(glm::mat4);
-    desc.count = 1;
-    desc.binding = 0;
-    desc.type = BufferType::UniformBuffer;
-    desc.layout = &ubo_layout;
-  };
-  matrices_ubo_ = renderer_.CreateBuffer(desc, nullptr);
+    graphics::VertexLayout ubo_layout{};
+    ubo_layout.AddAttribute({"projection", graphics::DataFormat::Mat4});
+    ubo_layout.AddAttribute({"view", graphics::DataFormat::Mat4});
+    BufferDescriptor desc;
+    {
+      desc.size = 64 + 64 + 16;
+      desc.count = 1;
+      desc.binding = 0;
+      desc.type = BufferType::UniformBuffer;
+      desc.layout = &ubo_layout;
+    };
+    matrices_ubo_ = renderer_.CreateBuffer(desc, nullptr);
+  }
+  // lights ubo:
+  {
+    graphics::VertexLayout ubo_layout{};
+    ubo_layout.AddAttribute({"position", graphics::DataFormat::Float3});
+    ubo_layout.AddAttribute({"ambient", graphics::DataFormat::Float3});
+    ubo_layout.AddAttribute({"diffuse", graphics::DataFormat::Float3});
+    ubo_layout.AddAttribute({"specular", graphics::DataFormat::Float3});
+    BufferDescriptor desc;
+    {
+      desc.size = 4 * 16; // TODO: offset compute function
+      desc.count = 1;
+      desc.binding = 1;
+      desc.type = BufferType::UniformBuffer;
+      desc.layout = &ubo_layout;
+    };
+    lights_ubo_ = renderer_.CreateBuffer(desc, nullptr);
+  }
+
+  // Add a testing lightsource
+  {
+    auto l = scene_.CreateEntity();
+    LightSourceComponent c{
+        {0.2f, 0.2f, 0.2f},
+        {0.5f, 0.5f, 0.5f},
+        {1.0f, 1.0f, 1.0f},
+    };
+    auto tr = TransformComponent{};
+    tr.translation = {2.0f, 7.0f, 2.0f};
+    tr.dirty = true;
+    scene_.AddComponent(l, c);
+    scene_.AddComponent(l, tr);
+  }
 }
+
+// TODO: remove this wtf
+struct TmpLight {
+  glm::vec3 position;
+  f32 pad1;
+  glm::vec3 ambient;
+  f32 pad2;
+  glm::vec3 diffuse;
+  f32 pad3;
+  glm::vec3 specular;
+  f32 pad4;
+};
 
 void SceneManager::Update(f64 delta) {
   camera_.ProcessInput(delta);
@@ -100,9 +148,11 @@ u32 SceneManager::AddMaterial(SharedPtr<Material> desc, u32 entity) {
   return e;
 }
 
+// TODO: delete this again
 struct Matrices {
   glm::mat4 proj;
   glm::mat4 view;
+  glm::vec3 camera_world;
 };
 void SceneManager::SubmitAll() {
   renderer_.ClearDepth();
@@ -111,12 +161,34 @@ void SceneManager::SubmitAll() {
                                float(renderer_.ViewPort().first) /
                                    float(renderer_.ViewPort().second),
                                camera_.Near(), camera_.Far());
-  Matrices matrices{proj, view};
-  renderer_.WriteBufferData(*matrices_ubo_, &matrices, 2 * sizeof(glm::mat4));
+  Matrices matrices{proj, view, camera_.Position()};
+  renderer_.WriteBufferData(*matrices_ubo_, &matrices,
+                            (2 * sizeof(glm::mat4)) + 16);
+
+  {
+    auto lights = scene_.Query<TransformComponent, LightSourceComponent>();
+    HW_ASSERT(lights.size() == 1);
+    auto component = scene_.GetComponent<LightSourceComponent>(lights[0]);
+    TmpLight l{
+        // glm::vec4(
+        scene_.GetComponent<TransformComponent>(lights[0]).translation, 0.0f,
+        // 0.0f),
+        // glm::vec4(
+        component.ambient, 0.0f,
+        // 0.0f),
+        // glm::vec4(
+        component.diffuse, 0.0f,
+        // 0.0f),
+        // glm::vec4(
+        component.specular, 0.0f,
+        // 0.0f),
+    };
+    renderer_.WriteBufferData(*lights_ubo_, &l, lights_ubo_->Size());
+  }
 
   auto meshes =
       scene_.Query<TransformComponent, GeometryComponent, MaterialComponent>();
-  HW_ASSERT(scene_.Count() == meshes.size());
+  HW_ASSERT(scene_.Count() == meshes.size() + 1);
   for (const auto &elem : meshes) {
     auto &transform = scene_.GetComponent<TransformComponent>(elem);
     auto &bufs = scene_.GetComponent<GeometryComponent>(elem);

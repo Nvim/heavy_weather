@@ -8,19 +8,21 @@ layout (location = 2) in vec2 uvs;
 layout (std140, binding=0) uniform Matrices {
   mat4 projection;
   mat4 view;
+  vec3 camera_world; // camera in world space
 };
 uniform mat4 Model;
 
 out vec3 Normal;
 out vec2 TexUvs;
 out vec3 FragPos; // Fragment position in world space
+out vec3 ViewPos;
 
 void main()
 {
-  // gl_Position = vec4(pos.x+iRotation, pos.y, pos.z, 1.0);
   mat4 MVP = projection * view * Model;
   gl_Position = MVP * vec4(pos, 1.0f);
   FragPos = vec3(Model * vec4(pos, 1.0));
   TexUvs = uvs;
   Normal = normal;
+  ViewPos = camera_world;
 }

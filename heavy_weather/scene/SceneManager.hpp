@@ -57,6 +57,7 @@ private:
   void OnEntityRemoved(const EntityRemovedEvent &e);
   void GarbageCollect();
   UniquePtr<Buffer> matrices_ubo_{nullptr};
+  UniquePtr<Buffer> lights_ubo_{nullptr};
 };
 
 } // namespace weather::graphics

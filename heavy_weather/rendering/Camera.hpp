@@ -30,6 +30,7 @@ public:
   void ProcessInput(f64 delta);
 
   const glm::mat4 &GetMatrix() const { return matrix_; }
+  const glm::vec3 &Position() const { return world_pos_; }
   f32 Far() const { return far_; }
   f32 Near() const { return near_; }
   f32 Fov() const { return fov_; }

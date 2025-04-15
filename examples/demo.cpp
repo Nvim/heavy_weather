@@ -110,18 +110,18 @@ void Demo::InitGraphics() {
       "cube"};
 
   {
-    u32 cube_mesh =
+    u32 left_cube_mesh =
         scene_manager_.AddMesh(cube_desc, glm::vec3{-1.5f, 0.0f, 0.0f});
     cube_desc.name = "cube2";
-    u32 square_mesh =
+    u32 right_cube_mesh =
         scene_manager_.AddMesh(cube_desc, glm::vec3{1.5f, 0.0f, 0.0f});
     cube_desc.name = "cube3";
-    u32 square_mesh2 =
+    u32 top_cube_mesh =
         scene_manager_.AddMesh(cube_desc, glm::vec3{0.0f, 1.5f, 0.0f});
 
     auto lit_paving_mat = asset_mgr_.LoadResource<graphics::Material>(
         "examples/resources/materials/lit.json");
-    auto lit_paving2_mat = asset_mgr_.LoadResource<graphics::Material>(
+    auto container_mat = asset_mgr_.LoadResource<graphics::Material>(
         "examples/resources/materials/lit.json");
     auto lit_cobble_mat = asset_mgr_.LoadResource<graphics::Material>(
         "examples/resources/materials/lit.json");
@@ -130,17 +130,28 @@ void Demo::InitGraphics() {
         asset_mgr_.LoadResource<graphics::Texture>(
             "examples/resources/textures/cobblestone_bc.png"),
         "TexDiffuse");
+    lit_cobble_mat->SetTexture(
+        asset_mgr_.LoadResource<graphics::Texture>(
+            "examples/resources/textures/cobblestone_spec.png"),
+        "TexSpecular");
     lit_paving_mat->SetTexture(asset_mgr_.LoadResource<graphics::Texture>(
                                    "examples/resources/textures/paving_bc.png"),
                                "TexDiffuse");
-    lit_paving2_mat->SetTexture(
+    lit_paving_mat->SetTexture(
         asset_mgr_.LoadResource<graphics::Texture>(
-            "examples/resources/textures/paving2_bc.png"),
-        "TexDiffuse");
+            "examples/resources/textures/paving_spec.png"),
+        "TexSpecular");
+    container_mat->SetTexture(asset_mgr_.LoadResource<graphics::Texture>(
+                                  "examples/resources/textures/container.png"),
+                              "TexDiffuse");
+    container_mat->SetTexture(
+        asset_mgr_.LoadResource<graphics::Texture>(
+            "examples/resources/textures/container_spec.png"),
+        "TexSpecular");
 
-    scene_manager_.AddMaterial(lit_cobble_mat, cube_mesh);
-    scene_manager_.AddMaterial(lit_paving_mat, square_mesh);
-    scene_manager_.AddMaterial(lit_paving2_mat, square_mesh2);
+    scene_manager_.AddMaterial(lit_cobble_mat, left_cube_mesh);
+    scene_manager_.AddMaterial(lit_paving_mat, right_cube_mesh);
+    scene_manager_.AddMaterial(container_mat, top_cube_mesh);
   }
 
   // {
