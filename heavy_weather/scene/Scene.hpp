@@ -29,13 +29,17 @@ private:
 
 public:
   Scene(Renderer &renderer, CameraParams &camera_params);
+
+  ECS &SceneGraph() { return scenegraph_; }
+  void Update(f64 delta);
+  void SubmitAll();
+  void OnGuiRender();
+
+  // Helpers:
   u32 AddMesh(MeshDescriptor &desc, glm::vec3 coords = {0.0f, 0.0f, 0.0f},
               u32 entity = NEW_ENTITY);
   u32 AddMaterial(SharedPtr<Material> desc, u32 entity);
   u32 AddTexture(SharedPtr<Texture> tex, u32 entity);
-  void Update(f64 delta);
-  void SubmitAll();
-  void OnGuiRender();
 
   // Delete all
   Scene(const Scene &) = delete;

@@ -13,6 +13,8 @@
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
+#include "heavy_weather/rendering/Texture.hpp"
+#include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include "heavy_weather/resources/AssetManager.hpp"
@@ -67,10 +69,7 @@ weather::Application *weather::CreateAppHook() {
 Demo::Demo(WindowProps &window_props, f64 fps,
            graphics::RendererInitParams &render_params)
     : Application(window_props, fps), renderer_{render_params},
-      scene_manager_{
-          renderer_,
-          camera_params,
-      } //
+      scene_{renderer_, camera_params} //
 {
   // Event callbacks:
   mouse_callback_ = [this](const MouseMovedEvent &e) { this->OnMouseMoved(e); };
@@ -101,17 +100,16 @@ void Demo::InitGraphics() {
   graphics::MeshDescriptor cube_desc{
       std::pair(cube_verts_normals_uvs, sizeof(cube_verts_normals_uvs)),
       std::pair(cube_indices_big, sizeof(cube_indices_big)), &cube_layout,
-      "cube"};
+      "cobble_cube"};
 
   {
-    u32 left_cube_mesh =
-        scene_manager_.AddMesh(cube_desc, glm::vec3{-1.5f, 0.0f, 0.0f});
-    cube_desc.name = "cube2";
+    u32 cobble_cube_mesh =
+        scene_.AddMesh(cube_desc, glm::vec3{-7.5f, -9.0f, -7.5f});
+    cube_desc.name = "paving_cube";
     u32 right_cube_mesh =
-        scene_manager_.AddMesh(cube_desc, glm::vec3{1.5f, 0.0f, 0.0f});
-    cube_desc.name = "cube3";
-    u32 top_cube_mesh =
-        scene_manager_.AddMesh(cube_desc, glm::vec3{0.0f, 1.5f, 0.0f});
+        scene_.AddMesh(cube_desc, glm::vec3{1.0f, 0.0f, 0.0f});
+    cube_desc.name = "container_cube";
+    u32 top_cube_mesh = scene_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
 
     auto lit_paving_mat = asset_mgr_.LoadResource<graphics::Material>(
         "examples/resources/materials/lit.json");
@@ -143,57 +141,53 @@ void Demo::InitGraphics() {
             "examples/resources/textures/container_spec.png"),
         "TexSpecular");
 
-    scene_manager_.AddMaterial(lit_cobble_mat, left_cube_mesh);
-    scene_manager_.AddMaterial(lit_paving_mat, right_cube_mesh);
-    scene_manager_.AddMaterial(container_mat, top_cube_mesh);
+    scene_.AddMaterial(lit_cobble_mat, cobble_cube_mesh);
+    scene_.AddMaterial(lit_paving_mat, right_cube_mesh);
+    scene_.AddMaterial(container_mat, top_cube_mesh);
 
-    struct aaa {
-      glm::vec3 a;
-    };
-    struct bbb {
-      glm::vec3 a;
-      glm::vec3 b;
-      glm::vec3 c;
-    };
-    HW_APP_INFO("vec3 size: {}", sizeof(glm::vec3));
-    HW_APP_INFO("struct size: {}", sizeof(aaa));
-    HW_APP_INFO("big struct size: {}", sizeof(bbb));
+    // Turn cobble cube into big plane
+    {
+      auto *tr =
+          scene_.SceneGraph().GetComponentPtr<graphics::TransformComponent>(
+              cobble_cube_mesh);
+      tr->scale = {15.0f, 1.0f, 15.0f};
+      tr->dirty = true;
+    }
+    // {
+    //   tinygltf::Model model;
+    //   tinygltf::TinyGLTF loader;
+    //   std::string err;
+    //   std::string warn;
+    //   bool ret = loader.LoadBinaryFromFile(
+    //       &model, &err, &warn,
+    //       "examples/resources/models/Box.glb"); // for binary glTF(.glb)
+    //
+    //   if (!warn.empty()) {
+    //     HW_APP_WARN("WARNING FROM GLTF: {}", warn);
+    //   }
+    //
+    //   if (!err.empty()) {
+    //     HW_APP_ERROR("ERROR FROM GLTF: {}", err);
+    //   }
+    //
+    //   if (!ret) {
+    //     HW_APP_ERROR("Failed to parse GLTF");
+    //   }
+    //   HW_APP_INFO("GLTF parsing works :)")
+    // }
   }
-
-  // {
-  //   tinygltf::Model model;
-  //   tinygltf::TinyGLTF loader;
-  //   std::string err;
-  //   std::string warn;
-  //   bool ret = loader.LoadBinaryFromFile(
-  //       &model, &err, &warn,
-  //       "examples/resources/models/Box.glb"); // for binary glTF(.glb)
-  //
-  //   if (!warn.empty()) {
-  //     HW_APP_WARN("WARNING FROM GLTF: {}", warn);
-  //   }
-  //
-  //   if (!err.empty()) {
-  //     HW_APP_ERROR("ERROR FROM GLTF: {}", err);
-  //   }
-  //
-  //   if (!ret) {
-  //     HW_APP_ERROR("Failed to parse GLTF");
-  //   }
-  //   HW_APP_INFO("GLTF parsing works :)")
-  // }
 }
 
 void Demo::OnRender(f64 delta) {
-  scene_manager_.Update(delta);
+  scene_.Update(delta);
   renderer_.Clear(bgcolor_);
-  scene_manager_.SubmitAll();
+  scene_.SubmitAll();
 }
 
 void Demo::OnGuiRender(f64 delta) {
   (void)delta;
   EventDispatch(GuiRenderEvent{});
-  scene_manager_.OnGuiRender();
+  scene_.OnGuiRender();
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT

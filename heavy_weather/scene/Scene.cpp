@@ -66,11 +66,11 @@ Scene::Scene(Renderer &renderer, CameraParams &camera_params)
     auto l = scenegraph_.CreateEntity();
     LightSourceComponent c{
         {0.2f, 0.2f, 0.2f},
-        {0.5f, 0.5f, 0.5f},
+        {0.6f, 0.6f, 0.6f},
         {1.0f, 1.0f, 1.0f},
     };
     auto tr = TransformComponent{};
-    tr.translation = {2.0f, 7.0f, 2.0f};
+    tr.translation = {20.0f, -4.0f, 2.0f};
     tr.dirty = true;
     scenegraph_.AddComponent(l, c);
     scenegraph_.AddComponent(l, tr);

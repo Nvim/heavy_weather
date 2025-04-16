@@ -34,6 +34,6 @@ private:
   weather::graphics::Renderer renderer_;
   weather::AssetManager asset_mgr_{&renderer_};
 
-  weather::graphics::Scene scene_manager_;
+  weather::graphics::Scene scene_;
   glm::vec4 bgcolor_{0.15f, 0.15f, 0.15f, 1.0f};
 };
