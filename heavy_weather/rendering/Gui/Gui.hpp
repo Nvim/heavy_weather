@@ -1,7 +1,6 @@
 #pragma once
 
 #include "heavy_weather/rendering/Types.hpp"
-#include "imgui.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -22,11 +21,12 @@ struct AppInfo {
 
 class Gui {
 public:
-  Gui(GuiDesc desc);
+  static void Init(GuiDesc desc);
+  static void ShutDown();
   // TODO: these should be private and App should be friend
-  void RenderAppWindow(AppInfo &info, void *window) const;
-  void BeginFrame() const;
-  void EndFrame() const;
+  static void RenderAppWindow(AppInfo &info, void *window);
+  static void BeginFrame();
+  static void EndFrame();
 
   static bool BeginWindow(const char *title);
   static void EndWindow();
@@ -47,13 +47,6 @@ public:
   static bool DrawInputFloat4(const char *name, void *data);
   static bool DrawScalarInt(const char *name, void *data, i32 step);
   static bool DrawScalarFloat(const char *name, void *data, f32 step);
-
-  ~Gui();
-  ImGuiIO *GetIO();
-
-private:
-  ImGuiIO *io_ = nullptr;
-  void *m_window_ = nullptr;
 };
 
 } // namespace weather::graphics

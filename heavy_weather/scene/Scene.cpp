@@ -1,4 +1,4 @@
-#include "SceneManager.hpp"
+#include "Scene.hpp"
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/event/EntityRemoved.hpp"
@@ -22,18 +22,10 @@
 
 namespace weather::graphics {
 
-SceneManager::SceneManager(Renderer &renderer,
-#ifdef HW_ENABLE_GUI
-                           Gui &gui,
-#endif
-                           CameraParams &camera_params)
-    : camera_{camera_params},
-#ifdef HW_ENABLE_GUI
-      gui_{gui},
-#endif
-      renderer_{renderer} {
+Scene::Scene(Renderer &renderer, CameraParams &camera_params)
+    : camera_{camera_params}, renderer_{renderer} {
   EventCallback<EntityRemovedEvent> evt =
-      std::bind(&SceneManager::OnEntityRemoved, this, std::placeholders::_1);
+      std::bind(&Scene::OnEntityRemoved, this, std::placeholders::_1);
   EventRegister(evt, this);
 
   // matrices ubo:
@@ -71,7 +63,7 @@ SceneManager::SceneManager(Renderer &renderer,
 
   // Add a testing lightsource
   {
-    auto l = scene_.CreateEntity();
+    auto l = scenegraph_.CreateEntity();
     LightSourceComponent c{
         {0.2f, 0.2f, 0.2f},
         {0.5f, 0.5f, 0.5f},
@@ -80,8 +72,8 @@ SceneManager::SceneManager(Renderer &renderer,
     auto tr = TransformComponent{};
     tr.translation = {2.0f, 7.0f, 2.0f};
     tr.dirty = true;
-    scene_.AddComponent(l, c);
-    scene_.AddComponent(l, tr);
+    scenegraph_.AddComponent(l, c);
+    scenegraph_.AddComponent(l, tr);
   }
 }
 
@@ -97,32 +89,32 @@ struct TmpLight {
   f32 pad4;
 };
 
-void SceneManager::Update(f64 delta) {
+void Scene::Update(f64 delta) {
   camera_.ProcessInput(delta);
   camera_.Update();
 }
 
-u32 SceneManager::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
+u32 Scene::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
   // register mesh to scene
   u32 mesh{};
   if (entity == NEW_ENTITY) {
-    mesh = scene_.CreateEntity();
+    mesh = scenegraph_.CreateEntity();
   } else {
     mesh = entity;
   }
-  scene_.AddComponent(mesh, renderer_.CreateGeometry(desc));
+  scenegraph_.AddComponent(mesh, renderer_.CreateGeometry(desc));
   // scene_.AddComponent(mesh, MaterialComponent{});
   auto tr = TransformComponent{};
   tr.translation = coords;
   tr.dirty = true;
-  scene_.AddComponent(mesh, tr);
+  scenegraph_.AddComponent(mesh, tr);
   if (desc.name) {
-    scene_.AddComponent(mesh, NameComponent{desc.name});
+    scenegraph_.AddComponent(mesh, NameComponent{desc.name});
   }
 
 // create and register a gui widget for the mesh
 #ifdef HW_ENABLE_GUI
-  scene_.AddComponent(
+  scenegraph_.AddComponent(
       mesh, WidgetComponent{std::vector<WidgetFunc>{
                 TransformControl, MaterialEditor, DeleteEntityButton}});
 #endif
@@ -130,19 +122,19 @@ u32 SceneManager::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
   return mesh;
 }
 
-u32 SceneManager::AddMaterial(SharedPtr<Material> desc, u32 entity) {
+u32 Scene::AddMaterial(SharedPtr<Material> desc, u32 entity) {
   u32 e{};
   if (entity == NEW_ENTITY) {
-    e = scene_.CreateEntity();
+    e = scenegraph_.CreateEntity();
   } else {
     e = entity;
   }
 
-  if (scene_.HasComponent<MaterialComponent>(e)) {
-    auto m = scene_.GetComponent<MaterialComponent>(e);
+  if (scenegraph_.HasComponent<MaterialComponent>(e)) {
+    auto m = scenegraph_.GetComponent<MaterialComponent>(e);
     m.material = desc;
   } else {
-    scene_.AddComponent(e, MaterialComponent{desc});
+    scenegraph_.AddComponent(e, MaterialComponent{desc});
   }
 
   return e;
@@ -154,7 +146,7 @@ struct Matrices {
   glm::mat4 view;
   glm::vec3 camera_world;
 };
-void SceneManager::SubmitAll() {
+void Scene::SubmitAll() {
   renderer_.ClearDepth();
   auto view = camera_.GetMatrix();
   auto proj = glm::perspective(glm::radians(camera_.Fov()),
@@ -166,12 +158,13 @@ void SceneManager::SubmitAll() {
                             (2 * sizeof(glm::mat4)) + 16);
 
   {
-    auto lights = scene_.Query<TransformComponent, LightSourceComponent>();
+    auto lights = scenegraph_.Query<TransformComponent, LightSourceComponent>();
     HW_ASSERT(lights.size() == 1);
-    auto component = scene_.GetComponent<LightSourceComponent>(lights[0]);
+    auto component = scenegraph_.GetComponent<LightSourceComponent>(lights[0]);
     TmpLight l{
         // glm::vec4(
-        scene_.GetComponent<TransformComponent>(lights[0]).translation, 0.0f,
+        scenegraph_.GetComponent<TransformComponent>(lights[0]).translation,
+        0.0f,
         // 0.0f),
         // glm::vec4(
         component.ambient, 0.0f,
@@ -187,12 +180,13 @@ void SceneManager::SubmitAll() {
   }
 
   auto meshes =
-      scene_.Query<TransformComponent, GeometryComponent, MaterialComponent>();
-  HW_ASSERT(scene_.Count() == meshes.size() + 1);
+      scenegraph_
+          .Query<TransformComponent, GeometryComponent, MaterialComponent>();
+  HW_ASSERT(scenegraph_.Count() == meshes.size() + 1);
   for (const auto &elem : meshes) {
-    auto &transform = scene_.GetComponent<TransformComponent>(elem);
-    auto &bufs = scene_.GetComponent<GeometryComponent>(elem);
-    auto &mat = scene_.GetComponent<MaterialComponent>(elem);
+    auto &transform = scenegraph_.GetComponent<TransformComponent>(elem);
+    auto &bufs = scenegraph_.GetComponent<GeometryComponent>(elem);
+    auto &mat = scenegraph_.GetComponent<MaterialComponent>(elem);
     HW_ASSERT(mat.material->GetShader() != nullptr);
 
     transform.ComputeMatrix();
@@ -206,21 +200,21 @@ void SceneManager::SubmitAll() {
   GarbageCollect();
 }
 
-void SceneManager::OnGuiRender() {
+void Scene::OnGuiRender() {
 #ifdef HW_ENABLE_GUI
   ImGui::Begin("Scene");
   char title[32];
-  auto widgets = scene_.Query<WidgetComponent>();
+  auto widgets = scenegraph_.Query<WidgetComponent>();
   for (const auto &e : widgets) {
-    if (scene_.HasComponent<NameComponent>(e)) {
+    if (scenegraph_.HasComponent<NameComponent>(e)) {
       std::snprintf(title, 31, "%s",
-                    scene_.GetComponent<NameComponent>(e).name);
+                    scenegraph_.GetComponent<NameComponent>(e).name);
     } else {
       std::sprintf(title, "entity #%u", e);
     }
     if (Gui::BeginTreeNode(title)) {
-      for (auto &fn : scene_.GetComponent<WidgetComponent>(e).funcs) {
-        fn(gui_, scene_, e);
+      for (auto &fn : scenegraph_.GetComponent<WidgetComponent>(e).funcs) {
+        fn(scenegraph_, e);
       }
       Gui::EndTreeNode();
     }
@@ -229,15 +223,15 @@ void SceneManager::OnGuiRender() {
 #endif
 }
 
-void SceneManager::OnEntityRemoved(const EntityRemovedEvent &e) {
+void Scene::OnEntityRemoved(const EntityRemovedEvent &e) {
   HW_CORE_INFO("Adding entity {} to removals", e.GetID());
   removals_.push_back(e.GetID());
 }
 
-void SceneManager::GarbageCollect() {
+void Scene::GarbageCollect() {
   for (auto r : removals_) {
     HW_CORE_INFO("Removing entity {}", r);
-    scene_.DestroyEntity(r);
+    scenegraph_.DestroyEntity(r);
   }
   removals_.clear();
 }

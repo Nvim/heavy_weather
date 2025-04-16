@@ -11,13 +11,13 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
-#include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include "heavy_weather/resources/AssetManager.hpp"
-#include "heavy_weather/scene/SceneManager.hpp"
+#include "heavy_weather/scene/Scene.hpp"
+#include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
 // #ifndef TINYGLTF_IMPLEMENTATION
@@ -67,14 +67,8 @@ weather::Application *weather::CreateAppHook() {
 Demo::Demo(WindowProps &window_props, f64 fps,
            graphics::RendererInitParams &render_params)
     : Application(window_props, fps), renderer_{render_params},
-#ifdef HW_ENABLE_GUI
-      gui_{{graphics::Backend::OpenGL, this->GetWindow().GetNative()}},
-#endif
       scene_manager_{
           renderer_,
-#ifdef HW_ENABLE_GUI
-          gui_,
-#endif
           camera_params,
       } //
 {
@@ -152,6 +146,18 @@ void Demo::InitGraphics() {
     scene_manager_.AddMaterial(lit_cobble_mat, left_cube_mesh);
     scene_manager_.AddMaterial(lit_paving_mat, right_cube_mesh);
     scene_manager_.AddMaterial(container_mat, top_cube_mesh);
+
+    struct aaa {
+      glm::vec3 a;
+    };
+    struct bbb {
+      glm::vec3 a;
+      glm::vec3 b;
+      glm::vec3 c;
+    };
+    HW_APP_INFO("vec3 size: {}", sizeof(glm::vec3));
+    HW_APP_INFO("struct size: {}", sizeof(aaa));
+    HW_APP_INFO("big struct size: {}", sizeof(bbb));
   }
 
   // {
@@ -216,9 +222,5 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
 void Demo::OnResize(const ResizeEvent &e) {
   renderer_.Resize({e.NewSize().w, e.NewSize().h});
 }
-
-#ifdef HW_ENABLE_GUI
-const graphics::Gui &Demo::GetGui() const { return gui_; }
-#endif
 
 const char *Demo::GetProgramName() const { return kTitle.c_str(); }

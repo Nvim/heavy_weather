@@ -26,6 +26,10 @@ Application::Application(WindowProps &window_props, f64 fps) {
   if (!InputSystem::Init(window_->GetNative())) {
     HW_CORE_CRITICAL("Failed to init input");
   }
+
+#ifdef HW_ENABLE_GUI
+  graphics::Gui::Init({graphics::Backend::OpenGL, window_->GetNative()});
+#endif
   resize_callback_ = [this](const ResizeEvent &e) { this->OnResize(e); };
   close_callback_ = [this](const WindowCloseEvent &e) { this->OnClose(e); };
   EventRegister(resize_callback_, this);
@@ -48,12 +52,6 @@ void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
   f64 start{}, end{}, remaining{}, delta{};
-#ifdef HW_ENABLE_GUI
-  const auto &gui = this->GetGui();
-  const char *engine_str = "Heavy Weather Engine - v0.0.0";
-#endif // HW_ENABLE_GUI
-
-  // TODO cool version string system
 
   while (is_running_) {
     start = PlatformGetTime();
@@ -61,6 +59,8 @@ void Application::Run() {
     window_->Update();
     this->OnRender(delta);
 #ifdef HW_ENABLE_GUI
+    // TODO cool version string system
+    const char *engine_str = "Heavy Weather Engine - v0.0.0";
     graphics::AppInfo info = {
         this->GetProgramName(),
         engine_str,
@@ -68,11 +68,11 @@ void Application::Run() {
         delta + remaining,
     };
 
-    gui.BeginFrame();
-    gui.RenderAppWindow(info, (void *)&this->GetWindow());
+    graphics::Gui::BeginFrame();
+    graphics::Gui::RenderAppWindow(info, (void *)&this->GetWindow());
 
     this->OnGuiRender(delta);
-    gui.EndFrame();
+    graphics::Gui::EndFrame();
 #endif // HW_ENABLE_GUI
     end = PlatformGetTime();
     delta = end - start;
@@ -82,6 +82,9 @@ void Application::Run() {
     // PlatformSleep(remaining - 1); // NOLINT
     // }
   }
+#ifdef HW_ENABLE_GUI
+  graphics::Gui::ShutDown();
+#endif
 }
 
 void Application::OnResize(const ResizeEvent &evt) // NOLINT

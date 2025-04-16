@@ -6,14 +6,9 @@
 #include "heavy_weather/event/KeyPressedEvent.hpp"
 #include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
-#include "heavy_weather/rendering/Gui/Gui.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
-#include "heavy_weather/rendering/Texture.hpp"
-#include "heavy_weather/resources/AssetLibrary.hpp"
 #include "heavy_weather/resources/AssetManager.hpp"
-#include "heavy_weather/resources/Image.hpp"
-#include "heavy_weather/resources/ShaderSource.hpp"
-#include "heavy_weather/scene/SceneManager.hpp"
+#include "heavy_weather/scene/Scene.hpp"
 
 using weather::KeyPressedEvent;
 using weather::MouseMovedEvent, weather::EventCallback, weather::EventRegister;
@@ -23,9 +18,6 @@ public:
   Demo(weather::WindowProps &window_props, f64 fps,
        weather::graphics::RendererInitParams &render_params);
   ~Demo() override;
-#ifdef HW_ENABLE_GUI
-  const weather::graphics::Gui &GetGui() const override;
-#endif
   const char *GetProgramName() const override;
 
 private:
@@ -41,15 +33,7 @@ private:
   EventCallback<MouseMovedEvent> mouse_callback_;
   weather::graphics::Renderer renderer_;
   weather::AssetManager asset_mgr_{&renderer_};
-  // weather::AssetLibrary<weather::Image> imgs_;
-  // weather::AssetLibrary<weather::graphics::Texture> textures_;
-  // weather::AssetLibrary<weather::ShaderSource> shader_srcs_;
-  // weather::AssetLibrary<weather::graphics::ShaderProgram> shaders_;
-  // weather::AssetLibrary<weather::graphics::Material> materials_;
 
-#ifdef HW_ENABLE_GUI
-  weather::graphics::Gui gui_;
-#endif
-  weather::graphics::SceneManager scene_manager_;
+  weather::graphics::Scene scene_manager_;
   glm::vec4 bgcolor_{0.15f, 0.15f, 0.15f, 1.0f};
 };

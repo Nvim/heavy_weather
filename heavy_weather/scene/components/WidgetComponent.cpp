@@ -6,8 +6,7 @@
 #include "heavy_weather/rendering/TransformComponent.hpp"
 
 namespace weather::graphics {
-void TransformControl(Gui &gui, ECS &scene, u32 entity) {
-  (void)gui;
+void TransformControl(ECS &scene, u32 entity) {
   auto *tr = scene.GetComponentPtr<TransformComponent>(entity);
 
   if (Gui::BeginTreeNode("Transform")) {
@@ -24,8 +23,7 @@ void TransformControl(Gui &gui, ECS &scene, u32 entity) {
   }
 }
 
-void DeleteEntityButton(Gui &gui, ECS &scene, u32 entity) {
-  (void)gui;
+void DeleteEntityButton(ECS &scene, u32 entity) {
   (void)scene;
   if (Gui::DrawButton("delete")) {
     EventDispatch(EntityRemovedEvent{entity});
@@ -39,8 +37,7 @@ void DeleteEntityButton(Gui &gui, ECS &scene, u32 entity) {
     imgui_func(it->first.c_str(), (f32 *)&it->second);                         \
   }
 
-void MaterialEditor(Gui &gui, ECS &scene, u32 entity) {
-  (void)gui;
+void MaterialEditor(ECS &scene, u32 entity) {
   if (Gui::BeginTreeNode("Material")) {
     auto m = scene.GetComponent<MaterialComponent>(entity);
 

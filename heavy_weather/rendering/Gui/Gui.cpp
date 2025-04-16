@@ -1,9 +1,7 @@
 #include "Gui.hpp"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "heavy_weather/core/Application.hpp"
 #include "heavy_weather/core/Asserts.hpp"
-#include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
@@ -12,14 +10,13 @@
 
 namespace weather::graphics {
 
-Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
+void Gui::Init(GuiDesc desc) {
   HW_ASSERT_MSG(desc.backend == Backend::OpenGL,
                 "Only OpenGL is supported as a GUI backend");
   ImGui::CreateContext();
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
-  io_ = &io;
   (void)io;
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard;           // Enable Keyboard Controls
@@ -29,13 +26,19 @@ Gui::Gui(GuiDesc desc) : m_window_{desc.window} {
   ImGui::StyleColorsDark();
 
   // Setup Platform/Renderer backends
-  HW_ASSERT_MSG(
-      ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(m_window_), true),
-      "Faild initializing imgui glfw impl");
+  HW_ASSERT_MSG(ImGui_ImplGlfw_InitForOpenGL(
+                    static_cast<GLFWwindow *>(desc.window), true),
+                "Faild initializing imgui glfw impl");
   HW_ASSERT(ImGui_ImplOpenGL3_Init("#version 330"));
 }
 
-void Gui::RenderAppWindow(AppInfo &info, void *window) const {
+void Gui::ShutDown() {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+}
+
+void Gui::RenderAppWindow(AppInfo &info, void *window) {
   if (ImGui::Begin("Application")) {
     ImGui::Text("%s\n%s", info.program_name, info.engine_name);
     ImGui::Separator();
@@ -47,13 +50,13 @@ void Gui::RenderAppWindow(AppInfo &info, void *window) const {
   }
 }
 
-void Gui::BeginFrame() const {
+void Gui::BeginFrame() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 }
 
-void Gui::EndFrame() const {
+void Gui::EndFrame() {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -99,12 +102,6 @@ bool Gui::DrawScalarInt(const char *name, void *data, i32 step) {
 }
 bool Gui::DrawScalarFloat(const char *name, void *data, f32 step) {
   return (ImGui::InputScalar(name, ImGuiDataType_Float, data, &step));
-}
-
-Gui::~Gui() {
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
 }
 
 } // namespace weather::graphics

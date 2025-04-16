@@ -7,7 +7,7 @@
 
 namespace weather::graphics {
 /*
- * A Widget is a collection of method that calls Gui class function to render a
+ * A Widget is a collection of method that calls Gui functions to render a
  * group of ImGui elements (buttons, sliders, etc), and is associated  with an
  * entity from the scene graph (ecs).
  * In order to get the data to bind to the ImGui elements, Widgets will query
@@ -18,7 +18,7 @@ namespace weather::graphics {
  * by GUI system.
  * */
 
-using WidgetFunc = std::function<void(Gui &, ECS &, u32)>;
+using WidgetFunc = std::function<void(ECS &, u32)>;
 
 // Associates an entity with a Gui widget
 struct WidgetComponent {
@@ -27,8 +27,8 @@ struct WidgetComponent {
 
 // WidgetFuncs:
 
-void TransformControl(Gui &gui, ECS &scene, u32 entity);
-void MaterialEditor(Gui &gui, ECS &scene, u32 entity);
-void DeleteEntityButton(Gui &gui, ECS &scene, u32 entity);
+void TransformControl(ECS &scene, u32 entity);
+void MaterialEditor(ECS &scene, u32 entity);
+void DeleteEntityButton(ECS &scene, u32 entity);
 
 } // namespace weather::graphics
