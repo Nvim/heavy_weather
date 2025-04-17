@@ -14,6 +14,7 @@
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include "heavy_weather/scene/components/NameComponent.hpp"
 #include "heavy_weather/scene/components/WidgetComponent.hpp"
+#include "heavy_weather/scene/systems/System.hpp"
 #include "imgui.h"
 #include <cstdio>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -24,9 +25,12 @@ namespace weather::graphics {
 
 Scene::Scene(Renderer &renderer, CameraParams &camera_params)
     : camera_{camera_params}, renderer_{renderer} {
+
   EventCallback<EntityRemovedEvent> evt =
       std::bind(&Scene::OnEntityRemoved, this, std::placeholders::_1);
   EventRegister(evt, this);
+
+  systems_.emplace_back(RotateSystem);
 
   // matrices ubo:
   {
@@ -92,6 +96,9 @@ struct TmpLight {
 void Scene::Update(f64 delta) {
   camera_.ProcessInput(delta);
   camera_.Update();
+  for (const auto &sys : systems_) {
+    sys(scenegraph_, delta);
+  }
 }
 
 u32 Scene::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
@@ -162,19 +169,14 @@ void Scene::SubmitAll() {
     HW_ASSERT(lights.size() == 1);
     auto component = scenegraph_.GetComponent<LightSourceComponent>(lights[0]);
     TmpLight l{
-        // glm::vec4(
         scenegraph_.GetComponent<TransformComponent>(lights[0]).translation,
         0.0f,
-        // 0.0f),
-        // glm::vec4(
-        component.ambient, 0.0f,
-        // 0.0f),
-        // glm::vec4(
-        component.diffuse, 0.0f,
-        // 0.0f),
-        // glm::vec4(
-        component.specular, 0.0f,
-        // 0.0f),
+        component.ambient,
+        0.0f,
+        component.diffuse,
+        0.0f,
+        component.specular,
+        0.0f,
     };
     renderer_.WriteBufferData(*lights_ubo_, &l, lights_ubo_->Size());
   }
@@ -225,7 +227,7 @@ void Scene::OnGuiRender() {
 
 void Scene::OnEntityRemoved(const EntityRemovedEvent &e) {
   HW_CORE_INFO("Adding entity {} to removals", e.GetID());
-  removals_.push_back(e.GetID());
+  removals_.insert(e.GetID());
 }
 
 void Scene::GarbageCollect() {

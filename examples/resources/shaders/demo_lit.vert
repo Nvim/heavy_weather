@@ -23,6 +23,7 @@ void main()
   gl_Position = MVP * vec4(pos, 1.0f);
   FragPos = vec3(Model * vec4(pos, 1.0));
   TexUvs = uvs;
-  Normal = normal;
+  // Normal = normal;
+  Normal = mat3(transpose(inverse(Model))) * normal;  
   ViewPos = camera_world;
 }

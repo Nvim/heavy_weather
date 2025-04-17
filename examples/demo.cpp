@@ -19,6 +19,7 @@
 #include "heavy_weather/rendering/VertexLayout.hpp"
 #include "heavy_weather/resources/AssetManager.hpp"
 #include "heavy_weather/scene/Scene.hpp"
+#include "heavy_weather/scene/components/RotateComponent.hpp"
 #include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
@@ -152,6 +153,14 @@ void Demo::InitGraphics() {
               cobble_cube_mesh);
       tr->scale = {15.0f, 1.0f, 15.0f};
       tr->dirty = true;
+    }
+
+    // make cubes rotate:
+    {
+      RotateComponent r{2.0f, 0.0f, 0.0f};
+      scene_.SceneGraph().AddComponent(right_cube_mesh, r);
+      r = {0.0f, 0.0f, 4.0f};
+      scene_.SceneGraph().AddComponent(top_cube_mesh, r);
     }
     // {
     //   tinygltf::Model model;

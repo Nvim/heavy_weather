@@ -8,7 +8,9 @@
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/rendering/Buffer.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
+#include "heavy_weather/scene/systems/System.hpp"
 #include <glm/fwd.hpp>
+#include <unordered_set>
 
 #define NEW_ENTITY 0
 
@@ -18,14 +20,16 @@ class Texture;
 class Renderer;
 class Material;
 
+using std::unordered_set;
+using std::vector;
+
 class Scene {
 private:
-  // Scene scene_;
   ECS scenegraph_;
   Camera camera_;
   Renderer &renderer_;
-  // TODO: removals should prevent duplicates
-  std::vector<u32> removals_; // Used to delay removals to the end of frame
+  vector<System> systems_;
+  unordered_set<u32> removals_; // Used to delay removals to the end of frame
 
 public:
   Scene(Renderer &renderer, CameraParams &camera_params);

@@ -8,7 +8,6 @@
 namespace weather::graphics {
 void TransformControl(ECS &scene, u32 entity) {
   auto *tr = scene.GetComponentPtr<TransformComponent>(entity);
-
   if (Gui::BeginTreeNode("Transform")) {
     if (Gui::DrawSliderFloat3("Translation", &tr->translation, -10.0f, 10.0f)) {
       tr->dirty = true;
