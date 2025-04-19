@@ -56,7 +56,9 @@ Scene::Scene(Renderer &renderer, CameraParams &camera_params)
     ubo_layout.AddAttribute({"specular", graphics::DataFormat::Float3});
     BufferDescriptor desc;
     {
-      desc.size = 4 * 16; // TODO: offset compute function
+      // One dirlight, kMaxPointLights pointlights
+      desc.size =
+          sizeof(DirLight) + (kMaxPointLights * sizeof(LightSourceComponent));
       desc.count = 1;
       desc.binding = 1;
       desc.type = BufferType::UniformBuffer;
@@ -65,33 +67,13 @@ Scene::Scene(Renderer &renderer, CameraParams &camera_params)
     lights_ubo_ = renderer_.CreateBuffer(desc, nullptr);
   }
 
-  // Add a testing lightsource
-  {
-    auto l = scenegraph_.CreateEntity();
-    LightSourceComponent c{
-        {0.2f, 0.2f, 0.2f},
-        {0.6f, 0.6f, 0.6f},
-        {1.0f, 1.0f, 1.0f},
-    };
-    auto tr = TransformComponent{};
-    tr.translation = {20.0f, -4.0f, 2.0f};
-    tr.dirty = true;
-    scenegraph_.AddComponent(l, c);
-    scenegraph_.AddComponent(l, tr);
-  }
+  dirlight_ = DirLight{
+      {-0.2f, -1.0f, -0.3f, 0.0f},
+      {0.1f, 0.1f, 0.1f, 0.0f},
+      {0.4f, 0.4f, 0.4f, 0.0f},
+      {0.0f, 0.0f, 0.0f, 0.0f},
+  };
 }
-
-// TODO: remove this wtf
-struct TmpLight {
-  glm::vec3 position;
-  f32 pad1;
-  glm::vec3 ambient;
-  f32 pad2;
-  glm::vec3 diffuse;
-  f32 pad3;
-  glm::vec3 specular;
-  f32 pad4;
-};
 
 void Scene::Update(f64 delta) {
   camera_.ProcessInput(delta);
@@ -99,6 +81,7 @@ void Scene::Update(f64 delta) {
   for (const auto &sys : systems_) {
     sys(scenegraph_, delta);
   }
+  ProcessLightSources();
 }
 
 u32 Scene::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
@@ -115,6 +98,33 @@ u32 Scene::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
   tr.translation = coords;
   tr.dirty = true;
   scenegraph_.AddComponent(mesh, tr);
+  if (desc.name) {
+    scenegraph_.AddComponent(mesh, NameComponent{desc.name});
+  }
+
+// create and register a gui widget for the mesh
+#ifdef HW_ENABLE_GUI
+  scenegraph_.AddComponent(
+      mesh, WidgetComponent{std::vector<WidgetFunc>{
+                TransformControl, MaterialEditor, DeleteEntityButton}});
+#endif
+
+  return mesh;
+}
+
+u32 Scene::AddMesh(MeshDescriptor &desc, TransformComponent &transform,
+                   u32 entity) {
+  // register mesh to scene
+  u32 mesh{};
+  if (entity == NEW_ENTITY) {
+    mesh = scenegraph_.CreateEntity();
+  } else {
+    mesh = entity;
+  }
+  scenegraph_.AddComponent(mesh, renderer_.CreateGeometry(desc));
+  // scene_.AddComponent(mesh, MaterialComponent{});
+  transform.dirty = true;
+  scenegraph_.AddComponent(mesh, transform);
   if (desc.name) {
     scenegraph_.AddComponent(mesh, NameComponent{desc.name});
   }
@@ -147,6 +157,36 @@ u32 Scene::AddMaterial(SharedPtr<Material> desc, u32 entity) {
   return e;
 }
 
+// Query point lights, update their position and send them to shader along with
+// hard-coded dir light
+void Scene::ProcessLightSources() {
+  auto lights = scenegraph_.Query<TransformComponent, LightSourceComponent>();
+  HW_ASSERT(lights.size() <= kMaxPointLights);
+  std::array<LightSourceComponent, kMaxPointLights> pointlights{};
+  u16 i = 0;
+  for (; i < lights.size(); ++i) {
+    pointlights[i] = scenegraph_.GetComponent<LightSourceComponent>(lights[i]);
+    auto tr =
+        scenegraph_.GetComponent<TransformComponent>(lights[i]).translation;
+    pointlights[i].position = glm::vec4(tr, 0.0f);
+  }
+
+  for (; i < kMaxPointLights; ++i) {
+    pointlights[i] = LightSourceComponent{};
+  }
+
+  // Write pointlight & dirlight to ubo:
+  struct PointAndDirLight {
+    DirLight dirLight;
+    std::array<LightSourceComponent, kMaxPointLights> pointlight;
+  } s = {
+      dirlight_,
+      pointlights,
+  };
+  HW_ASSERT(sizeof(s) == lights_ubo_->Size());
+  renderer_.WriteBufferData(*lights_ubo_, &s, lights_ubo_->Size());
+}
+
 // TODO: delete this again
 struct Matrices {
   glm::mat4 proj;
@@ -164,27 +204,9 @@ void Scene::SubmitAll() {
   renderer_.WriteBufferData(*matrices_ubo_, &matrices,
                             (2 * sizeof(glm::mat4)) + 16);
 
-  {
-    auto lights = scenegraph_.Query<TransformComponent, LightSourceComponent>();
-    HW_ASSERT(lights.size() == 1);
-    auto component = scenegraph_.GetComponent<LightSourceComponent>(lights[0]);
-    TmpLight l{
-        scenegraph_.GetComponent<TransformComponent>(lights[0]).translation,
-        0.0f,
-        component.ambient,
-        0.0f,
-        component.diffuse,
-        0.0f,
-        component.specular,
-        0.0f,
-    };
-    renderer_.WriteBufferData(*lights_ubo_, &l, lights_ubo_->Size());
-  }
-
   auto meshes =
       scenegraph_
           .Query<TransformComponent, GeometryComponent, MaterialComponent>();
-  HW_ASSERT(scenegraph_.Count() == meshes.size() + 1);
   for (const auto &elem : meshes) {
     auto &transform = scenegraph_.GetComponent<TransformComponent>(elem);
     auto &bufs = scenegraph_.GetComponent<GeometryComponent>(elem);

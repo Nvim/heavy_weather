@@ -1,0 +1,20 @@
+{
+  "name": "Solid",
+  "vertex": "examples/resources/shaders/demo.vert",
+  "fragment": "examples/resources/shaders/solid_color.frag",
+  "uniforms": {
+    "ints": {},
+    "floats": {},
+    "float2s": {},
+    "float3s": {
+      "uColor": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "float4s": {},
+    "mat3s": {},
+    "mat4s": {}
+  }
+}

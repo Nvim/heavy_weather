@@ -11,6 +11,7 @@
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
+#include "heavy_weather/rendering/LightSourceComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
@@ -104,55 +105,56 @@ void Demo::InitGraphics() {
       "cobble_cube"};
 
   {
-    u32 cobble_cube_mesh =
-        scene_.AddMesh(cube_desc, glm::vec3{-7.5f, -9.0f, -7.5f});
+    // Turn cobble cube into big plane
+    auto tr = graphics::TransformComponent{};
+    tr.translation = {-7.5f, -3.5f, -7.5f};
+    tr.scale = {15.0f, 1.0f, 15.0f};
+    u32 cobble_cube_mesh = scene_.AddMesh(cube_desc, tr);
+
+    // Add regular cubes:
     cube_desc.name = "paving_cube";
     u32 right_cube_mesh =
         scene_.AddMesh(cube_desc, glm::vec3{1.0f, 0.0f, 0.0f});
     cube_desc.name = "container_cube";
     u32 top_cube_mesh = scene_.AddMesh(cube_desc, glm::vec3{-1.0f, 0.0f, 0.0f});
 
-    auto lit_paving_mat = asset_mgr_.LoadResource<graphics::Material>(
-        "examples/resources/materials/lit.json");
-    auto container_mat = asset_mgr_.LoadResource<graphics::Material>(
-        "examples/resources/materials/lit.json");
-    auto lit_cobble_mat = asset_mgr_.LoadResource<graphics::Material>(
-        "examples/resources/materials/lit.json");
-
-    lit_cobble_mat->SetTexture(
-        asset_mgr_.LoadResource<graphics::Texture>(
-            "examples/resources/textures/cobblestone_bc.png"),
-        "TexDiffuse");
-    lit_cobble_mat->SetTexture(
-        asset_mgr_.LoadResource<graphics::Texture>(
-            "examples/resources/textures/cobblestone_spec.png"),
-        "TexSpecular");
-    lit_paving_mat->SetTexture(asset_mgr_.LoadResource<graphics::Texture>(
-                                   "examples/resources/textures/paving_bc.png"),
-                               "TexDiffuse");
-    lit_paving_mat->SetTexture(
-        asset_mgr_.LoadResource<graphics::Texture>(
-            "examples/resources/textures/paving_spec.png"),
-        "TexSpecular");
-    container_mat->SetTexture(asset_mgr_.LoadResource<graphics::Texture>(
-                                  "examples/resources/textures/container.png"),
-                              "TexDiffuse");
-    container_mat->SetTexture(
-        asset_mgr_.LoadResource<graphics::Texture>(
-            "examples/resources/textures/container_spec.png"),
-        "TexSpecular");
-
-    scene_.AddMaterial(lit_cobble_mat, cobble_cube_mesh);
-    scene_.AddMaterial(lit_paving_mat, right_cube_mesh);
-    scene_.AddMaterial(container_mat, top_cube_mesh);
-
-    // Turn cobble cube into big plane
+    // tweak materials
     {
-      auto *tr =
-          scene_.SceneGraph().GetComponentPtr<graphics::TransformComponent>(
-              cobble_cube_mesh);
-      tr->scale = {15.0f, 1.0f, 15.0f};
-      tr->dirty = true;
+      auto lit_paving_mat = asset_mgr_.LoadResource<graphics::Material>(
+          "examples/resources/materials/lit.json");
+      auto container_mat = asset_mgr_.LoadResource<graphics::Material>(
+          "examples/resources/materials/lit.json");
+      auto lit_cobble_mat = asset_mgr_.LoadResource<graphics::Material>(
+          "examples/resources/materials/lit.json");
+
+      lit_cobble_mat->SetTexture(
+          asset_mgr_.LoadResource<graphics::Texture>(
+              "examples/resources/textures/cobblestone_bc.png"),
+          "TexDiffuse");
+      lit_cobble_mat->SetTexture(
+          asset_mgr_.LoadResource<graphics::Texture>(
+              "examples/resources/textures/cobblestone_spec.png"),
+          "TexSpecular");
+      lit_paving_mat->SetTexture(
+          asset_mgr_.LoadResource<graphics::Texture>(
+              "examples/resources/textures/paving_bc.png"),
+          "TexDiffuse");
+      lit_paving_mat->SetTexture(
+          asset_mgr_.LoadResource<graphics::Texture>(
+              "examples/resources/textures/paving_spec.png"),
+          "TexSpecular");
+      container_mat->SetTexture(
+          asset_mgr_.LoadResource<graphics::Texture>(
+              "examples/resources/textures/container.png"),
+          "TexDiffuse");
+      container_mat->SetTexture(
+          asset_mgr_.LoadResource<graphics::Texture>(
+              "examples/resources/textures/container_spec.png"),
+          "TexSpecular");
+
+      scene_.AddMaterial(lit_cobble_mat, cobble_cube_mesh);
+      scene_.AddMaterial(lit_paving_mat, right_cube_mesh);
+      scene_.AddMaterial(container_mat, top_cube_mesh);
     }
 
     // make cubes rotate:
@@ -161,6 +163,52 @@ void Demo::InitGraphics() {
       scene_.SceneGraph().AddComponent(right_cube_mesh, r);
       r = {0.0f, 0.0f, 4.0f};
       scene_.SceneGraph().AddComponent(top_cube_mesh, r);
+    }
+
+    // Add some lights:
+    {
+      auto solid_mtl = asset_mgr_.LoadResource<graphics::Material>(
+          "examples/resources/materials/solid_color.json");
+      auto tr = graphics::TransformComponent{};
+      tr.translation = {2.0f, -1.2f, 2.75f};
+      tr.scale = {0.3f, 0.3f, 0.3f};
+      cube_desc.name = "white light";
+      auto l = scene_.AddMesh(cube_desc, tr);
+      graphics::LightSourceComponent c;
+      {
+        c.position = tr.translation;
+        c.constant = 1.0f;
+        c.ambient = {0.2f, 0.2f, 0.2f};
+        c.linear = 0.14f;
+        c.diffuse = {0.6f, 0.6f, 0.6f};
+        c.quadratic = 0.07f;
+        c.specular = {1.0f, 1.0f, 1.0f, 0.0f};
+      };
+      scene_.SceneGraph().AddComponent(l, c);
+      scene_.AddMaterial(solid_mtl, l);
+      solid_mtl->SetUniformValue("uColor", c.diffuse);
+    }
+    {
+      auto solid_mtl = asset_mgr_.LoadResource<graphics::Material>(
+          "examples/resources/materials/solid_color.json");
+      auto tr = graphics::TransformComponent{};
+      tr.translation = {-2.1f, 0.2f, -1.45f};
+      tr.scale = {0.3f, 0.3f, 0.3f};
+      cube_desc.name = "blue light";
+      auto l = scene_.AddMesh(cube_desc, tr);
+      graphics::LightSourceComponent c;
+      {
+        c.position = tr.translation;
+        c.constant = 1.0f;
+        c.ambient = {0.1f, 0.3f, 0.5f};
+        c.linear = 0.14f;
+        c.diffuse = {0.3f, 0.7f, 1.0f};
+        c.quadratic = 0.07f;
+        c.specular = {0.4f, 0.7f, 1.0f, 0.0f};
+      };
+      scene_.SceneGraph().AddComponent(l, c);
+      solid_mtl->SetUniformValue("uColor", c.diffuse);
+      scene_.AddMaterial(solid_mtl, l);
     }
     // {
     //   tinygltf::Model model;
