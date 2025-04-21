@@ -41,7 +41,7 @@ void main()
 {
   vec3 norm = normalize(Normal);
   vec3 viewDir = normalize(ViewPos - FragPos);
-  vec3 result;
+  vec3 result = vec3(0.0);
 
   result += ComputeDirLight(dirlight, norm, viewDir);
 
