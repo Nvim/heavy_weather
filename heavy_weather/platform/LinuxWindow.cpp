@@ -56,8 +56,10 @@ InputManager *PlatformInitInput(void *window) {
 
 // TODO: gracefully handle errors
 bool PlatformLoadBackend(graphics::Backend backend) {
-  HW_ASSERT_MSG(backend == graphics::Backend::OpenGL,
-                "Backend is not supported on Linux");
+  if (backend != graphics::Backend::OpenGL) {
+    HW_CORE_CRITICAL("Unsupported backend");
+    return false;
+  }
   // NOLINTNEXTLINE
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     HW_ASSERT_MSG(0, "Couldn't load OpenGL");

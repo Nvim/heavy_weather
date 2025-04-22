@@ -6,6 +6,7 @@ namespace weather::graphics {
 
 GLUniformBuffer::GLUniformBuffer(BufferDescriptor desc, void *data)
     : Buffer{desc}, handle_{} {
+  (void)data;
   glGenBuffers(1, &handle_);
   glBindBuffer(GL_UNIFORM_BUFFER, handle_);
   glBufferData(GL_UNIFORM_BUFFER, Size(), nullptr, GL_DYNAMIC_DRAW);

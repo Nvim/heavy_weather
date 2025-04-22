@@ -11,8 +11,11 @@
 namespace weather::graphics {
 
 void Gui::Init(GuiDesc desc) {
-  HW_ASSERT_MSG(desc.backend == Backend::OpenGL,
-                "Only OpenGL is supported as a GUI backend");
+  if (desc.backend != Backend::OpenGL) {
+    HW_CORE_ERROR("Only OpenGL is supported as a GUI backend");
+    HW_ASSERT(false);
+    return;
+  }
   ImGui::CreateContext();
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();

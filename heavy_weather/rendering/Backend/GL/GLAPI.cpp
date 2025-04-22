@@ -185,8 +185,10 @@ void GLBackendAPI::WriteBufferData(const Buffer &buf, void *data, u64 data_sz) {
   HW_ASSERT_MSG(buf.Type() == BufferType::UniformBuffer,
                 "Only UBO writing is supported for now");
   const auto &glbuf = dynamic_cast<const GLUniformBuffer &>(buf);
-  HW_ASSERT_MSG(glbuf.Size() == data_sz,
-                "Can't write to UBO: sizes don't match");
+  if (glbuf.Size() != data_sz) {
+    HW_ASSERT_MSG(false, "Can't write to UBO: sizes don't match");
+    return;
+  }
   BindUBO(glbuf.Hanlde(), glbuf.Binding());
   glBufferSubData(GL_UNIFORM_BUFFER, 0, glbuf.Size(), data);
 }

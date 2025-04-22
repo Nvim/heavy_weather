@@ -17,7 +17,7 @@
       lib = pkgs.lib;
     in
     {
-      devShells.${system}.default = pkgs.mkShell.override { stdenv = pkgs.clang18Stdenv; } {
+      devShells.${system}.default = pkgs.mkShell.override { stdenv = pkgs.llvmPackages_20.stdenv; } {
         # LD_LIBRARY_PATH = "${lib.getLib pkgs.libGL}/lib/libGL.so.1:${lib.getLib pkgs.libGL}/lib/libEGL.so.1";
         LD_LIBRARY_PATH =
           let
