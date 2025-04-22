@@ -184,7 +184,7 @@ void Demo::InitGraphics() {
         c.quadratic = 0.07f;
         c.specular = {1.0f, 1.0f, 1.0f, 0.0f};
       };
-      scene_.SceneGraph().AddComponent(l, c);
+      scene_.AddLightSource(c, l);
       scene_.AddMaterial(solid_mtl, l);
       solid_mtl->SetUniformValue("uColor", c.diffuse);
     }
@@ -206,7 +206,7 @@ void Demo::InitGraphics() {
         c.quadratic = 0.07f;
         c.specular = {0.4f, 0.7f, 1.0f, 0.0f};
       };
-      scene_.SceneGraph().AddComponent(l, c);
+      scene_.AddLightSource(c, l);
       solid_mtl->SetUniformValue("uColor", c.diffuse);
       scene_.AddMaterial(solid_mtl, l);
     }

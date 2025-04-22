@@ -104,9 +104,9 @@ u32 Scene::AddMesh(MeshDescriptor &desc, glm::vec3 coords, u32 entity) {
 
 // create and register a gui widget for the mesh
 #ifdef HW_ENABLE_GUI
-  scenegraph_.AddComponent(
-      mesh, WidgetComponent{std::vector<WidgetFunc>{
-                TransformControl, MaterialEditor, DeleteEntityButton}});
+  scenegraph_.AddComponent(mesh, WidgetComponent{std::vector<WidgetFunc>{
+                                     TransformControl, MaterialEditor,
+                                     DeleteEntityButton, LightSourceControl}});
 #endif
 
   return mesh;
@@ -137,6 +137,23 @@ u32 Scene::AddMesh(MeshDescriptor &desc, TransformComponent &transform,
 #endif
 
   return mesh;
+}
+
+u32 Scene::AddLightSource(LightSourceComponent &comp, u32 entity) {
+  scenegraph_.AddComponent(entity, comp);
+  // create and register a gui widget for the mesh
+#ifdef HW_ENABLE_GUI
+  if (scenegraph_.HasComponent<WidgetComponent>(entity)) {
+    auto *widgets = scenegraph_.GetComponentPtr<WidgetComponent>(entity);
+    widgets->funcs.emplace_back(LightSourceControl);
+  } else {
+    scenegraph_.AddComponent(entity,
+                             WidgetComponent{std::vector<WidgetFunc>{
+                                 TransformControl, MaterialEditor,
+                                 DeleteEntityButton, LightSourceControl}});
+  }
+#endif
+  return entity;
 }
 
 u32 Scene::AddMaterial(SharedPtr<Material> desc, u32 entity) {

@@ -19,7 +19,7 @@ struct DirLight {
   vec3 specular;
 };
 
-#define MAX_POINT_LIGHTS 2
+#define MAX_POINT_LIGHTS 5
 layout(std140, binding=1) uniform Lights {
   DirLight dirlight;
   PointLight pointlight[MAX_POINT_LIGHTS];
@@ -44,7 +44,6 @@ void main()
   vec3 result = vec3(0.0);
 
   result += ComputeDirLight(dirlight, norm, viewDir);
-
   for(uint i = 0; i < MAX_POINT_LIGHTS; ++i) {
     result += ComputePointLight(pointlight[i], norm, FragPos, viewDir);
   }
@@ -84,10 +83,8 @@ vec3 ComputePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir
   vec3 specular = light.specular * spec_fact * texture(TexSpecular, TexUvs).rgb;
 
   float distance = length(light.position - fragPos);
-  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
-  // float attenuation = 1.0 / ((light.constant + light.linear)
-  //   * (distance + light.quadratic)
-  //   * (distance * distance));    
+  float den = max((light.constant + light.linear * distance + light.quadratic * (distance * distance)), 0.01);
+  float attenuation = 1.0 / den;    
 
   ambient  *= attenuation; 
   diffuse  *= attenuation;

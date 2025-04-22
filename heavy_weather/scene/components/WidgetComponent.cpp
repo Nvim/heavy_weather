@@ -1,9 +1,11 @@
 #include "WidgetComponent.hpp"
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/event/Util.hpp"
+#include "heavy_weather/rendering/LightSourceComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
+#include "imgui.h"
 
 namespace weather::graphics {
 void TransformControl(ECS &scene, u32 entity) {
@@ -19,6 +21,41 @@ void TransformControl(ECS &scene, u32 entity) {
       tr->dirty = true;
     }
     Gui::EndTreeNode();
+  }
+}
+
+void LightSourceControl(ECS &scene, u32 entity) {
+  bool is_light = scene.HasComponent<LightSourceComponent>(entity);
+  if (ImGui::Button("Toggle lightsource")) {
+    if (is_light) {
+      scene.RemoveComponent<LightSourceComponent>(entity);
+      is_light = false;
+    } else {
+      LightSourceComponent c{};
+      {
+        c.position = scene.GetComponent<TransformComponent>(entity).translation;
+        c.constant = 1.0f;
+        c.ambient = {0.2f, 0.2f, 0.2f};
+        c.linear = 0.14f;
+        c.diffuse = {0.6f, 0.6f, 0.6f};
+        c.quadratic = 0.07f;
+        c.specular = {1.0f, 1.0f, 1.0f, 0.0f};
+      }
+      scene.AddComponent(entity, c);
+      is_light = true;
+    }
+  }
+  if (is_light) {
+    auto *comp = scene.GetComponentPtr<LightSourceComponent>(entity);
+    if (Gui::BeginTreeNode("Light Source")) {
+      Gui::DrawSliderFloat3("Ambient", &comp->ambient, 0.0f, 1.0f);
+      Gui::DrawSliderFloat3("Diffuse", &comp->diffuse, 0.0f, 1.0f);
+      Gui::DrawSliderFloat3("Specular", &comp->specular, 0.0f, 1.0f);
+      ImGui::InputFloat("Constant", &comp->constant);
+      ImGui::InputFloat("Linear", &comp->linear);
+      ImGui::InputFloat("Quadratic", &comp->quadratic);
+      Gui::EndTreeNode();
+    }
   }
 }
 

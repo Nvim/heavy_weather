@@ -30,5 +30,6 @@ struct WidgetComponent {
 void TransformControl(ECS &scene, u32 entity);
 void MaterialEditor(ECS &scene, u32 entity);
 void DeleteEntityButton(ECS &scene, u32 entity);
+void LightSourceControl(ECS &scene, u32 entity);
 
 } // namespace weather::graphics

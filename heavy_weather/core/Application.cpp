@@ -77,10 +77,10 @@ void Application::Run() {
     end = PlatformGetTime();
     delta = end - start;
     remaining = fps_ - delta;
-    // if (delta > 0.0f && remaining > 0.0f) {
-    // HW_CORE_INFO("Sleeping for {}", remaining);
-    // PlatformSleep(remaining - 1); // NOLINT
-    // }
+    if (delta > 0.0f && remaining > 0.0f) {
+      // HW_CORE_INFO("Sleeping for {}", remaining);
+      PlatformSleep(remaining - 1); // NOLINT
+    }
   }
 #ifdef HW_ENABLE_GUI
   graphics::Gui::ShutDown();

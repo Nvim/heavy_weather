@@ -12,14 +12,17 @@ void RotateSystem(ECS &ecs, f64 delta) {
     auto *tr = ecs.GetComponentPtr<graphics::TransformComponent>(e);
     auto rot = ecs.GetComponent<RotateComponent>(e);
 
-    auto s = sin(delta) * 10;
-    tr->rotation.x += rot.x_speed * s;
-    tr->rotation.y += rot.y_speed * s;
-    tr->rotation.z += rot.z_speed * s;
+    f32 *rots[3] = {&tr->rotation.x, &tr->rotation.y, &tr->rotation.z};
+    f32 speeds[3] = {rot.x_speed, rot.y_speed, rot.z_speed};
+    auto s = sin(delta) * 15;
 
-    // tr->rotation.x = glm::clamp((f32)(tr->rotation.x + (rot.x_speed * s)),
-    // 0.0f, 360.0f); tr->rotation.x = glm::clamp((f32)(tr->rotation.x +
-    // (rot.x_speed * s)), 0.0f, 360.0f);
+    for (u8 i = 0; i < 3; ++i) {
+      *(rots[i]) += speeds[i] * s;
+      if (*(rots[i]) > 360.0f) {
+        *(rots[i]) = 0.0f;
+      }
+    }
+
     tr->dirty = true;
   }
 }

@@ -27,6 +27,7 @@ class Texture;
 class Renderer;
 class Material;
 struct TransformComponent;
+struct LightSourceComponent;
 
 using std::unordered_set;
 using std::vector;
@@ -39,7 +40,7 @@ private:
   vector<System> systems_;
   unordered_set<u32> removals_; // Used to delay removals to the end of frame
   DirLight dirlight_;
-  static constexpr u16 kMaxPointLights = 2;
+  static constexpr u16 kMaxPointLights = 5;
 
 public:
   Scene(Renderer &renderer, CameraParams &camera_params);
@@ -54,6 +55,7 @@ public:
               u32 entity = NEW_ENTITY);
   u32 AddMesh(MeshDescriptor &desc, TransformComponent &transform,
               u32 entity = NEW_ENTITY);
+  u32 AddLightSource(LightSourceComponent &comp, u32 entity);
   u32 AddMaterial(SharedPtr<Material> desc, u32 entity);
   u32 AddTexture(SharedPtr<Texture> tex, u32 entity);
 

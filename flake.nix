@@ -44,8 +44,8 @@
           cmakeWithGui
           pkg-config
           ninja
-          clang-tools_18 # LSP & Formatter
-          lldb_18 # Debugger
+          llvmPackages_20.clang-tools # LSP & Formatter
+          lldb_20 # Debugger
           pre-commit
           gdbgui
 
