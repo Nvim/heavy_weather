@@ -5,6 +5,7 @@
 #pragma once
 
 #include "glm/gtc/type_ptr.hpp"
+#include "heavy_weather/core/Asserts.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <heavy_weather/engine.h>
@@ -31,6 +32,20 @@ static inline u32 FormatTOGL(DataFormat format) {
   // clang-format on
   HW_CORE_WARN("Unkown buffer format.");
   return 0;
+}
+
+static inline GLint GetGLBufferType(BufferType type) {
+  switch (type) {
+  case BufferType::VertexBuffer:
+    return GL_VERTEX_ARRAY;
+  case BufferType::IndexBuffer:
+    return GL_ELEMENT_ARRAY_BUFFER;
+  case BufferType::UniformBuffer:
+    return GL_UNIFORM_BUFFER;
+  default:
+    HW_ASSERT_MSG(0, "Unknown buffer type");
+    return 0;
+  }
 }
 
 static inline void BindUniform1i(int loc, void *data) {

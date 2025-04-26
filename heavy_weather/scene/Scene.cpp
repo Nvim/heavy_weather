@@ -2,6 +2,7 @@
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/event/EntityRemoved.hpp"
+#include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/Buffer.hpp"
 #include "heavy_weather/rendering/GeometryComponent.hpp"
@@ -34,37 +35,27 @@ Scene::Scene(Renderer &renderer, CameraParams &camera_params)
 
   // matrices ubo:
   {
-    graphics::VertexLayout ubo_layout{};
-    ubo_layout.AddAttribute({"projection", graphics::DataFormat::Mat4});
-    ubo_layout.AddAttribute({"view", graphics::DataFormat::Mat4});
     BufferDescriptor desc;
     {
       desc.size = 64 + 64 + 16;
       desc.count = 1;
-      desc.binding = 0;
       desc.type = BufferType::UniformBuffer;
-      desc.layout = &ubo_layout;
     };
     matrices_ubo_ = renderer_.CreateBuffer(desc, nullptr);
+    renderer_.Api().BindShaderResource(*matrices_ubo_, 0);
   }
   // lights ubo:
   {
-    graphics::VertexLayout ubo_layout{};
-    ubo_layout.AddAttribute({"position", graphics::DataFormat::Float3});
-    ubo_layout.AddAttribute({"ambient", graphics::DataFormat::Float3});
-    ubo_layout.AddAttribute({"diffuse", graphics::DataFormat::Float3});
-    ubo_layout.AddAttribute({"specular", graphics::DataFormat::Float3});
     BufferDescriptor desc;
     {
       // One dirlight, kMaxPointLights pointlights
       desc.size =
           sizeof(DirLight) + (kMaxPointLights * sizeof(LightSourceComponent));
       desc.count = 1;
-      desc.binding = 1;
       desc.type = BufferType::UniformBuffer;
-      desc.layout = &ubo_layout;
     };
     lights_ubo_ = renderer_.CreateBuffer(desc, nullptr);
+    renderer_.Api().BindShaderResource(*lights_ubo_, 1);
   }
 
   dirlight_ = DirLight{
@@ -73,6 +64,18 @@ Scene::Scene(Renderer &renderer, CameraParams &camera_params)
       {0.4f, 0.4f, 0.4f, 0.0f},
       {0.0f, 0.0f, 0.0f, 0.0f},
   };
+
+  HW_ASSERT(sizeof(LightSourceComponent) * kMaxPointLights ==
+            lights_ubo_->Size() - sizeof(DirLight));
+
+  // Initial write: dirlight + empty pointlights array
+  renderer_.Api().WriteBufferData(*lights_ubo_, &dirlight_, 0,
+                                  sizeof(DirLight));
+
+  std::array<LightSourceComponent, kMaxPointLights> pointlights{};
+  renderer_.Api().WriteBufferData(
+      *lights_ubo_, pointlights.data(), sizeof(DirLight),
+      sizeof(LightSourceComponent) * kMaxPointLights);
 }
 
 void Scene::Update(f64 delta) {
@@ -180,28 +183,24 @@ void Scene::ProcessLightSources() {
   auto lights = scenegraph_.Query<TransformComponent, LightSourceComponent>();
   HW_ASSERT(lights.size() <= kMaxPointLights);
   std::array<LightSourceComponent, kMaxPointLights> pointlights{};
-  u16 i = 0;
+  u64 i = 0;
   for (; i < lights.size(); ++i) {
-    pointlights[i] = scenegraph_.GetComponent<LightSourceComponent>(lights[i]);
+    pointlights.at(i) =
+        scenegraph_.GetComponent<LightSourceComponent>(lights[i]);
     auto tr =
         scenegraph_.GetComponent<TransformComponent>(lights[i]).translation;
-    pointlights[i].position = glm::vec4(tr, 0.0f);
+    pointlights.at(i).position = glm::vec4(tr, 0.0f);
   }
+  // fill rest of array with 0 so we don't get ghost lights after removing:
+  memset(&pointlights.at(i), 0,
+         (kMaxPointLights - i) * sizeof(LightSourceComponent));
 
-  for (; i < kMaxPointLights; ++i) {
-    pointlights[i] = LightSourceComponent{};
-  }
-
-  // Write pointlight & dirlight to ubo:
-  struct PointAndDirLight {
-    DirLight dirLight;
-    std::array<LightSourceComponent, kMaxPointLights> pointlight;
-  } s = {
-      dirlight_,
-      pointlights,
-  };
-  HW_ASSERT(sizeof(s) == lights_ubo_->Size());
-  renderer_.WriteBufferData(*lights_ubo_, &s, lights_ubo_->Size());
+  // TODO: Configurable DirLight
+  // renderer_.Api().WriteBufferData(*lights_ubo_, &dirlight_, 0,
+  //                                 sizeof(DirLight));
+  renderer_.Api().WriteBufferData(
+      *lights_ubo_, pointlights.data(), sizeof(DirLight),
+      sizeof(LightSourceComponent) * kMaxPointLights);
 }
 
 // TODO: delete this again
@@ -218,8 +217,8 @@ void Scene::SubmitAll() {
                                    float(renderer_.ViewPort().second),
                                camera_.Near(), camera_.Far());
   Matrices matrices{proj, view, camera_.Position()};
-  renderer_.WriteBufferData(*matrices_ubo_, &matrices,
-                            (2 * sizeof(glm::mat4)) + 16);
+  renderer_.Api().WriteBufferData(*matrices_ubo_, &matrices, 0,
+                                  (2 * sizeof(glm::mat4)) + 16);
 
   auto meshes =
       scenegraph_

@@ -22,14 +22,14 @@ GLIndexBuffer::~GLIndexBuffer() {
   glDeleteBuffers(1, &handle_);
 }
 
-const VertexLayout *GLIndexBuffer::Layout() const {
-  HW_CORE_ERROR("Trying to get layout on index buffer is invalid");
-  return nullptr;
-}
-
-void GLIndexBuffer::SetLayout(VertexLayout &&layout) {
-  (void)layout;
-  HW_CORE_ERROR("Can't set layout on index buffer");
-}
+// const VertexLayout *GLIndexBuffer::Layout() const {
+//   HW_CORE_ERROR("Trying to get layout on index buffer is invalid");
+//   return nullptr;
+// }
+//
+// void GLIndexBuffer::SetLayout(VertexLayout &&layout) {
+//   (void)layout;
+//   HW_CORE_ERROR("Can't set layout on index buffer");
+// }
 
 } // namespace weather::graphics

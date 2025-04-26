@@ -21,7 +21,7 @@ static bool ValidateBufferDesc(const BufferDescriptor &desc) {
     return false;
   }
   if (desc.type == BufferType::UniformBuffer) {
-    if (desc.size == 0 || desc.count != 1 || desc.layout == nullptr) {
+    if (desc.size == 0) {
       return false;
     }
   }
@@ -31,7 +31,7 @@ static bool ValidateBufferDesc(const BufferDescriptor &desc) {
     }
   }
   if (desc.type == BufferType::IndexBuffer) {
-    if (desc.size == 0 || desc.count == 0 || desc.layout != nullptr) {
+    if (desc.size == 0 || desc.count == 0) {
       return false;
     }
   }
@@ -53,11 +53,6 @@ UniquePtr<Buffer> Renderer::CreateBuffer(const BufferDescriptor &desc,
     return nullptr;
   }
   return api_->CreateBuffer(desc, data);
-}
-
-void Renderer::WriteBufferData(const Buffer &buf, void *data, u64 data_sz) {
-  HW_ASSERT(data != nullptr && buf.Type() != BufferType::Unknown);
-  api_->WriteBufferData(buf, data, data_sz);
 }
 
 GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
@@ -107,8 +102,8 @@ void Renderer::Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
 
   material.BindUniforms();
 
-  api_->BindBuffer(vbuf);
-  api_->BindBuffer(ibuf);
+  api_->SetVertexBuffer(vbuf);
+  api_->SetIndexBuffer(ibuf);
   api_->RenderIndexed(ibuf.Count());
   // api_->Render();
 }

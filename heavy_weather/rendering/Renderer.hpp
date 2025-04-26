@@ -1,3 +1,11 @@
+/* *
+ * Renderer turns out to be mostly a wrapper around an API. Since BackendAPI is
+ * already an API-agnostic interface, user code could be good using it directly
+ * instead.
+ * Starting from 3dd1c69577ec, I'll reduce it's use in new code and try to keep
+ * it as a container/owner for the actual api instance.
+ * Using pimpl pattern over interface may be interesting later too, idk.
+ * */
 #pragma once
 
 #include "heavy_weather/engine.h"
@@ -24,6 +32,7 @@ public:
   void Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
               const Buffer &ibuf, Material &material);
 
+  BackendAPI &Api() const { return *api_; }
   GeometryComponent CreateGeometry(const MeshDescriptor &desc);
   UniquePtr<Buffer> CreateBuffer(const BufferDescriptor &desc, void *data);
   SharedPtr<Texture> CreateTexture(SharedPtr<Image> img);

@@ -14,8 +14,8 @@ public:
   ~GLVertexBuffer() override;
   u32 Hanlde() const { return handle_; }
   u32 VAO() const { return vao_; }
-  const VertexLayout *Layout() const override { return &layout_; };
-  void SetLayout(VertexLayout &&layout) override;
+  const VertexLayout *Layout() const { return &layout_; };
+  void SetLayout(VertexLayout &&layout);
 
   //
   GLVertexBuffer(const GLVertexBuffer &) = default;

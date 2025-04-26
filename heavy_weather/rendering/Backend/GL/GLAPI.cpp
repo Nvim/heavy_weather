@@ -7,13 +7,15 @@
 #include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
+#include "heavy_weather/rendering/Backend/GL/GLBuffer.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLShaderProgram.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLTexture.hpp"
-#include "heavy_weather/rendering/Backend/GL/GLUniformBuffer.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include <glad/glad.h>
+
+#include <memory>
 
 namespace weather::graphics {
 
@@ -43,6 +45,11 @@ GLBackendAPI::GLBackendAPI(u16 w, u16 h, bool depth, bool debug)
   if (depth) {
     glEnable(GL_DEPTH_TEST);
   }
+
+  state_.targets[GLTarget::VAO] = 0;
+  state_.targets[GLTarget::VBO] = 0;
+  state_.targets[GLTarget::EBO] = 0;
+  state_.targets[GLTarget::UBO] = 0;
 }
 
 void GLBackendAPI::Resize(std::pair<u16, u16> new_sz) {
@@ -71,41 +78,17 @@ UniquePtr<Buffer> GLBackendAPI::CreateVertexBuffer(BufferDescriptor desc,
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  state_.vao = vao;
+  state_.targets[GLTarget::VAO] = vao;
   return buf;
-}
-
-UniquePtr<Buffer> GLBackendAPI::CreateIndexBuffer(BufferDescriptor desc,
-                                                  void *data) {
-  glBindVertexArray(state_.vao);
-  HW_CORE_TRACE("Binding VAO #{} for IndexBuffer creation", state_.vao);
-  UniquePtr<Buffer> buf =
-      std::unique_ptr<Buffer>(new GLIndexBuffer(desc, data));
-  glBindVertexArray(0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  return buf;
-}
-
-UniquePtr<Buffer> GLBackendAPI::CreateUniformBuffer(BufferDescriptor desc,
-                                                    void *data) {
-  auto *b = new GLUniformBuffer(desc, data); // NOLINT
-  auto handle = b->Hanlde();
-  state_.ubo = handle;
-  return std::unique_ptr<Buffer>(b);
 }
 
 UniquePtr<Buffer> GLBackendAPI::CreateBuffer(BufferDescriptor desc,
                                              void *data) {
   UniquePtr<Buffer> buf = nullptr;
-  if (desc.type == BufferType::IndexBuffer) {
-    buf = CreateIndexBuffer(desc, data);
-  } else if (desc.type == BufferType::VertexBuffer) {
+  if (desc.type == BufferType::VertexBuffer) {
     buf = CreateVertexBuffer(desc, data);
-  } else if (desc.type == BufferType::UniformBuffer) {
-    buf = CreateUniformBuffer(desc, data);
   } else {
-    HW_CORE_ERROR("Couldn't create buffer: Unkown type");
+    buf = std::make_unique<GLBuffer>(desc, data);
   }
 
   return buf;
@@ -145,52 +128,58 @@ SharedPtr<Texture> GLBackendAPI::CreateTexture(SharedPtr<Image> img) {
 
 // Use the vbo's vao to bind vbo
 void GLBackendAPI::BindVBO(u32 vbo, u32 vao) {
-  if (state_.vao != vao) {
+  if (state_.targets[GLTarget::VAO] != vao) {
     glBindVertexArray(vao);
-    state_.vao = vao;
+    state_.targets[GLTarget::VAO] = vao;
   }
-  state_.vbo = vbo;
+  state_.targets[GLTarget::VBO] = vbo;
 }
 
 // Bind the ebo to the last used vao
 void GLBackendAPI::BindEBO(u32 ebo) {
-  glBindVertexArray(state_.vao);
+  glBindVertexArray(state_.targets[GLTarget::VAO]);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  state_.ebo = ebo;
+  state_.targets[GLTarget::EBO] = ebo;
 }
 
-void GLBackendAPI::BindUBO(u32 ubo, u32 base) {
-  (void)base; // TODO: remove base if it works
-  if (state_.ubo == ubo) {
-    return;
+void GLBackendAPI::BindShaderResource(const Buffer &buf, i32 binding) {
+  const auto &glbuf = dynamic_cast<const GLBuffer &>(buf);
+  if (state_.targets[GLBuffer::GLTarget(glbuf.Target())] != glbuf.Handle()) {
+    state_.targets[GLBuffer::GLTarget(glbuf.Target())] = glbuf.Handle();
+    glBindBuffer(glbuf.Target(), glbuf.Handle());
   }
-  glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-  state_.ubo = ubo;
+  glBindBufferBase(glbuf.Target(), binding, glbuf.Handle());
 }
 
-void GLBackendAPI::BindBuffer(const Buffer &buf) {
-  if (buf.Type() == BufferType::VertexBuffer) {
-    const auto &glbuf = dynamic_cast<const GLVertexBuffer &>(buf);
-    BindVBO(glbuf.Hanlde(), glbuf.VAO());
-  } else if (buf.Type() == BufferType::IndexBuffer) {
-    const auto &glbuf = dynamic_cast<const GLIndexBuffer &>(buf);
-    BindEBO(glbuf.Hanlde());
-  } else if (buf.Type() == BufferType::UniformBuffer) {
-    const auto &glbuf = dynamic_cast<const GLUniformBuffer &>(buf);
-    BindUBO(glbuf.Hanlde(), glbuf.Binding());
-  }
+void GLBackendAPI::SetVertexBuffer(const Buffer &buf) {
+  HW_ASSERT_MSG(buf.Type() == BufferType::VertexBuffer, "Bad buffer type");
+  const auto &glbuf = dynamic_cast<const GLVertexBuffer &>(buf);
+  BindVBO(glbuf.Hanlde(), glbuf.VAO());
 }
 
-void GLBackendAPI::WriteBufferData(const Buffer &buf, void *data, u64 data_sz) {
+void GLBackendAPI::SetIndexBuffer(const Buffer &buf) {
+  HW_ASSERT_MSG(buf.Type() == BufferType::IndexBuffer, "Bad buffer type");
+  const auto &glbuf = dynamic_cast<const GLBuffer &>(buf);
+  BindEBO(glbuf.Handle());
+}
+
+void GLBackendAPI::WriteBufferData(const Buffer &buf, void *data, u64 offset,
+                                   u64 data_sz) {
   HW_ASSERT_MSG(buf.Type() == BufferType::UniformBuffer,
-                "Only UBO writing is supported for now");
-  const auto &glbuf = dynamic_cast<const GLUniformBuffer &>(buf);
-  if (glbuf.Size() != data_sz) {
-    HW_ASSERT_MSG(false, "Can't write to UBO: sizes don't match");
+                "This is probably not what you want");
+  HW_ASSERT(buf.Size() != 0);
+  const auto &glbuf = dynamic_cast<const GLBuffer &>(buf);
+  if (glbuf.Size() < data_sz) {
+    HW_ASSERT_MSG(false, "Invalid write: data size is bigger than buffer");
     return;
   }
-  BindUBO(glbuf.Hanlde(), glbuf.Binding());
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, glbuf.Size(), data);
+
+  if (state_.targets[GLBuffer::GLTarget(glbuf.Target())] != glbuf.Handle()) {
+    state_.targets[GLBuffer::GLTarget(glbuf.Target())] = glbuf.Handle();
+    glBindBuffer(glbuf.Target(), glbuf.Handle());
+  }
+  glBufferSubData(glbuf.Target(), static_cast<GLintptr>(offset),
+                  static_cast<GLintptr>(data_sz), data);
 }
 
 void GLBackendAPI::UsePipeline(ShaderProgram &pipeline) {

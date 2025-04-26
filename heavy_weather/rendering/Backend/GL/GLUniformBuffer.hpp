@@ -10,8 +10,8 @@ public:
   explicit GLUniformBuffer(BufferDescriptor desc, void *data);
   ~GLUniformBuffer() override;
   u32 Hanlde() const { return handle_; }
-  const VertexLayout *Layout() const override { return &layout_; };
-  void SetLayout(VertexLayout &&layout) override;
+  const VertexLayout *Layout() const { return &layout_; };
+  void SetLayout(VertexLayout &&layout);
 
   //
   GLUniformBuffer(const GLUniformBuffer &) = default;
