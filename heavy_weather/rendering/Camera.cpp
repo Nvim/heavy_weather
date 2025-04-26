@@ -42,6 +42,7 @@ void Camera::ProcessInput(f64 delta) {
 }
 
 void Camera::ProcessKeyboard(f64 delta) {
+  delta /= 1000;
   f32 speed = static_cast<f32>(speed_ * delta);
   if (InputSystem::IsKeyDown(HW_KEY_W)) {
     world_pos_ += (lookat_ * speed);
@@ -61,20 +62,21 @@ void Camera::ProcessKeyboard(f64 delta) {
   }
 
   // Camera
+  f32 m = delta * 80.0f; // NOLINT
   if (InputSystem::IsKeyDown(HW_KEY_UP)) {
-    pitch_ = std::min(pitch_ + 0.05f, 89.0f);
+    pitch_ = std::min(pitch_ + m, 89.0f);
     dirty_ = true;
   }
   if (InputSystem::IsKeyDown(HW_KEY_DOWN)) {
-    pitch_ = std::max(pitch_ - 0.05f, -89.0f);
+    pitch_ = std::max(pitch_ - m, -89.0f);
     dirty_ = true;
   }
   if (InputSystem::IsKeyDown(HW_KEY_LEFT)) {
-    yaw_ -= 0.05f;
+    yaw_ -= m;
     dirty_ = true;
   }
   if (InputSystem::IsKeyDown(HW_KEY_RIGHT)) {
-    yaw_ += 0.05f;
+    yaw_ += m;
     dirty_ = true;
   }
 }
@@ -88,8 +90,8 @@ void Camera::ProcessMouse(f64 delta) {
     return;
   }
 
-  x_off *= sens_;
-  y_off *= sens_;
+  x_off *= (sens_ * delta);
+  y_off *= (sens_ * delta);
   yaw_ += x_off;
   pitch_ += y_off;
   pitch_ = std::clamp(pitch_, -89.0f, 89.0f);

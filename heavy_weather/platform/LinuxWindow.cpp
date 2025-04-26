@@ -37,12 +37,9 @@ void PlatformSleep(u64 time) {
 
 f64 PlatformGetTime() {
   struct timespec now{};
-  clock_gettime(CLOCK_MONOTONIC, &now);
-  f64 time = now.tv_sec + now.tv_nsec * 0.000000001; // NOLINT
-  if (s_glfw_init) {
-    glfwSetTime(time);
-  }
-  return time;
+  f64 time = glfwGetTime();
+  // HW_CORE_DEBUG("GLFW Time: {}s ({}ms)", time, (time * 1000));
+  return time * 1000; // returns milliseconds
 }
 
 std::unique_ptr<Window> PlatformInitWindow(const WindowProps &props) {

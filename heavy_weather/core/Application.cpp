@@ -51,35 +51,39 @@ const Window &Application::GetWindow() const { return *window_; }
 void Application::Run() {
   HW_CORE_INFO("App running");
   is_running_ = true;
-  f64 start{}, end{}, remaining{}, delta{};
+  f64 target_fps_ms = (fps_ * 1000);
+  f64 start{}, end{}, remaining_ms{}, delta_ms{target_fps_ms},
+      frametime_ms{target_fps_ms};
 
   while (is_running_) {
     start = PlatformGetTime();
 
     window_->Update();
-    this->OnRender(delta);
+    this->OnRender(frametime_ms);
 #ifdef HW_ENABLE_GUI
     // TODO cool version string system
     const char *engine_str = "Heavy Weather Engine - v0.0.0";
     graphics::AppInfo info = {
-        this->GetProgramName(),
-        engine_str,
-        delta,
-        delta + remaining,
+        this->GetProgramName(), engine_str, 1000 / (frametime_ms),
+        frametime_ms,           delta_ms,
     };
 
     graphics::Gui::BeginFrame();
     graphics::Gui::RenderAppWindow(info, (void *)&this->GetWindow());
 
-    this->OnGuiRender(delta);
+    this->OnGuiRender(frametime_ms);
     graphics::Gui::EndFrame();
 #endif // HW_ENABLE_GUI
     end = PlatformGetTime();
-    delta = end - start;
-    remaining = fps_ - delta;
-    if (delta > 0.0f && remaining > 0.0f) {
-      // HW_CORE_INFO("Sleeping for {}", remaining);
-      PlatformSleep(remaining - 1); // NOLINT
+    delta_ms = end - start;
+    if (delta_ms < target_fps_ms) {
+      remaining_ms = target_fps_ms - delta_ms;
+      PlatformSleep(remaining_ms); // NOLINT
+      frametime_ms = target_fps_ms;
+      // HW_CORE_INFO("Frame took {}ms. Sleeping for {}ms to get {} frametime",
+      //              delta_ms, remaining_ms, fps_);
+    } else {
+      frametime_ms = delta_ms;
     }
   }
 #ifdef HW_ENABLE_GUI
@@ -102,3 +106,10 @@ void Application::OnClose(const WindowCloseEvent &evt) {
   is_running_ = false;
 }
 } // namespace weather
+
+//
+// std::random_device rd;
+// std::mt19937 gen(rd());
+// std::uniform_real_distribution<> dist(13.0, 50.0);
+// f64 rand_time = dist(gen);
+// PlatformSleep(rand_time); // NOLINT
