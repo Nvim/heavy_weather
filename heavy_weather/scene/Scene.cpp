@@ -1,6 +1,7 @@
 #include "Scene.hpp"
 #include "heavy_weather/core/Asserts.hpp"
 #include "heavy_weather/core/Logger.hpp"
+#include "heavy_weather/engine.h"
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/event/ResizeEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
@@ -9,6 +10,7 @@
 #include "heavy_weather/rendering/LightSourceComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
+#include "heavy_weather/rendering/RenderCommand.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "heavy_weather/rendering/Types.hpp"
@@ -84,6 +86,7 @@ void Scene::Update(f64 delta) {
   for (const auto &sys : systems_) {
     sys(scenegraph_, delta);
   }
+  UpdateCameraMatrices();
   ProcessLightSources();
 }
 
@@ -177,6 +180,22 @@ u32 Scene::AddMaterial(SharedPtr<Material> desc, u32 entity) {
   return e;
 }
 
+void Scene::UpdateCameraMatrices() {
+  struct Matrices {
+    glm::mat4 proj;
+    glm::mat4 view;
+    glm::vec3 camera_world;
+  };
+  auto view = camera_.GetMatrix();
+  auto proj = glm::perspective(glm::radians(camera_.Fov()),
+                               float(renderer_.ViewPort().first) /
+                                   float(renderer_.ViewPort().second),
+                               camera_.Near(), camera_.Far());
+  Matrices matrices{proj, view, camera_.Position()};
+  renderer_.Api().WriteBufferData(*matrices_ubo_, &matrices, 0,
+                                  (2 * sizeof(glm::mat4)) + 16);
+}
+
 // Query point lights, update their position and send them to shader along with
 // hard-coded dir light
 void Scene::ProcessLightSources() {
@@ -203,39 +222,20 @@ void Scene::ProcessLightSources() {
       sizeof(LightSourceComponent) * kMaxPointLights);
 }
 
-// TODO: delete this again
-struct Matrices {
-  glm::mat4 proj;
-  glm::mat4 view;
-  glm::vec3 camera_world;
-};
 void Scene::SubmitAll() {
   renderer_.ClearDepth();
-  auto view = camera_.GetMatrix();
-  auto proj = glm::perspective(glm::radians(camera_.Fov()),
-                               float(renderer_.ViewPort().first) /
-                                   float(renderer_.ViewPort().second),
-                               camera_.Near(), camera_.Far());
-  Matrices matrices{proj, view, camera_.Position()};
-  renderer_.Api().WriteBufferData(*matrices_ubo_, &matrices, 0,
-                                  (2 * sizeof(glm::mat4)) + 16);
-
   auto meshes =
       scenegraph_
           .Query<TransformComponent, GeometryComponent, MaterialComponent>();
   for (const auto &elem : meshes) {
-    auto &transform = scenegraph_.GetComponent<TransformComponent>(elem);
-    auto &bufs = scenegraph_.GetComponent<GeometryComponent>(elem);
-    auto &mat = scenegraph_.GetComponent<MaterialComponent>(elem);
-    HW_ASSERT(mat.material->GetShader() != nullptr);
-
-    transform.ComputeMatrix();
-    auto mvp = proj * view * transform.matrix;
-    Buffer &vbuf = *bufs.vbuffer;
-    Buffer &ibuf = *bufs.ibuffer;
-    HW_ASSERT(vbuf.Type() == BufferType::VertexBuffer);
-    HW_ASSERT(ibuf.Type() == BufferType::IndexBuffer);
-    renderer_.Submit(mvp, transform.matrix, vbuf, ibuf, *mat.material.get());
+    auto *transform = scenegraph_.GetComponentPtr<TransformComponent>(elem);
+    auto *bufs = scenegraph_.GetComponentPtr<GeometryComponent>(elem);
+    auto *mat = scenegraph_.GetComponentPtr<MaterialComponent>(elem);
+    transform->ComputeMatrix();
+    UniquePtr<RenderCommand> p =
+        std::make_unique<rendercommands::RenderMeshCmd>(
+            bufs, mat->material.get(), transform->matrix);
+    renderer_.PushCommand(std::move(p));
   }
   GarbageCollect();
 }

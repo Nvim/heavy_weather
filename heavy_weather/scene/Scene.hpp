@@ -67,6 +67,7 @@ public:
   ~Scene() = default;
 
 private:
+  void UpdateCameraMatrices();
   void ProcessLightSources();
   void OnEntityRemoved(const EntityRemovedEvent &e);
   void GarbageCollect();

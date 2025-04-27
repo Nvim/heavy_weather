@@ -10,7 +10,9 @@
 
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/BackendApi.hpp"
+#include "heavy_weather/rendering/RenderCommand.hpp"
 #include <glm/glm.hpp>
+#include <queue>
 
 namespace weather {
 class Image;
@@ -29,8 +31,9 @@ public:
   void Clear(glm::vec4 col) { api_->Clear(col); }
   void ClearDepth() { api_->ClearDepthBuffer(); }
 
-  void Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
-              const Buffer &ibuf, Material &material);
+  bool Begin();
+  void PushCommand(UniquePtr<RenderCommand> command);
+  bool ProcessCommands();
 
   BackendAPI &Api() const { return *api_; }
   GeometryComponent CreateGeometry(const MeshDescriptor &desc);
@@ -46,6 +49,8 @@ public:
 
 private:
   UniquePtr<BackendAPI> api_ = nullptr;
+  std::queue<UniquePtr<RenderCommand>> command_queue_;
+  bool recording_{false};
 };
 
 } // namespace graphics

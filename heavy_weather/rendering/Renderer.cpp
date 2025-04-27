@@ -7,6 +7,7 @@
 #include "heavy_weather/rendering/Buffer.hpp"
 #include "heavy_weather/rendering/GeometryComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
+#include "heavy_weather/rendering/RenderCommand.hpp"
 #include "heavy_weather/rendering/ShaderProgram.hpp"
 #include "heavy_weather/rendering/Types.hpp"
 #include "heavy_weather/rendering/VertexLayout.hpp"
@@ -44,6 +45,39 @@ Renderer::Renderer(RendererInitParams &params) {
       new GLBackendAPI(params.viewport.first, params.viewport.second,
                        params.depth_test, params.debug_mode));
 };
+
+void Renderer::PushCommand(UniquePtr<RenderCommand> command) {
+  command_queue_.push(std::move(command));
+}
+
+bool Renderer::Begin() {
+  if (recording_) {
+    HW_CORE_ERROR("Can't begin recording commands: recording already started");
+    return false;
+  }
+  if (!command_queue_.empty()) {
+    HW_CORE_WARN("Renderer CommandQueue wasn't flushed before beginning frame");
+    return false;
+  }
+  recording_ = true;
+  return true;
+}
+
+bool Renderer::ProcessCommands() {
+  if (!recording_) {
+    HW_CORE_ERROR("Can't process commands: queue hasn't begun recording");
+    return false;
+  }
+  while (!command_queue_.empty()) {
+    auto cmd = std::move(command_queue_.front());
+    if (!cmd->Execute(*api_)) {
+      return false;
+    }
+    command_queue_.pop();
+  }
+  recording_ = false;
+  return true;
+}
 
 UniquePtr<Buffer> Renderer::CreateBuffer(const BufferDescriptor &desc,
                                          void *data) {
@@ -84,28 +118,6 @@ GeometryComponent Renderer::CreateGeometry(const MeshDescriptor &desc) {
 
 SharedPtr<Texture> Renderer::CreateTexture(SharedPtr<Image> img) {
   return api_->CreateTexture(std::move(img));
-}
-
-void Renderer::Submit(glm::mat4 &mvp, glm::mat4 &model, const Buffer &vbuf,
-                      const Buffer &ibuf, Material &material) {
-  auto shader = material.GetShader();
-  UsePipeline(*shader);
-
-  f32 time = PlatformGetTime(); // TODO: get delta!
-  auto mvp_uniform = UniformDescriptor{"MVP", DataFormat::Mat4, &mvp};
-  auto model_uniform = UniformDescriptor{"Model", DataFormat::Mat4, &model};
-  auto time_uniform =
-      UniformDescriptor{"uGlobalTime", DataFormat::Float, &time};
-  shader->BindUniform(time_uniform);
-  shader->BindUniform(mvp_uniform);
-  shader->BindUniform(model_uniform);
-
-  material.BindUniforms();
-
-  api_->SetVertexBuffer(vbuf);
-  api_->SetIndexBuffer(ibuf);
-  api_->RenderIndexed(ibuf.Count());
-  // api_->Render();
 }
 
 SharedPtr<ShaderProgram> Renderer::CreatePipeline(SharedPtr<ShaderSource> vs,

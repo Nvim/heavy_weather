@@ -24,8 +24,8 @@ private:
   void OnMouseMoved(const MouseMovedEvent &e);
   void OnKeyPressed(const KeyPressedEvent &evt);
   void OnResize(const weather::ResizeEvent &e);
-  void OnRender(f64 delta) override;
-  void OnGuiRender(f64 delta) override;
+  bool OnRender(f64 delta) override;
+  bool OnGuiRender(f64 delta) override;
 
   void InitGraphics();
 

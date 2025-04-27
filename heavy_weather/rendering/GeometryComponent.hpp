@@ -1,7 +1,5 @@
 #pragma once
 
-#include "heavy_weather/core/Asserts.hpp"
-#include "heavy_weather/core/Logger.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/rendering/Types.hpp"
 

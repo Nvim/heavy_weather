@@ -36,7 +36,6 @@ void PlatformSleep(u64 time) {
 }
 
 f64 PlatformGetTime() {
-  struct timespec now{};
   f64 time = glfwGetTime();
   // HW_CORE_DEBUG("GLFW Time: {}s ({}ms)", time, (time * 1000));
   return time * 1000; // returns milliseconds

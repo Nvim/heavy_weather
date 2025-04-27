@@ -235,16 +235,20 @@ void Demo::InitGraphics() {
   }
 }
 
-void Demo::OnRender(f64 delta) {
+bool Demo::OnRender(f64 delta) {
+  if (!renderer_.Begin()) {
+    return false;
+  }
   scene_.Update(delta);
   renderer_.Clear(bgcolor_);
   scene_.SubmitAll();
+  return renderer_.ProcessCommands();
 }
 
-void Demo::OnGuiRender(f64 delta) {
-  (void)delta;
+bool Demo::OnGuiRender([[maybe_unused]] f64 delta) {
   EventDispatch(GuiRenderEvent{});
   scene_.OnGuiRender();
+  return true;
 }
 
 void Demo::OnMouseMoved(const MouseMovedEvent &e) // NOLINT

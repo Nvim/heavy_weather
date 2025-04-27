@@ -27,8 +27,8 @@ public:
   virtual const char *GetProgramName() const = 0;
 
 private:
-  virtual void OnRender(f64 delta) = 0;
-  virtual void OnGuiRender(f64 delta) = 0;
+  virtual bool OnRender(f64 delta) = 0;
+  virtual bool OnGuiRender(f64 delta) = 0;
   static inline Application *s_instance{nullptr};
   std::unique_ptr<Window> window_;
   bool is_running_;

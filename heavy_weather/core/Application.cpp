@@ -59,7 +59,11 @@ void Application::Run() {
     start = PlatformGetTime();
 
     window_->Update();
-    this->OnRender(frametime_ms);
+    if (!this->OnRender(frametime_ms)) {
+      HW_CORE_WARN("Error during rendering. Exiting.");
+      is_running_ = false;
+      break;
+    }
 #ifdef HW_ENABLE_GUI
     // TODO cool version string system
     const char *engine_str = "Heavy Weather Engine - v0.0.0";
@@ -71,7 +75,11 @@ void Application::Run() {
     graphics::Gui::BeginFrame();
     graphics::Gui::RenderAppWindow(info, (void *)&this->GetWindow());
 
-    this->OnGuiRender(frametime_ms);
+    if (!this->OnGuiRender(frametime_ms)) {
+      HW_CORE_WARN("Error during GUI rendering. Exiting.");
+      is_running_ = false;
+      break;
+    }
     graphics::Gui::EndFrame();
 #endif // HW_ENABLE_GUI
     end = PlatformGetTime();
