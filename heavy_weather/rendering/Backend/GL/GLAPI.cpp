@@ -1,6 +1,5 @@
 #include "GLAPI.hpp"
 
-#include "GLIndexBuffer.hpp"
 #include "GLShader.hpp"
 #include "GLVertexBuffer.hpp"
 #include "heavy_weather/core/Asserts.hpp"

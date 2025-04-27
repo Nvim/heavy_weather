@@ -39,7 +39,8 @@ static void DisplayShaderPipeline(graphics::ShaderProgram &p, i64 use_count) {
   }
 }
 
-template <> void AssetLibrary<ShaderSource>::OnGuiRender() {
+template <>
+void AssetLibrary<ShaderSource>::OnGuiRender() {
   if (ImGui::TreeNode("Shader Sources")) {
     for (auto &src : assets_) {
       DisplayShaderSource(*src.second, src.second.use_count());
@@ -47,7 +48,8 @@ template <> void AssetLibrary<ShaderSource>::OnGuiRender() {
     ImGui::TreePop();
   }
 }
-template <> void AssetLibrary<weather::Image>::OnGuiRender() {
+template <>
+void AssetLibrary<weather::Image>::OnGuiRender() {
   if (ImGui::TreeNode("Images")) {
     for (const auto &img : assets_) {
       DisplayImage(*img.second, img.second.use_count());
@@ -56,15 +58,18 @@ template <> void AssetLibrary<weather::Image>::OnGuiRender() {
   }
 }
 
-template <> void AssetLibrary<weather::graphics::Texture>::OnGuiRender() {
+template <>
+void AssetLibrary<weather::graphics::Texture>::OnGuiRender() {
   if (ImGui::TreeNode("Textures")) {
+    f32 max_x = 150, max_y = 150;
     for (const auto &t : assets_) {
       if (ImGui::TreeNode(t.first.c_str())) {
         ImGui::Text("Use count: %ld", t.second.use_count());
+        f32 tex_x = static_cast<f32>(t.second->Size().first);
+        f32 tex_y = static_cast<f32>(t.second->Size().second);
         DisplayImage(*t.second->img_, t.second->img_.use_count());
         ImGui::Image(t.second->Handle(),
-                     {static_cast<float>(t.second->Size().first),
-                      static_cast<float>(t.second->Size().second)});
+                     {std::min(max_x, tex_x), std::min(max_y, tex_y)});
         if (ImGui::Button("Reload")) {
           HW_CORE_DEBUG("Reloading texture {}", t.second->Name());
           t.second->Reload();
@@ -76,7 +81,8 @@ template <> void AssetLibrary<weather::graphics::Texture>::OnGuiRender() {
   }
 }
 
-template <> void AssetLibrary<weather::graphics::ShaderProgram>::OnGuiRender() {
+template <>
+void AssetLibrary<weather::graphics::ShaderProgram>::OnGuiRender() {
   if (ImGui::TreeNode("Shader pipelines")) {
     for (const auto &p : assets_) {
       DisplayShaderPipeline(*p.second, p.second.use_count());
@@ -85,7 +91,8 @@ template <> void AssetLibrary<weather::graphics::ShaderProgram>::OnGuiRender() {
   }
 }
 
-template <> void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
+template <>
+void AssetLibrary<weather::graphics::Material>::OnGuiRender() {
   if (ImGui::TreeNode("Materials")) {
     for (const auto &mat : assets_) {
       if (ImGui::TreeNode(mat.first.c_str())) {
