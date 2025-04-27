@@ -237,7 +237,6 @@ void Scene::SubmitAll() {
             bufs, mat->material.get(), transform->matrix);
     renderer_.PushCommand(std::move(p));
   }
-  GarbageCollect();
 }
 
 void Scene::OnGuiRender() {

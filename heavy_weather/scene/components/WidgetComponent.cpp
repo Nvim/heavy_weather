@@ -2,7 +2,6 @@
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/LightSourceComponent.hpp"
-#include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "imgui.h"
@@ -48,9 +47,9 @@ void LightSourceControl(ECS &scene, u32 entity) {
   if (is_light) {
     auto *comp = scene.GetComponentPtr<LightSourceComponent>(entity);
     if (Gui::BeginTreeNode("Light Source")) {
-      Gui::DrawSliderFloat3("Ambient", &comp->ambient, 0.0f, 1.0f);
-      Gui::DrawSliderFloat3("Diffuse", &comp->diffuse, 0.0f, 1.0f);
-      Gui::DrawSliderFloat3("Specular", &comp->specular, 0.0f, 1.0f);
+      ImGui::ColorEdit3("Ambient", (f32 *)(&comp->ambient));
+      ImGui::ColorEdit3("Diffuse", (f32 *)(&comp->diffuse));
+      ImGui::ColorEdit3("Specular", (f32 *)(&comp->specular));
       ImGui::InputFloat("Constant", &comp->constant);
       ImGui::InputFloat("Linear", &comp->linear);
       ImGui::InputFloat("Quadratic", &comp->quadratic);
@@ -63,7 +62,6 @@ void DeleteEntityButton(ECS &scene, u32 entity) {
   (void)scene;
   if (Gui::DrawButton("delete")) {
     EventDispatch(EntityRemovedEvent{entity});
-    // scene.DestroyEntity(entity);
   }
 }
 

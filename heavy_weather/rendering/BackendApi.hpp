@@ -12,6 +12,7 @@ namespace graphics {
 
 class Texture;
 class Buffer;
+class RenderTarget;
 
 class BackendAPI {
 public:
@@ -25,6 +26,7 @@ public:
                                          ShaderType type) = 0;
   virtual SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) = 0;
   virtual SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) = 0;
+  virtual SharedPtr<RenderTarget> CreateRenderTarget() = 0;
 
   /* Resouce binding: */
   virtual void BindShaderResource(const Buffer &buf, i32 binding) = 0;
@@ -33,7 +35,8 @@ public:
   virtual void WriteBufferData(const Buffer &buf, void *data, u64 offset,
                                u64 data_sz) = 0;
   virtual void UsePipeline(ShaderProgram &pipeline) = 0;
-  // virtual void BindUniform(UniformDescriptor &desc) = 0;
+  virtual void SetRenderTarget(RenderTarget &target) = 0;
+  virtual void RestoreRenderTarget() = 0;
 
   // Draw Call using previously bound resources:
   // TODO: Clear as a single method, buffer common interface abstraction

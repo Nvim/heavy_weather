@@ -8,11 +8,14 @@
 #include "heavy_weather/core/Window.hpp"
 #include "heavy_weather/engine.h"
 #include "heavy_weather/event/GuiRenderEvent.hpp"
+#include "heavy_weather/event/KeyPressedEvent.hpp"
+#include "heavy_weather/event/MouseMovedEvent.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/event/WindowCloseEvent.hpp"
 #include "heavy_weather/rendering/Camera.hpp"
 #include "heavy_weather/rendering/LightSourceComponent.hpp"
 #include "heavy_weather/rendering/Material.hpp"
+#include "heavy_weather/rendering/RenderTarget.hpp"
 #include "heavy_weather/rendering/Renderer.hpp"
 #include "heavy_weather/rendering/Texture.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
@@ -21,6 +24,7 @@
 #include "heavy_weather/resources/AssetManager.hpp"
 #include "heavy_weather/scene/Scene.hpp"
 #include "heavy_weather/scene/components/RotateComponent.hpp"
+#include "imgui.h"
 #include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 #include <resources/cube_vertices.hpp>
@@ -46,11 +50,13 @@ using weather::graphics::Backend;
 namespace {
 const std::string kTitle = "Sandbox";
 constexpr f64 kFrametime = 1.0f / 60;
-constexpr u16 kWidth = 1280;
-constexpr u16 kHeight = 720;
+constexpr u16 kViewportW = 1280;
+constexpr u16 kViewportH = 720;
+constexpr u16 kWindowW = 1600;
+constexpr u16 kWindowH = 900;
 
 weather::graphics::RendererInitParams renderer_init{
-    Backend::OpenGL, {kWidth, kHeight}, true, true};
+    Backend::OpenGL, {kViewportW, kViewportH}, true, true};
 
 weather::graphics::CameraParams camera_params{};
 
@@ -60,7 +66,7 @@ using namespace weather;
 
 // Entrypoint hook:
 weather::Application *weather::CreateAppHook() {
-  weather::WindowProps props = {kTitle, kWidth, kHeight};
+  weather::WindowProps props = {kTitle, kWindowW, kWindowH};
   return new Demo{props, kFrametime, renderer_init}; // NOLINT
 }
 
@@ -82,6 +88,7 @@ Demo::Demo(WindowProps &window_props, f64 fps,
   EventRegister(r, this);
 
   // Graphics:
+  rendertarget_ = renderer_.Api().CreateRenderTarget();
   InitGraphics();
 }
 
@@ -236,18 +243,31 @@ void Demo::InitGraphics() {
 }
 
 bool Demo::OnRender(f64 delta) {
+  scene_.Update(delta);
+  renderer_.Clear({0.1f, 0.1f, 0.1f, 1.0f});
+  renderer_.Api().SetRenderTarget(*rendertarget_);
   if (!renderer_.Begin()) {
     return false;
   }
-  scene_.Update(delta);
   renderer_.Clear(bgcolor_);
   scene_.SubmitAll();
-  return renderer_.ProcessCommands();
+  bool ret = renderer_.ProcessCommands();
+  renderer_.Api().RestoreRenderTarget();
+  scene_.GarbageCollect();
+  return ret;
 }
 
 bool Demo::OnGuiRender([[maybe_unused]] f64 delta) {
   EventDispatch(GuiRenderEvent{});
   scene_.OnGuiRender();
+  if (ImGui::Begin("Viewport")) {
+    if (ImGui::IsWindowHovered()) {
+      ImGui::SetNextFrameWantCaptureKeyboard(false);
+    }
+    ImGui::Image(rendertarget_->ColorHandle(), {kViewportW, kViewportH}, {0, 1},
+                 {1, 0});
+    ImGui::End();
+  }
   return true;
 }
 
@@ -275,7 +295,7 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
 }
 
 void Demo::OnResize(const ResizeEvent &e) {
-  renderer_.Resize({e.NewSize().w, e.NewSize().h});
+  // renderer_.Resize({e.NewSize().w, e.NewSize().h});
 }
 
 const char *Demo::GetProgramName() const { return kTitle.c_str(); }

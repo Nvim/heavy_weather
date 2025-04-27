@@ -49,6 +49,7 @@ public:
   void Update(f64 delta);
   void SubmitAll();
   void OnGuiRender();
+  void GarbageCollect();
 
   // Helpers:
   u32 AddMesh(MeshDescriptor &desc, glm::vec3 coords = {0.0f, 0.0f, 0.0f},
@@ -70,7 +71,6 @@ private:
   void UpdateCameraMatrices();
   void ProcessLightSources();
   void OnEntityRemoved(const EntityRemovedEvent &e);
-  void GarbageCollect();
   UniquePtr<Buffer> matrices_ubo_{nullptr};
   UniquePtr<Buffer> lights_ubo_{nullptr};
 };

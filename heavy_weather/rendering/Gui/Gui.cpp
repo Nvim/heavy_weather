@@ -50,6 +50,7 @@ void Gui::RenderAppWindow(AppInfo &info, void *window) {
     if (ImGui::Button("Exit")) {
       EventDispatch(weather::WindowCloseEvent{window});
     }
+    ImGui::ShowMetricsWindow();
     ImGui::End();
   }
 }
@@ -58,6 +59,7 @@ void Gui::BeginFrame() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+  ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 }
 
 void Gui::EndFrame() {

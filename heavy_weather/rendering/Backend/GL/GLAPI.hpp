@@ -12,6 +12,7 @@ enum class GLTarget : u8 { VAO, VBO, EBO, UBO };
 struct GLState {
   u32 program = 0;
   std::unordered_map<GLTarget, u32> targets;
+  u32 fbo = 0;
 };
 
 // Configuration/Features for API:
@@ -33,6 +34,7 @@ public:
                                  ShaderType type) override;
   SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) override;
   SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
+  SharedPtr<RenderTarget> CreateRenderTarget() override;
 
   void WriteBufferData(const Buffer &buf, void *data, u64 offset,
                        u64 data_sz) override;
@@ -40,6 +42,9 @@ public:
   void SetVertexBuffer(const Buffer &buf) override;
   void SetIndexBuffer(const Buffer &buf) override;
   void UsePipeline(ShaderProgram &pipeline) override;
+  void SetRenderTarget(RenderTarget &target) override;
+  void RestoreRenderTarget() override;
+
   void Render() override;
   void RenderIndexed(u64 count) override;
   void Clear(glm::vec4 col) const override;

@@ -7,6 +7,7 @@
 #include "heavy_weather/engine.h"
 #include "heavy_weather/platform/Platform.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLBuffer.hpp"
+#include "heavy_weather/rendering/Backend/GL/GLRenderTarget.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLShaderProgram.hpp"
 #include "heavy_weather/rendering/Backend/GL/GLTexture.hpp"
 #include "heavy_weather/rendering/Backend/GL/Utils.hpp"
@@ -121,6 +122,12 @@ GLBackendAPI::CreatePipeline(PipelineDescriptor &desc) {
   return pipeline;
 }
 
+SharedPtr<RenderTarget> GLBackendAPI::CreateRenderTarget() {
+  std::pair<u16, u16> s{config_.viewport_w, config_.viewport_h};
+  auto r = std::make_shared<GLRenderTarget>(s);
+  return r;
+}
+
 SharedPtr<Texture> GLBackendAPI::CreateTexture(SharedPtr<Image> img) {
   return std::shared_ptr<Texture>(new GLTexture(img));
 };
@@ -192,6 +199,20 @@ void GLBackendAPI::UsePipeline(ShaderProgram &pipeline) {
   }
   glUseProgram(glpipeline.Handle());
   state_.program = pipeline.Handle();
+}
+
+void GLBackendAPI::SetRenderTarget(RenderTarget &target) {
+  // TODO: validation
+  if (state_.fbo != target.Handle()) {
+    glBindFramebuffer(GL_FRAMEBUFFER, target.Handle());
+    state_.fbo = target.Handle();
+  }
+}
+void GLBackendAPI::RestoreRenderTarget() {
+  if (state_.fbo != 0) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    state_.fbo = 0;
+  }
 }
 
 void GLBackendAPI::Clear(glm::vec4 col) const {
