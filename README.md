@@ -29,20 +29,20 @@ supported on all devices or by WebGL.
 
 The project uses the following third-party libraries:
 
-- GLFW for windowing and input
-- GLAD for loading OpenGL headers
-- ImGUI for the graphical user interface
-- SpdLog for logging
-- STB image for loading textures
-- TinyGLTF for loading GLTF models and resources
-- JSON for parsing data files
-- GoogleTest testing framework
+- [GLFW](https://github.com/glfw/glfw) for windowing and input
+- [GLAD](https://github.com/premake-libs/glad) for loading OpenGL headers
+- [ImGUI](https://github.com/ocornut/imgui) for the graphical user interface
+- [spdlog](https://github.com/gabime/spdlog) for logging
+- [stb_image](stb_image) for loading textures
+- [TinyGLTF](https://github.com/syoyo/tinygltf) for loading GLTF models and resources
+- [nlohmann/json](https://github.com/nlohmann/json) for parsing data files
+- [GoogleTest](https://github.com/google/googletest) testing framework
 
 # Building
 
-Building the engine has only been tested on Linux x86, with Clang 20. Building
-with GCC or other Clang versions should be possible on Linux, but other
-platforms aren't supported yet.
+Building the engine has only been tested on Linux x86, with Clang 20 and the
+C++17 standard. Building with GCC or other Clang versions should be possible
+on Linux, but other platforms aren't supported yet.
 
 All dependencies are included as submodules and are built from source. The only
 exception is GLFW, whcih is expected to be installed system-wide. If you prefer
@@ -69,4 +69,4 @@ cmake --build --preset release-clean
 ## Nix
 
 A Nix devshell with all the necessary dependencies is available. Run `nix
-develop .` then built the project with CMake.
+develop .` then build the project with CMake.
