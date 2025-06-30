@@ -42,6 +42,8 @@
         packages = with pkgs; [
           # IDE/Dev Tools:
           cmakeWithGui
+          gnumake
+          ninja
           pkg-config
           ninja
           llvmPackages_20.clang-tools # LSP & Formatter
