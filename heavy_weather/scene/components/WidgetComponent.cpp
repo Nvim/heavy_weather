@@ -2,6 +2,7 @@
 #include "heavy_weather/event/EntityRemoved.hpp"
 #include "heavy_weather/event/Util.hpp"
 #include "heavy_weather/rendering/LightSourceComponent.hpp"
+#include "heavy_weather/rendering/Material.hpp"
 #include "heavy_weather/rendering/MaterialComponent.hpp"
 #include "heavy_weather/rendering/TransformComponent.hpp"
 #include "imgui.h"

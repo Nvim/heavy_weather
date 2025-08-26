@@ -21,6 +21,7 @@ Application::Application(WindowProps &window_props, f64 fps) {
   s_instance = this;
   is_running_ = false;
   fps_ = fps;
+  window_props.title.append(" - Heavy Weather");
   window_ = PlatformInitWindow(window_props);
 
   if (!InputSystem::Init(window_->GetNative())) {

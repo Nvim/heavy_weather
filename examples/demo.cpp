@@ -93,6 +93,7 @@ Demo::Demo(WindowProps &window_props, f64 fps,
 }
 
 Demo::~Demo() {
+  // TODO: EventUnregisterAll
   EventUnregister(mouse_callback_);
   EventCallback<KeyPressedEvent> e = BIND_EVENT_FUNC(&Demo::OnKeyPressed);
   EventUnregister(e);
@@ -217,34 +218,11 @@ void Demo::InitGraphics() {
       solid_mtl->SetUniformValue("uColor", c.diffuse);
       scene_.AddMaterial(solid_mtl, l);
     }
-    // {
-    //   tinygltf::Model model;
-    //   tinygltf::TinyGLTF loader;
-    //   std::string err;
-    //   std::string warn;
-    //   bool ret = loader.LoadBinaryFromFile(
-    //       &model, &err, &warn,
-    //       "examples/resources/models/Box.glb"); // for binary glTF(.glb)
-    //
-    //   if (!warn.empty()) {
-    //     HW_APP_WARN("WARNING FROM GLTF: {}", warn);
-    //   }
-    //
-    //   if (!err.empty()) {
-    //     HW_APP_ERROR("ERROR FROM GLTF: {}", err);
-    //   }
-    //
-    //   if (!ret) {
-    //     HW_APP_ERROR("Failed to parse GLTF");
-    //   }
-    //   HW_APP_INFO("GLTF parsing works :)")
-    // }
   }
 }
 
 bool Demo::OnRender(f64 delta) {
   scene_.Update(delta);
-  renderer_.Clear({0.1f, 0.1f, 0.1f, 1.0f});
   renderer_.Api().SetRenderTarget(*rendertarget_);
   if (!renderer_.Begin()) {
     return false;
@@ -294,7 +272,7 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   }
 }
 
-void Demo::OnResize(const ResizeEvent &e) {
+void Demo::OnResize([[maybe_unused]] const ResizeEvent &e) {
   // renderer_.Resize({e.NewSize().w, e.NewSize().h});
 }
 

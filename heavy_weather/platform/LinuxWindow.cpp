@@ -82,7 +82,7 @@ static void set_window_flags() {
 
 // ** LinuxWindow class ** //
 LinuxWindow::LinuxWindow(const WindowProps &props) : props_{props} {
-  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND); // TODO: define for this
+  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11); // TODO: define for this
   HW_ASSERT_MSG((glfwInit()), "Couldn't init GLFW");
   set_window_flags();
   window_ = glfwCreateWindow(props.width, props.height, props.title.c_str(),
