@@ -128,6 +128,12 @@ SharedPtr<RenderTarget> GLBackendAPI::CreateRenderTarget() {
   return r;
 }
 
+SharedPtr<MultiPassRenderTarget> GLBackendAPI::CreateMultiPassRenderTarget() {
+  std::pair<u16, u16> s{config_.viewport_w, config_.viewport_h};
+  auto r = std::make_shared<GLMultiPassRenderTarget>(s);
+  return r;
+}
+
 SharedPtr<Texture> GLBackendAPI::CreateTexture(SharedPtr<Image> img) {
   return std::shared_ptr<Texture>(new GLTexture(img));
 };

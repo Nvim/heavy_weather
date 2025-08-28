@@ -14,11 +14,18 @@ class MouseMovedEvent;
 namespace graphics {
 class Scene;
 class RenderTarget;
+class MultiPassRenderTarget;
 class Renderer;
 } // namespace graphics
 } // namespace weather
 
 using namespace weather;
+
+enum class Attachment : u8 {
+  RGB,
+  POSITION,
+  NORMAL,
+};
 
 class Demo : public Application {
 public:
@@ -41,7 +48,9 @@ private:
   graphics::Renderer renderer_;
   AssetManager asset_mgr_{&renderer_};
 
-  SharedPtr<graphics::RenderTarget> rendertarget_;
+  // SharedPtr<graphics::RenderTarget> rendertarget_;
+  SharedPtr<graphics::MultiPassRenderTarget> rendertarget_;
   graphics::Scene scene_;
   glm::vec4 bgcolor_{0.15f, 0.15f, 0.15f, 1.0f};
+  Attachment attachment_{Attachment::RGB};
 };
