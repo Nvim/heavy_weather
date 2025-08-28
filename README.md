@@ -33,7 +33,7 @@ The project uses the following third-party libraries:
 - [GLAD](https://github.com/premake-libs/glad) for loading OpenGL headers
 - [ImGUI](https://github.com/ocornut/imgui) for the graphical user interface
 - [spdlog](https://github.com/gabime/spdlog) for logging
-- [stb_image](stb_image) for loading textures
+- [stb_image](https://github.com/nothings/stb) for loading textures
 - [TinyGLTF](https://github.com/syoyo/tinygltf) for loading GLTF models and resources
 - [nlohmann/json](https://github.com/nlohmann/json) for parsing data files
 - [GoogleTest](https://github.com/google/googletest) testing framework
@@ -45,7 +45,7 @@ C++17 standard. Building with GCC or other Clang versions should be possible
 on Linux, but other platforms aren't supported yet.
 
 All dependencies are included as submodules and are built from source. The only
-exception is GLFW, whcih is expected to be installed system-wide. If you prefer
+exception is GLFW, which is expected to be installed system-wide. If you prefer
 building it from source with the other dependencies, define `BUILD_GLFW`.
 
 ## Configurations
