@@ -41,4 +41,67 @@ GLRenderTarget::GLRenderTarget(std::pair<i32, i32> size)
 }
 
 GLRenderTarget::~GLRenderTarget() { glDeleteFramebuffers(0, &handle_); }
+
+// ** MULTIPASS **
+GLMultiPassRenderTarget::GLMultiPassRenderTarget(std::pair<i32, i32> size)
+    : size_{size}, handle_{}, rgb_{}, position_{}, normal_{}, depth_{} {
+
+  glGenFramebuffers(1, &handle_);
+  glBindFramebuffer(GL_FRAMEBUFFER, handle_);
+
+  // Color:
+  glGenTextures(1, &rgb_);
+  glBindTexture(GL_TEXTURE_2D, rgb_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.first, size.second, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, nullptr);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenTextures(1, &position_);
+  glBindTexture(GL_TEXTURE_2D, position_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.first, size.second, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, nullptr);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenTextures(1, &normal_);
+  glBindTexture(GL_TEXTURE_2D, normal_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.first, size.second, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, nullptr);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // Depth:
+  glGenTextures(1, &depth_);
+  glBindTexture(GL_TEXTURE_2D, depth_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size.first, size.second, 0,
+               GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // Attach:
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         rgb_, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
+                         position_, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
+                         normal_, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                         depth_, 0);
+  unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                                 GL_COLOR_ATTACHMENT2};
+  glDrawBuffers(3, attachments); // NOLINT
+  HW_ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) ==
+                    GL_FRAMEBUFFER_COMPLETE,
+                "failed to create OpenGL FBO");
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+GLMultiPassRenderTarget::~GLMultiPassRenderTarget() {
+  glDeleteFramebuffers(0, &handle_);
+}
 } // namespace weather::graphics

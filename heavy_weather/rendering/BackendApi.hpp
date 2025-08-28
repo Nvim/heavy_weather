@@ -13,6 +13,7 @@ namespace graphics {
 class Texture;
 class Buffer;
 class RenderTarget;
+class MultiPassRenderTarget;
 
 class BackendAPI {
 public:
@@ -27,6 +28,7 @@ public:
   virtual SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) = 0;
   virtual SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) = 0;
   virtual SharedPtr<RenderTarget> CreateRenderTarget() = 0;
+  virtual SharedPtr<MultiPassRenderTarget> CreateMultiPassRenderTarget() = 0;
 
   /* Resouce binding: */
   virtual void BindShaderResource(const Buffer &buf, i32 binding) = 0;

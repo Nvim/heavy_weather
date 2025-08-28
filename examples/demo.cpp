@@ -88,7 +88,7 @@ Demo::Demo(WindowProps &window_props, f64 fps,
   EventRegister(r, this);
 
   // Graphics:
-  rendertarget_ = renderer_.Api().CreateRenderTarget();
+  rendertarget_ = renderer_.Api().CreateMultiPassRenderTarget();
   InitGraphics();
 }
 
@@ -129,11 +129,11 @@ void Demo::InitGraphics() {
     // tweak materials
     {
       auto lit_paving_mat = asset_mgr_.LoadResource<graphics::Material>(
-          "examples/resources/materials/lit.json");
+          "examples/resources/materials/deferred.json");
       auto container_mat = asset_mgr_.LoadResource<graphics::Material>(
-          "examples/resources/materials/lit.json");
+          "examples/resources/materials/deferred.json");
       auto lit_cobble_mat = asset_mgr_.LoadResource<graphics::Material>(
-          "examples/resources/materials/lit.json");
+          "examples/resources/materials/deferred.json");
 
       lit_cobble_mat->SetTexture(
           asset_mgr_.LoadResource<graphics::Texture>(
@@ -242,8 +242,20 @@ bool Demo::OnGuiRender([[maybe_unused]] f64 delta) {
     if (ImGui::IsWindowHovered()) {
       ImGui::SetNextFrameWantCaptureKeyboard(false);
     }
-    ImGui::Image(rendertarget_->ColorHandle(), {kViewportW, kViewportH}, {0, 1},
-                 {1, 0});
+
+    u32 handle{};
+    switch (attachment_) {
+    case Attachment::RGB:
+      handle = rendertarget_->RGBHandle();
+      break;
+    case Attachment::POSITION:
+      handle = rendertarget_->PositionHandle();
+      break;
+    case Attachment::NORMAL:
+      handle = rendertarget_->NormalHandle();
+      break;
+    }
+    ImGui::Image(handle, {kViewportW, kViewportH}, {0, 1}, {1, 0});
     ImGui::End();
   }
   return true;
@@ -269,6 +281,18 @@ void Demo::OnKeyPressed(const KeyPressedEvent &evt) {
   if (key == GLFW_KEY_ESCAPE) {
     HW_CORE_DEBUG("Shutdown keybind has been pressed.");
     EventDispatch(weather::WindowCloseEvent{(void *)&this->GetWindow()});
+  }
+  if (key == GLFW_KEY_R) {
+    attachment_ = Attachment::RGB;
+    HW_CORE_DEBUG("Changed attachment to RGB.");
+  }
+  if (key == GLFW_KEY_P) {
+    attachment_ = Attachment::POSITION;
+    HW_CORE_DEBUG("Changed attachment to POSITION.");
+  }
+  if (key == GLFW_KEY_N) {
+    attachment_ = Attachment::NORMAL;
+    HW_CORE_DEBUG("Changed attachment to NORMAL.");
   }
 }
 
