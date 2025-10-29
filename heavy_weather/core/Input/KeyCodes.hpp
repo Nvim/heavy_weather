@@ -158,5 +158,5 @@ namespace weather {
 #define HW_MOUSE_BUTTON_MIDDLE    GLFW_MOUSE_BUTTON_MIDDLE
 // clang-format on
 
-#endif
 }
+#endif
