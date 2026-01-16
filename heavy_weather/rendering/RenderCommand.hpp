@@ -24,6 +24,7 @@ public:
 
 namespace rendercommands {
 
+// TODO: don't copy model matrices
 class RenderMeshCmd : public RenderCommand {
 public:
   bool Execute([[maybe_unused]] BackendAPI &api) override;

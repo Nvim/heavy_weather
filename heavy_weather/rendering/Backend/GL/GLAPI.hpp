@@ -35,6 +35,7 @@ public:
   SharedPtr<Texture> CreateTexture(SharedPtr<Image> img) override;
   SharedPtr<ShaderProgram> CreatePipeline(PipelineDescriptor &desc) override;
   SharedPtr<RenderTarget> CreateRenderTarget() override;
+  SharedPtr<MultiPassRenderTarget> CreateMultiPassRenderTarget() override;
 
   void WriteBufferData(const Buffer &buf, void *data, u64 offset,
                        u64 data_sz) override;

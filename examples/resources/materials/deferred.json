@@ -1,0 +1,17 @@
+{
+  "name": "Lit",
+  "vertex": "resources/shaders/deferred/deferred.vert",
+  "fragment": "resources/shaders/deferred/geometry.frag",
+  "uniforms": {
+    "ints": {},
+    "floats": {},
+    "float2s": {},
+    "float3s": {},
+    "mat3s": {},
+    "mat4s": {}
+  },
+  "textures": {
+    "TexDiffuse": "examples/resources/textures/paving_bc.png",
+    "TexSpecular": "examples/resources/textures/paving_spec.png"
+  }
+}
