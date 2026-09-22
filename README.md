@@ -2,6 +2,8 @@
 
 Work in progress graphics engine.
 
+![](https://github.com/Nvim/heavy_weather/blob/main/screenshot.png)
+
 # Features
 
 - Event system for communication between components
